@@ -1,0 +1,175 @@
+.word-selector {
+  margin-bottom: 1.5rem;
+}
+
+.selection-type-buttons {
+  display: flex;
+  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.topic-item {
+  background-color: var(--gray-light);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-weight: 600;
+}
+
+.topic-item:hover {
+  background-color: rgba(74, 111, 165, 0.2);
+}
+
+.topic-item.selected {
+  background-color: var(--primary);
+  color: white;
+}
+
+.selected-topics {
+  margin-top: 2rem;
+}
+
+.topic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.topic-list li {
+  background-color: white;
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--gray);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.remove-btn:hover {
+  color: var(--danger);
+}
+
+.word-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.word-chip {
+  background-color: var(--gray-light);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.loading-text {
+  font-style: italic;
+  color: var(--gray);
+  margin-top: 1rem;
+}
+
+.custom-words {
+  max-width: 600px;
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+.custom-topic-item {
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.custom-topic-item h4 {
+  margin-top: 0;
+  color: var(--primary);
+}
+
+.remove-word-btn {
+  background: none;
+  border: none;
+  color: var(--gray);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 0 0 0.35rem;
+}
+
+.remove-word-btn:hover {
+  color: var(--danger);
+}
+
+.upload-instructions {
+  margin-bottom: 1rem;
+}
+
+.format-example {
+  background-color: var(--gray-light);
+  padding: 1rem;
+  border-radius: 4px;
+  font-family: monospace;
+  margin-bottom: 1.5rem;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+}
+
+.upload-control {
+  margin-top: 1.5rem;
+}
+
+.file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.file-label {
+  display: inline-block;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .selection-type-buttons {
+    flex-direction: column;
+  }
+  
+  .selection-type-buttons button {
+    width: 100%;
+  }
+  
+  .topics-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

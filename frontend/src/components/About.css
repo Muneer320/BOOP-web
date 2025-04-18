@@ -1,0 +1,109 @@
+.about-page {
+  padding-bottom: 3rem;
+}
+
+.about-header {
+  text-align: center;
+  padding: 4rem 0;
+  margin-bottom: 2rem;
+}
+
+.about-header h1 {
+  color: var(--primary);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.lead {
+  font-size: 1.5rem;
+  color: var(--gray);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.about-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about-section {
+  margin-bottom: 3rem;
+}
+
+.about-section h2 {
+  color: var(--primary-dark);
+  position: relative;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.about-section h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background-color: var(--secondary);
+}
+
+.about-section p {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
+
+.about-section ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.about-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.cta-container {
+  text-align: center;
+  background-color: var(--primary);
+  color: white;
+  padding: 3rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.cta-container h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.cta-container .btn {
+  background-color: white;
+  color: var(--primary);
+  border: none;
+  font-size: 1.1rem;
+  padding: 0.75rem 2rem;
+}
+
+.cta-container .btn:hover {
+  background-color: var(--secondary);
+  color: var(--dark);
+}
+
+@media (max-width: 768px) {
+  .about-header {
+    padding: 2rem 0;
+  }
+  
+  .about-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .lead {
+    font-size: 1.2rem;
+  }
+  
+  .cta-container {
+    padding: 2rem 1rem;
+  }
+}
