@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import WordSelector from './WordSelector';
 import FileUploader from './FileUploader';
+import LoadingOverlay from './LoadingOverlay';
 import './PuzzleCreator.css';
 
 const PuzzleCreator = () => {
@@ -163,6 +164,7 @@ const PuzzleCreator = () => {
     <div className="puzzle-creator">
       <div className="container">
         <div className="card">
+          {isGenerating && <LoadingOverlay text="Generating your puzzle book..." />}
           {/* Progress indicator */}
           <div className="progress-bar">
             <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>

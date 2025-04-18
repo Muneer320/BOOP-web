@@ -92,6 +92,11 @@
   margin-top: 2rem;
 }
 
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;

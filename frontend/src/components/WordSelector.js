@@ -48,8 +48,9 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       return;
     }
     
-    const word = customWordInput.trim();
-    if (!word) {
+    const inputWords = customWordInput.trim().split(/[,\/;]+/);
+    const words = inputWords.filter(word => !!word.trim());
+    if (words.length === 0) {
       setError('Please enter a word');
       return;
     }
@@ -58,7 +59,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       const existingWords = prev[customTopicName] || [];
       return {
         ...prev,
-        [customTopicName]: [...existingWords, word]
+        [customTopicName]: [...existingWords, ...words]
       };
     });
     

@@ -1,0 +1,60 @@
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-spinner {
+  display: grid;
+  grid-template-columns: repeat(4, 30px);
+  grid-gap: 6px;
+}
+
+.grid-cell {
+  width: 30px;
+  height: 30px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  animation: cellFade 1.2s infinite ease-in-out;
+}
+
+.loading-text {
+  margin-top: 0.75rem;
+  color: var(--dark);
+  font-size: 1rem;
+}
+
+.loading-quote {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--gray);
+  font-style: italic;
+}
+
+@keyframes cellFade {
+  0%, 100% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
