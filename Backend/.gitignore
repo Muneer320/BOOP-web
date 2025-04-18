@@ -1,0 +1,7 @@
+# Cache files
+
+__pycache__/
+*.cpython-*.pyc
+*.pyo
+*.pyd
+*.pdb
