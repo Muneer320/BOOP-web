@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
+import api from './services/api';
 
 // Components
 import Header from './components/Header';
@@ -14,6 +15,10 @@ import GenerationStatus from './components/GenerationStatus';
 import { GenerationProvider } from './context/GenerationContext';
 
 function App() {
+  useEffect(() => {
+    api.get('/status').catch(err => console.error('Wake-up API failed:', err));
+  }, []);
+
   return (
     <GenerationProvider>
       <Router>
