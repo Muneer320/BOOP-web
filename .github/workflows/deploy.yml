@@ -40,3 +40,27 @@ jobs:
           git add .
           git commit -m "Update backend from GitHub - ${{ github.sha }}"
           git push https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/BOOP-backend main
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    if: "contains(join(github.event.commits.*.modified, ' '), 'frontend/') || github.event_name == 'workflow_dispatch'"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Deploy to Vercel
+        working-directory: ./frontend
+        run: |
+          vercel --token ${{ secrets.VERCEL_TOKEN }} \
+                 --prod \
+                 --yes \
+                 --confirm \
+                 -e REACT_APP_API_URL="https://${{ secrets.HF_USERNAME }}-boop-backend.hf.space"
