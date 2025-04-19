@@ -48,7 +48,6 @@ def append_page(book_name, image_path):
 '''
 def append_puzzle_page(pdf_file, svg_directory, background_image=None):
     temp_pdf = "temp.pdf"
-
     if os.path.exists(pdf_file):
         print(f"Reading existing PDF: {pdf_file}")
         with open(pdf_file, "rb") as f:
@@ -60,46 +59,35 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
             with open(temp_pdf, "wb") as f_temp:
                 pdf_writer.write(f_temp)
         print(f"Existing PDF pages saved to {temp_pdf}")
-
     new_pdf = "new_pages.pdf"
     c = canvas.Canvas(new_pdf, pagesize=A4)
     width, height = A4
-
     def extract_order_number(filename):
         match = re.match(r"(\d+)", filename)
         return int(match.group(1)) if match else float('inf')
-
     for page_num, svg_filename in enumerate(sorted(os.listdir(svg_directory), key=extract_order_number), start=1):
         if svg_filename.endswith("S.svg"):
             continue
-
         svg_filepath = os.path.join(svg_directory, svg_filename)
         drawing = svg2rlg(svg_filepath)
-
         if background_image:
             c.drawImage(background_image, 0, 0, width=width, height=height)
-
         drawing_width = drawing.width
         drawing_height = drawing.height
         scale_width = width / drawing_width
         scale_height = height / drawing_height
         scale = min(scale_width, scale_height)
-
         drawing.scale(scale, scale)
         renderPDF.draw(drawing, c, 0, 0)
-
         print(f"Adding new page: {svg_filename}")
         c.showPage()
-
     c.save()
-
     if os.path.exists(pdf_file):
         print(f"Merging existing and new pages into {pdf_file}")
         with open(temp_pdf, "rb") as f_existing, open(new_pdf, "rb") as f_new:
             existing_pdf = PdfReader(f_existing)
             new_pdf_content = PdfReader(f_new)
             pdf_writer = PdfWriter()
-
             with open(pdf_file, "wb") as f_final:
                 for page_num, page in enumerate(existing_pdf.pages, start=1):
                     print(f"Adding existing page {page_num}")
@@ -108,14 +96,10 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                     print(f"Adding new page {page_num}")
                     pdf_writer.add_page(page)
                 pdf_writer.write(f_final)
-
         print(f"Final PDF saved as {pdf_file}")
-
         f_existing.close()
         f_new.close()
-
         time.sleep(1)
-
         def force_delete(file_path):
             try:
                 os.remove(file_path)
@@ -128,15 +112,12 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                       file_path} after changing permissions")
             except Exception as e:
                 print(f"Error deleting {file_path}: {e}")
-
         force_delete(temp_pdf)
         force_delete(new_pdf)
-
 # puzzle + solution pages
 def append_puzzle_page(pdf_file, svg_directory, background_image=None):
     temp_pdf = "temp.pdf"
     solution_pdf = "solution_pages.pdf"
-
     if os.path.exists(pdf_file):
         print(f"Reading existing PDF: {pdf_file}")
         with open(pdf_file, "rb") as f:
@@ -148,7 +129,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
             with open(temp_pdf, "wb") as f_temp:
                 pdf_writer.write(f_temp)
         print(f"Existing PDF pages saved to {temp_pdf}")
-
     new_pdf = "new_pages.pdf"
     new_solutions_pdf = "new_solutions.pdf"
     c = canvas.Canvas(new_pdf, pagesize=A4)
@@ -156,7 +136,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
     width, height = A4
     top_margin = 100
     bottom_margin = 100
-
     # Add "SOLUTIONS" cover page
     solutions_cover = os.path.join(svg_directory, "S.svg")
     if os.path.exists(solutions_cover):
@@ -168,7 +147,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
         scale_cover_width = width / cover_width
         scale_cover_height = height / cover_height
         scale_cover = min(scale_cover_width, scale_cover_height)
-
         cover_drawing.scale(scale_cover, scale_cover)
         renderPDF.draw(cover_drawing, c_solutions, 0, 0)
         c_solutions.showPage()
@@ -178,38 +156,29 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
         solutions_text = "SOLUTIONS"
         c_solutions.drawString((width - c_solutions.stringWidth(solutions_text)) / 2, height / 2, solutions_text)
         c_solutions.showPage()
-
     def extract_order_number(filename):
         match = re.match(r"(\d+)", filename)
         return int(match.group(1)) if match else float('inf')
-
     solutions_per_line = 2
     max_lines_per_page = 3
     y_position = height - top_margin - 150  # Starting position for the first line of solutions
     solution_page_num = 0
-
     for page_num, svg_filename in enumerate(sorted(os.listdir(svg_directory), key=extract_order_number), start=1):
         if svg_filename.endswith("S.svg"):
             continue
-
         svg_filepath = os.path.join(svg_directory, svg_filename)
         drawing = svg2rlg(svg_filepath)
-
         if background_image:
             c.drawImage(background_image, 0, 0, width=width, height=height)
-
         drawing_width = drawing.width
         drawing_height = drawing.height
         scale_width = width / drawing_width
         scale_height = height / drawing_height
         scale = min(scale_width, scale_height)
-
         drawing.scale(scale, scale)
         renderPDF.draw(drawing, c, (width - drawing_width * scale) / 2, (height - drawing_height * scale) / 2)
-
         print(f"Adding new page: {svg_filename}")
         c.showPage()
-
         # Add solution page
         solution_filename = svg_filename.replace(".svg", "S.svg")
         solution_filepath = os.path.join(svg_directory, solution_filename)
@@ -221,28 +190,23 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                 scale_solution_width = (width / 2 - 50) / solution_width  # Two solutions per line
                 scale_solution_height = (height - top_margin - bottom_margin) / (max_lines_per_page + 1) / solution_height  # Adjust for multiple lines per page
                 scale_solution = min(scale_solution_width, scale_solution_height) * 1.2  # Increase size of the grids
-
                 if solution_height * scale_solution + y_position < bottom_margin:
                     c_solutions.showPage()
                     if background_image:
                         c_solutions.drawImage(background_image, 0, 0, width=width, height=height)
                     y_position = height - top_margin - 150
-
                 x_position = (width / 2 - solution_width * scale_solution) / 2 + (solution_page_num % solutions_per_line) * (width / 2)  # Adjust x-position for two solutions per line
-
                 # Manually scale and position the drawing
                 c_solutions.saveState()
                 c_solutions.translate(x_position, y_position)
                 c_solutions.scale(scale_solution, scale_solution)
                 renderPDF.draw(solution_drawing, c_solutions, 0, 0)
                 c_solutions.restoreState()
-
                 # Add the name below each solution
                 c_solutions.setFont("Helvetica", 12)
                 solution_name = os.path.basename(solution_filepath).split(".")[1].replace("S", "")
                 text_width = c_solutions.stringWidth(solution_name, "Helvetica", 12)
                 c_solutions.drawString(x_position + (solution_width * scale_solution - text_width) / 2, y_position - 20, solution_name)
-
                 if solution_page_num % solutions_per_line == (solutions_per_line - 1):
                     y_position -= (solution_height * scale_solution + 100)  # Adjust vertical position with proper spacing
                     if solution_page_num % (solutions_per_line * max_lines_per_page) == (solutions_per_line * max_lines_per_page - 1):
@@ -250,14 +214,10 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                         if background_image:
                             c_solutions.drawImage(background_image, 0, 0, width=width, height=height)
                         y_position = height - top_margin - 150
-
                 solution_page_num += 1  # Increment solution page counter
-
                 print(f"Adding solution page: {solution_filename}")
-
     c.save()
     c_solutions.save()
-
     # Merge puzzle and solution PDFs into the main PDF
     if os.path.exists(pdf_file):
         print(f"Merging existing and new pages into {pdf_file}")
@@ -266,7 +226,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
             new_pdf_content = PdfReader(f_new)
             solutions_pdf_content = PdfReader(f_solutions)
             pdf_writer = PdfWriter()
-
             with open(pdf_file, "wb") as f_final:
                 for page_num, page in enumerate(existing_pdf.pages, start=1):
                     print(f"Adding existing page {page_num}")
@@ -278,15 +237,11 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                     print(f"Adding new solution page {page_num}")
                     pdf_writer.add_page(page)
                 pdf_writer.write(f_final)
-
         print(f"Final PDF saved as {pdf_file}")
-
         f_existing.close()
         f_new.close()
         f_solutions.close()
-
         time.sleep(1)
-
         def force_delete(file_path):
             try:
                 os.remove(file_path)
@@ -298,11 +253,9 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                 print(f"Successfully deleted {file_path} after changing permissions")
             except Exception as e:
                 print(f"Error deleting {file_path}: {e}")
-
         force_delete(temp_pdf)
         force_delete(new_pdf)
         force_delete(new_solutions_pdf)
-
 '''
 
 
@@ -484,8 +437,7 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                 print(f"PermissionError: Changing permissions for {file_path}")
                 os.chmod(file_path, stat.S_IWUSR)
                 os.remove(file_path)
-                print(f"Successfully deleted {
-                      file_path} after changing permissions")
+                print(f"Successfully deleted {file_path} after changing permissions")
             except Exception as e:
                 print(f"Error deleting {file_path}: {e}")
 

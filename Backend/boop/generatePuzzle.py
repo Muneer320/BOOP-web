@@ -177,10 +177,8 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
     words_font_size = 40
     page_number_font_size = 40
     vertical_gap = 150  # Gap between grid and word list
-
     if ".png" not in filename:
         filename += ".png"
-
     # Load background or create a blank white page
     if background_image:
         page = Image.open(background_image).convert(
@@ -188,7 +186,6 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
     else:
         page = Image.new("RGB", (page_width, page_height), "white")
     draw = ImageDraw.Draw(page)
-
     # Load fonts
     try:
         grid_font = ImageFont.truetype(font_path, grid_font_size)
@@ -198,27 +195,22 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
     except IOError:
         raise RuntimeError(
             "Font file not found. Update the font_path variable.")
-
     # Grid size and cell calculation
     grid_size = len(grid)
     cell_size = min((page_width - 2 * margin) // grid_size,
                     (page_height // 2) // grid_size)
     grid_width = grid_size * cell_size
     grid_height = grid_size * cell_size
-
     # Word list dimensions
     words_per_column = (len(wordlist) + 2) // 3
     # Approximate height of word list and title
     word_list_height = words_per_column * 50 + 100
-
     # Total height for grid + gap + word list
     combined_height = grid_height + vertical_gap + word_list_height
     vertical_offset = (page_height - combined_height) // 2
-
     # Positioning of grid
     grid_start_x = (page_width - grid_width) // 2
     grid_start_y = vertical_offset
-
     if mask_type == "circle":
         # Draw circle around the grid with increased radius
         center_x = grid_start_x + grid_width // 2
@@ -230,7 +222,6 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
                 center_x + radius, center_y + radius],
             outline="red", width=grid_outline_width
         )
-
         # Draw letters inside the circle
         for row in range(grid_size):
             for col in range(grid_size):
@@ -250,19 +241,16 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
                 char_y = cell_y + cell_size // 2
                 draw.text((char_x, char_y), grid[row][col].upper(
                 ), fill="black", font=grid_font, anchor="mm")
-
         # Draw grid outline
         draw.rectangle(
             [grid_start_x - grid_outline_width, grid_start_y - grid_outline_width,
              grid_start_x + grid_width + grid_outline_width, grid_start_y + grid_height + grid_outline_width],
             outline="red", width=grid_outline_width
         )
-
     # Add "Hidden Words" title
     title_y = grid_start_y + grid_height + vertical_gap
     draw.text((page_width // 2, title_y), "HIDDEN WORDS",
               fill="black", font=title_font, anchor="mm")
-
     # Add word list
     words_y = title_y + 100
     column_width = (page_width - 2 * margin) // 3
@@ -273,16 +261,12 @@ def create_puzzle_image(filename, grid, wordlist, mask_type=None, page_number=No
         word_y = words_y + row * 50
         draw.text((word_x, word_y), word.upper(),
                   fill="black", font=words_font, anchor="mm")
-
     # Add page number
     if page_number is not None:
         draw.text((page_width // 2, page_height - 100), str(page_number),
                   fill="black", font=page_number_font, anchor="mm")
-
     # Save the output
     page.save(filename)
-
-
 def create_solution_image(filename, grid, word_positions, mask_type=None):
     """
     Generates a solution image with highlighted words in a transparent image,
@@ -293,20 +277,16 @@ def create_solution_image(filename, grid, word_positions, mask_type=None):
     padding = 20
     width = grid_size * cell_size + 2 * padding
     height = grid_size * cell_size + 2 * padding
-
     if ".png" not in filename:
         filename += ".png"
-
     # Create a transparent image
     solution_image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(solution_image)
-
     # Load a font for the grid letters
     try:
         font = ImageFont.truetype("arial.ttf", 24)
     except IOError:
         raise RuntimeError("Font file not found. Update the font path.")
-
     # Function to draw the grid
     def draw_grid():
         start_x = padding
@@ -320,7 +300,6 @@ def create_solution_image(filename, grid, word_positions, mask_type=None):
                      start_y + y * cell_size + cell_size // 2),
                     char.upper(), fill="black", font=font, anchor="mm"
                 )
-
     # Function to highlight words with unique colors
     def highlight_word(word, start_x, start_y, end_x, end_y, color):
         for i in range(len(word)):
@@ -337,10 +316,8 @@ def create_solution_image(filename, grid, word_positions, mask_type=None):
                  padding + y_pos * cell_size + cell_size // 2),
                 word[i].upper(), fill=color, font=font, anchor="mm"
             )
-
     # Draw the grid first
     draw_grid()
-
     # Assign a unique color to each word and highlight them
     word_colors = {}
     for word, (start_x, start_y, end_x, end_y) in word_positions.items():
@@ -348,7 +325,6 @@ def create_solution_image(filename, grid, word_positions, mask_type=None):
             word_colors[word] = tuple(random.randint(0, 255) for _ in range(3))
         color = word_colors[word]
         highlight_word(word, start_x, start_y, end_x, end_y, color)
-
     # Draw the mask (circle or rectangle)
     if mask_type == "circle":
         # Draw circle mask around the grid
@@ -367,11 +343,8 @@ def create_solution_image(filename, grid, word_positions, mask_type=None):
                 cell_size, padding + grid_size * cell_size],
             outline="red", width=5
         )
-
     # Save the image
     solution_image.save(filename)
-
-
 def create_puzzle_svg(filename, grid, wordlist, mask_type=None, page_number=None):
     """
     This function generates a puzzle page as an SVG with a grid of letters, an optional circle mask around the grid,
@@ -385,31 +358,23 @@ def create_puzzle_svg(filename, grid, wordlist, mask_type=None, page_number=None
     words_font_size = 30
     page_number_font_size = 30
     vertical_gap = 100  # Gap between grid and word list
-
     if ".svg" not in filename:
         filename += ".svg"
-
     dwg = Drawing(filename, size=(page_width, page_height))
-
     grid_size = len(grid)
     cell_size = min((page_width - 2 * margin) // grid_size,
                     (page_height // 2) // grid_size)
     grid_width = grid_size * cell_size
     grid_height = grid_size * cell_size
-
     words_per_column = (len(wordlist) + 2) // 3
     # Approximate height of word list and title
     word_list_height = words_per_column * 40 + 80
-
     combined_height = grid_height + vertical_gap + word_list_height
     vertical_offset = (page_height - combined_height) // 2
-
     grid_start_x = (page_width - grid_width) // 2
     grid_start_y = vertical_offset
-
     # Group for grid cells and letters
     grid_group = Group()
-
     for row in range(grid_size):
         for col in range(grid_size):
             cell_x = grid_start_x + col * cell_size
@@ -420,9 +385,7 @@ def create_puzzle_svg(filename, grid, wordlist, mask_type=None, page_number=None
             char_y = cell_y + cell_size // 2
             grid_group.add(dwg.text(grid[row][col].upper(), insert=(char_x, char_y), text_anchor="middle",
                                     alignment_baseline="central", font_size=grid_font_size, fill='black'))
-
     dwg.add(grid_group)
-
     if mask_type == "circle":
         center_x = grid_start_x + grid_width // 2
         center_y = grid_start_y + grid_height // 2
@@ -432,12 +395,10 @@ def create_puzzle_svg(filename, grid, wordlist, mask_type=None, page_number=None
     else:
         dwg.add(dwg.rect(insert=(grid_start_x, grid_start_y), size=(
             grid_width, grid_height), fill='none', stroke='red', stroke_width=grid_outline_width))
-
     # Add "Hidden Words" title
     title_y = grid_start_y + grid_height + vertical_gap
     dwg.add(dwg.text("HIDDEN WORDS", insert=(page_width // 2, title_y), text_anchor="middle",
                      alignment_baseline="central", font_size=title_font_size, fill='black'))
-
     # Add word list
     words_y = title_y + 80
     column_width = (page_width - 2 * margin) // 3
@@ -448,12 +409,10 @@ def create_puzzle_svg(filename, grid, wordlist, mask_type=None, page_number=None
         word_y = words_y + row * 40  # Position each word
         dwg.add(dwg.text(word.upper(), insert=(word_x, word_y), text_anchor="middle",
                          alignment_baseline="central", font_size=words_font_size, fill='black'))
-
     # Add page number
     if page_number is not None:
         dwg.add(dwg.text(str(page_number), insert=(page_width // 2, page_height - 100), text_anchor="middle",
                          alignment_baseline="central", font_size=page_number_font_size, fill='black'))
-
     # Save the SVG file
     dwg.save()
 '''
@@ -689,8 +648,7 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
             for puzzle_number, word_list in enumerate(mode_data, start=1):
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}{mode[0]}{puzzle_number}"
-                puzzle_filename = f"{
-                    puzzle_folder}/{current_puzzle}. {page_number}"
+                puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
                 size = 13 if "Normal" in mode else 17
 
                 puzzle = create_puzzle_and_solution(
@@ -705,8 +663,7 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
 
             if bonus_data:
                 if current_topic != topic_name or current_mode != f"Bonus {bonus_mode}":
-                    transition_filename = f"{
-                        puzzle_folder}/{current_puzzle}. {topic_index}B{bonus_mode[0]}"
+                    transition_filename = f"{puzzle_folder}/{current_puzzle}. {topic_index}B{bonus_mode[0]}"
                     create_transition_svg(
                         transition_filename + ".svg", topic_name, f"Bonus {bonus_mode}", background_image)
                     current_puzzle += 1
@@ -716,8 +673,7 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
             for puzzle_number, word_list in enumerate(bonus_data, start=1):
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}B{bonus_mode[0]}{puzzle_number}"
-                puzzle_filename = f"{
-                    puzzle_folder}/{current_puzzle}. {page_number}"
+                puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
                 size = 13 if "Normal" in mode else 17
 
                 puzzle = create_puzzle_and_solution(
