@@ -19,7 +19,7 @@ jobs:
         run: git clone https://huggingface.co/spaces/muneer320/boop-backend ./hf-space
       - name: Copy files
         run: |
-          cp -r backend/* ./hf-space/
+          cp -r Backend/* ./hf-space/
           cd ./hf-space
           git config --global user.email "muneer.alam320@gmail.com"
           git config --global user.name "Muneer Alam"
