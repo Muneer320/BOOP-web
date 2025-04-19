@@ -8,7 +8,7 @@ app = FastAPI(
 )
 
 # CORS configuration
-origins = ["https://boop-three.vercel.app/", "http://localhost:3000"]
+origins = ["https://boop-web.vercel.app/", "http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
