@@ -1,0 +1,30 @@
+name: Keep API Active
+
+on:
+  schedule:
+    # Run every 55 minutes (just before the 1-hour inactivity timeout)
+    - cron: '5 */1 * * *'
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend API
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.HF_USERNAME }}-boop-backend.hf.space/api/status
+        continue-on-error: true
+        
+      - name: Log Timestamp
+        run: |
+          echo "Services pinged at $(date)"
+          
+      - name: Check Backend Health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.HF_USERNAME }}-boop-backend.hf.space/api/status)
+          if [ "$STATUS" != "200" ]; then
+            echo "⚠️ Backend returned status code: $STATUS"
+          else
+            echo "✅ Backend is healthy"
+          fi
