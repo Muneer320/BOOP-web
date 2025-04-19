@@ -1,0 +1,42 @@
+name: Deploy BOOP Web
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: "contains(join(github.event.commits.*.modified, ' '), 'backend/') || github.event_name == 'workflow_dispatch'"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install Hugging Face CLI
+        run: pip install huggingface_hub
+        
+      - name: Login to Hugging Face
+        run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+        
+      - name: Clone Space Repository
+        run: git clone https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/BOOP-backend ./hf-space
+        
+      - name: Copy Backend Files
+        run: |
+          cp -r Backend/* ./hf-space/
+          
+      - name: Commit and Push to Hugging Face
+        run: |
+          cd ./hf-space
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add .
+          git commit -m "Update backend from GitHub - ${{ github.sha }}"
+          git push https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/BOOP-backend main
