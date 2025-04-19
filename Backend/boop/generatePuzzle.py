@@ -654,8 +654,7 @@ def create_puzzle_and_solution(puzzle_filename, wordlist, nrows: int, ncols: int
         solution_filename = f"{puzzle_filename}S"
         create_solution_svg(solution_filename, grid, word_positions, mask_type)
 
-        print(f"Puzzle and solution generated: {
-              puzzle_filename}.svg, {solution_filename}.svg")
+        print(f"Puzzle and solution generated: {os.path.basename(puzzle_filename)}.svg, {os.path.basename(solution_filename)}.svg")
     else:
         print("Failed to generate word search after multiple attempts.")
         return puzzle_filename

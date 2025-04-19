@@ -7,6 +7,27 @@
   border: 2px dashed #e9ecef;
 }
 
+.default-option {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-input {
+  margin-right: 0.5rem;
+}
+
+.toggle-label {
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
 .file-uploader.uploaded {
   border-color: var(--success);
   background-color: rgba(40, 167, 69, 0.05);
@@ -52,6 +73,17 @@
   cursor: pointer;
   text-align: center;
   transition: all 0.2s;
+}
+
+.file-label.disabled {
+  background-color: var(--gray-light);
+  color: var(--gray);
+  cursor: not-allowed;
+}
+
+.upload-area.disabled {
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .file-label:hover {

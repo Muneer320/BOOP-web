@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import { useGeneration } from '../context/GenerationContext';
 import WordSelector from './WordSelector';
 import FileUploader from './FileUploader';
 import LoadingOverlay from './LoadingOverlay';
@@ -12,7 +13,9 @@ const PuzzleCreator = () => {
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Use global generation state
+  const { isGenerating, startGeneration, completeGeneration } = useGeneration();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -102,7 +105,7 @@ const PuzzleCreator = () => {
   // Generate puzzle book
   const generatePuzzle = async () => {
     try {
-      setIsGenerating(true);
+      startGeneration(); // Start global generation state
       setError(null);
       
       const response = await apiService.generatePuzzle(formData);
@@ -115,6 +118,9 @@ const PuzzleCreator = () => {
       document.body.appendChild(link);
       link.click();
       
+      // Store generated file in context for potential re-download
+      completeGeneration(response.data);
+      
       // Clean up
       window.URL.revokeObjectURL(url);
       link.remove();
@@ -124,8 +130,7 @@ const PuzzleCreator = () => {
     } catch (err) {
       setError('Failed to generate puzzle book. Please try again.');
       console.error('Error generating puzzle:', err);
-    } finally {
-      setIsGenerating(false);
+      completeGeneration(null); // Reset generation state on error
     }
   };
 
@@ -300,6 +305,8 @@ const PuzzleCreator = () => {
                   accept="image/*"
                   onFileUploaded={(fileId) => handleFileUpload('cover_id', fileId)}
                   description="Upload a custom cover image for your puzzle book"
+                  hasDefaultOption={true}
+                  defaultFile=""
                 />
                 
                 <FileUploader
@@ -307,6 +314,8 @@ const PuzzleCreator = () => {
                   accept="image/*"
                   onFileUploaded={(fileId) => handleFileUpload('background_id', fileId)}
                   description="Upload a background for title and transition pages"
+                  hasDefaultOption={true}
+                  defaultFile=""
                 />
                 
                 <FileUploader
@@ -314,6 +323,8 @@ const PuzzleCreator = () => {
                   accept="image/*"
                   onFileUploaded={(fileId) => handleFileUpload('puzzle_bg_id', fileId)}
                   description="Upload a background for puzzle pages"
+                  hasDefaultOption={true}
+                  defaultFile=""
                 />
               </div>
               

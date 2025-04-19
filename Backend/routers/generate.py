@@ -26,9 +26,9 @@ class GenerateRequest(BaseModel):
     hard: int = 5
     bonus_normal: int = 1
     bonus_hard: int = 1
-    cover_id: str = None
-    background_id: str = None
-    puzzle_bg_id: str = None
+    cover_id: Optional[str] = None
+    background_id: Optional[str] = None
+    puzzle_bg_id: Optional[str] = None
 
 @router.post("/generate-puzzle")
 async def generate_puzzle(req: GenerateRequest):
