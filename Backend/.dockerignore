@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+BOOP_API/
+build/
+*.sqlite3
+output/

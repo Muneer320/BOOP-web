@@ -55,6 +55,20 @@ This API serves as the backend for the BOOP word search web application, powerin
 - All asset and word uploads should be performed before calling the generate endpoint.
 - The frontend controls puzzle parameters and passes them as JSON; no CLI is required.
 - Interactive documentation is available at `/docs` (Swagger UI) and `/redoc`.
+
+## Docker
+- **Build Image**
+  ```bash
+  docker build -t boop-web-backend .
+  ```
+- **Run Container**
+  ```bash
+  docker run --rm -p 7860:7860 boop-web-backend
+  ```
+  The API will be available at `http://localhost:7860` (e.g. `http://localhost:7860/api/status`).
+
+*For Hugging Face Spaces deployment, ensure the container listens on port 7860 as required.*
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to the BOOP API:
