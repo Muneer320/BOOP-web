@@ -8,7 +8,7 @@ app = FastAPI(
 )
 
 # CORS configuration
-origins = ["*"]  # Allow all origins; will restrict in production
+origins = ["https://boop-three.vercel.app/", "http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
