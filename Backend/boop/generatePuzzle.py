@@ -680,10 +680,8 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
 
             if mode_data:
                 if current_topic != topic_name or current_mode != mode:
-                    transition_filename = f"{
-                        puzzle_folder}/{current_puzzle}. {topic_index}{mode[0]}"
-                    create_transition_svg(
-                        transition_filename + ".svg", topic_name, mode, background_image)
+                    transition_filename = f"{puzzle_folder}/{current_puzzle}. {topic_index}{mode[0]}"
+                    create_transition_svg(transition_filename + ".svg", topic_name, mode, background_image)
                     current_puzzle += 1
                     current_topic = topic_name
                     current_mode = mode

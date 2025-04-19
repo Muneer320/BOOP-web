@@ -37,7 +37,7 @@ async def generate_puzzle(req: GenerateRequest):
     # Handle custom words input
     if req.words_payload:
         # write JSON payload to temp txt in BOOP/Words format
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.join(os.path.dirname(__file__), '..', "outputs"))
+        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
         temp_input = os.path.join(output_folder, 'input_words.txt')
         with open(temp_input, 'w', encoding='utf-8') as f:
             for topic, words in req.words_payload.items():
@@ -47,10 +47,10 @@ async def generate_puzzle(req: GenerateRequest):
                 f.write("\n\n====================\n")
         words_txt = temp_input
     elif req.words_file_id:
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.join(os.path.dirname(__file__), '..', "outputs"))
+        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
         words_txt = os.path.join(UPLOAD_DIR, req.words_file_id)
     else:
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.join(os.path.dirname(__file__), '..', "outputs"))
+        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
         words_txt = os.path.join(boop_dir, 'Words', 'words.txt')
     pdf_path = os.path.join(os.getcwd(), f"{req.name}.pdf")
 
