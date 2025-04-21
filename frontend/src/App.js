@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import api from './services/api';
+import { apiService } from './services/api';
 
 // Components
 import Header from './components/Header';
@@ -16,7 +16,7 @@ import { GenerationProvider } from './context/GenerationContext';
 
 function App() {
   useEffect(() => {
-    api.get('/status').catch(err => console.error('Wake-up API failed:', err));
+    apiService.checkStatus().catch(err => console.error('Wake-up API failed:', err));
   }, []);
 
   return (

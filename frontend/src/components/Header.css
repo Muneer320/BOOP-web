@@ -15,17 +15,39 @@
 
 .logo a {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   text-decoration: none;
   color: var(--primary);
 }
 
-.logo h1 {
+.logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  max-height: 60px;
+  width: auto;
+  mix-blend-mode: multiply;
+  opacity: 0.95;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+}
+
+.logo-text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
+.logo-text {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 1px;
+  color: var(--primary);
 }
 
 .tagline {

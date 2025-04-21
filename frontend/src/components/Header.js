@@ -9,8 +9,12 @@ const Header = () => {
       <div className="container">
         <div className="header-content">
           <div className="logo">
-            <Link to="/">
+            <Link to="/" className="logo-link">
               <img src={logo} alt="BOOP logo" className="logo-image" />
+              <div className="logo-text-block">
+                <h1 className="logo-text">BOOP Web</h1>
+                <span className="tagline">Word Search Generator</span>
+              </div>
             </Link>
           </div>
           <nav className="nav">
