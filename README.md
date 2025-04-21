@@ -1,4 +1,5 @@
 # BOOP Web
+![BOOP Logo](frontend/src/assets/logo.svg)
 
 BOOP Web is a full‑stack word search puzzle generator, evolving from a CLI tool into a modern web application. It consists of:
 

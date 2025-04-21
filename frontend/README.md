@@ -1,4 +1,5 @@
 # BOOP Web
+![BOOP Logo](src/assets/logo.svg)
 
 BOOP Web is a React-based user interface for the BOOP puzzle generator API. It transforms the [original CLI tool](https://github.com/Muneer320/BOOP) into an accessible web experience, allowing users to configure and generate customizable word search puzzle books easily and conveniently.
 
@@ -71,7 +72,7 @@ Create an optimized production build:
 ```bash
 npm run build
 # or
-zarn build
+yarn build
 ```
 
 The output will be in the `build/` directory. Serve it with any static file server.

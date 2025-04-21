@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.svg';
 import './Header.css';
 
 const Header = () => {
@@ -9,8 +10,7 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             <Link to="/">
-              <h1>BOOP</h1>
-              <span className="tagline">Word Search Generator</span>
+              <img src={logo} alt="BOOP logo" className="logo-image" />
             </Link>
           </div>
           <nav className="nav">
