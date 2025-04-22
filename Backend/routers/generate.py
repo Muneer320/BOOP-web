@@ -59,6 +59,7 @@ async def generate_puzzle(req: GenerateRequest):
         if img_id:
             path = os.path.join(UPLOAD_DIR, img_id)
             if os.path.exists(path): return path
+            print(f"Image {img_id} not found")
         return default_path
 
     cover_img = resolve(req.cover_id, os.path.join(boop_dir, 'Assets', 'Cover.png'))
