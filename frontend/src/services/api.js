@@ -1,10 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Create axios instance with base URL
 const api = axios.create({
-  // baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
-  baseURL: "http://localhost:8000/api",
-
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,35 +11,37 @@ const api = axios.create({
 // API service methods
 export const apiService = {
   // Health check
-  checkStatus: () => api.get('/status'),
-  
+  checkStatus: () => api.get("/status"),
+
   // Settings
-  getSettings: () => api.get('/settings'),
-  
+  getSettings: () => api.get("/settings"),
+
   // Templates
-  getTemplates: () => api.get('/templates'),
+  getTemplates: () => api.get("/templates"),
   getTemplate: (templateId) => api.get(`/templates/${templateId}`),
-  
+
   // Files/Assets
   uploadFile: (file) => {
     const formData = new FormData();
-    formData.append('file', file);
-    return api.post('/upload', formData);
+    formData.append("file", file);
+    return api.post("/upload", formData);
   },
-  getFile: (fileId) => api.get(`/files/${fileId}`, {
-    responseType: 'blob'
-  }),
+  getFile: (fileId) =>
+    api.get(`/files/${fileId}`, {
+      responseType: "blob",
+    }),
   deleteFile: (fileId) => api.delete(`/files/${fileId}`),
-  
+
   // Word Topics
-  getTopics: () => api.get('/topics'),
+  getTopics: () => api.get("/topics"),
   getTopicWords: (topic) => api.get(`/topics/${topic}/words`),
-  
+
   // Generate Puzzle
-  generatePuzzle: (data) => api.post('/generate-puzzle', data, {
-    responseType: 'blob',
-    headers: {
-      'Accept': 'application/octet-stream'
-    }
-  })
+  generatePuzzle: (data) =>
+    api.post("/generate-puzzle", data, {
+      responseType: "blob",
+      headers: {
+        Accept: "application/octet-stream",
+      },
+    }),
 };

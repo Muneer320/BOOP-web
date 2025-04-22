@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useGeneration } from '../context/GenerationContext';
-import './GenerationStatus.css';
+import React, { useState, useEffect } from "react";
+import { useGeneration } from "../context/GenerationContext";
+import "./GenerationStatus.css";
 
 const GenerationStatus = () => {
   const { isGenerating, generatedFile, generationStarted } = useGeneration();
 
-  const [durationText, setDurationText] = useState('');
+  const [durationText, setDurationText] = useState("");
 
   useEffect(() => {
     if (!generationStarted) return;
@@ -14,9 +14,11 @@ const GenerationStatus = () => {
       const duration = Math.floor(
         (new Date() - new Date(generationStarted)) / 1000
       );
-      setDurationText(duration < 60 
-        ? `${duration} seconds` 
-        : `${Math.floor(duration / 60)} min ${duration % 60} sec`);
+      setDurationText(
+        duration < 60
+          ? `${duration} seconds`
+          : `${Math.floor(duration / 60)} min ${duration % 60} sec`
+      );
     }, 1000);
 
     return () => clearInterval(timer);
@@ -47,13 +49,15 @@ const GenerationStatus = () => {
           <div className="status-icon success">✓</div>
           <div className="status-info">
             <p className="status-title">Book Ready!</p>
-            <button 
+            <button
               className="download-again-btn"
               onClick={() => {
-                const url = window.URL.createObjectURL(new Blob([generatedFile]));
-                const link = document.createElement('a');
+                const url = window.URL.createObjectURL(
+                  new Blob([generatedFile])
+                );
+                const link = document.createElement("a");
                 link.href = url;
-                link.setAttribute('download', 'puzzle-book.pdf');
+                link.setAttribute("download", "puzzle-book.pdf");
                 document.body.appendChild(link);
                 link.click();
                 window.URL.revokeObjectURL(url);
@@ -63,7 +67,7 @@ const GenerationStatus = () => {
               Download Again
             </button>
           </div>
-          <button 
+          <button
             className="close-status-btn"
             onClick={() => window.location.reload()}
           >

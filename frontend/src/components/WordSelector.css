@@ -164,11 +164,11 @@
   .selection-type-buttons {
     flex-direction: column;
   }
-  
+
   .selection-type-buttons button {
     width: 100%;
   }
-  
+
   .topics-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }

@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import './WordSelector.css';
+import React, { useState, useEffect } from "react";
+import { apiService } from "../services/api";
+import "./WordSelector.css";
 
 const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   const [selectedTopics, setSelectedTopics] = useState([]);
   const [topicWords, setTopicWords] = useState({});
   const [customWords, setCustomWords] = useState({});
-  const [customTopicName, setCustomTopicName] = useState('');
-  const [customWordInput, setCustomWordInput] = useState('');
+  const [customTopicName, setCustomTopicName] = useState("");
+  const [customWordInput, setCustomWordInput] = useState("");
   const [isLoadingWords, setIsLoadingWords] = useState(false);
   const [error, setError] = useState(null);
-  const [selectionType, setSelectionType] = useState('preset'); // 'preset', 'custom', 'file'
+  const [selectionType, setSelectionType] = useState("preset"); // 'preset', 'custom', 'file'
 
   // Fetch words for a specific topic
   const fetchTopicWords = async (topic) => {
     try {
       setIsLoadingWords(true);
       const response = await apiService.getTopicWords(topic);
-      setTopicWords(prev => ({
+      setTopicWords((prev) => ({
         ...prev,
-        [topic]: response.data.words
+        [topic]: response.data.words,
       }));
     } catch (err) {
       setError(`Failed to load words for topic: ${topic}`);
@@ -32,9 +32,9 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   // Select or deselect a topic
   const toggleTopic = (topic) => {
     if (selectedTopics.includes(topic)) {
-      setSelectedTopics(prev => prev.filter(t => t !== topic));
+      setSelectedTopics((prev) => prev.filter((t) => t !== topic));
     } else {
-      setSelectedTopics(prev => [...prev, topic]);
+      setSelectedTopics((prev) => [...prev, topic]);
       if (!topicWords[topic]) {
         fetchTopicWords(topic);
       }
@@ -44,41 +44,41 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   // Add a custom word to a topic
   const addCustomWord = () => {
     if (!customTopicName.trim()) {
-      setError('Please enter a topic name');
+      setError("Please enter a topic name");
       return;
     }
-    
+
     const inputWords = customWordInput.trim().split(/[,\/;]+/);
-    const words = inputWords.filter(word => !!word.trim());
+    const words = inputWords.filter((word) => !!word.trim());
     if (words.length === 0) {
-      setError('Please enter a word');
+      setError("Please enter a word");
       return;
     }
-    
-    setCustomWords(prev => {
+
+    setCustomWords((prev) => {
       const existingWords = prev[customTopicName] || [];
       return {
         ...prev,
-        [customTopicName]: [...existingWords, ...words]
+        [customTopicName]: [...existingWords, ...words],
       };
     });
-    
-    setCustomWordInput('');
+
+    setCustomWordInput("");
     setError(null);
   };
 
   // Remove a custom word
   const removeCustomWord = (topic, word) => {
-    setCustomWords(prev => {
-      const updatedWords = prev[topic].filter(w => w !== word);
+    setCustomWords((prev) => {
+      const updatedWords = prev[topic].filter((w) => w !== word);
       const updatedTopics = { ...prev };
-      
+
       if (updatedWords.length === 0) {
         delete updatedTopics[topic];
       } else {
         updatedTopics[topic] = updatedWords;
       }
-      
+
       return updatedTopics;
     });
   };
@@ -87,34 +87,39 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     try {
       const response = await apiService.uploadFile(file);
       onFileUpload(response.data.file_id);
-      setSelectionType('file');
+      setSelectionType("file");
       setError(null);
     } catch (err) {
-      setError('Failed to upload words file. Please make sure it\'s a valid text file.');
-      console.error('Error uploading file:', err);
+      setError(
+        "Failed to upload words file. Please make sure it's a valid text file."
+      );
+      console.error("Error uploading file:", err);
     }
   };
 
   // Update parent component with selected words
   useEffect(() => {
-    if (selectionType === 'preset' && selectedTopics.length > 0) {
+    if (selectionType === "preset" && selectedTopics.length > 0) {
       const selectedWordsPayload = {};
-      selectedTopics.forEach(topic => {
+      selectedTopics.forEach((topic) => {
         if (topicWords[topic]) {
           selectedWordsPayload[topic] = topicWords[topic];
         }
       });
-      
+
       if (Object.keys(selectedWordsPayload).length > 0) {
         onWordsUpdate(selectedWordsPayload);
       }
-    } else if (selectionType === 'custom' && Object.keys(customWords).length > 0) {
+    } else if (
+      selectionType === "custom" &&
+      Object.keys(customWords).length > 0
+    ) {
       onWordsUpdate(customWords);
-    } else if (selectionType === 'file') {
+    } else if (selectionType === "file") {
       // File upload is handled separately
     } else {
       onWordsUpdate(null);
@@ -124,21 +129,27 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   return (
     <div className="word-selector">
       <div className="selection-type-buttons">
-        <button 
-          className={`btn ${selectionType === 'preset' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setSelectionType('preset')}
+        <button
+          className={`btn ${
+            selectionType === "preset" ? "btn-primary" : "btn-secondary"
+          }`}
+          onClick={() => setSelectionType("preset")}
         >
           Use Preset Topics
         </button>
-        <button 
-          className={`btn ${selectionType === 'custom' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setSelectionType('custom')}
+        <button
+          className={`btn ${
+            selectionType === "custom" ? "btn-primary" : "btn-secondary"
+          }`}
+          onClick={() => setSelectionType("custom")}
         >
           Add Custom Words
         </button>
-        <button 
-          className={`btn ${selectionType === 'file' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setSelectionType('file')}
+        <button
+          className={`btn ${
+            selectionType === "file" ? "btn-primary" : "btn-secondary"
+          }`}
+          onClick={() => setSelectionType("file")}
         >
           Upload Word File
         </button>
@@ -147,14 +158,16 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       {/* Preset Topics Selection */}
-      {selectionType === 'preset' && (
+      {selectionType === "preset" && (
         <div className="preset-topics">
           <h3>Select Topics</h3>
           <div className="topics-grid">
-            {topics.map(topic => (
-              <div 
+            {topics.map((topic) => (
+              <div
                 key={topic}
-                className={`topic-item ${selectedTopics.includes(topic) ? 'selected' : ''}`}
+                className={`topic-item ${
+                  selectedTopics.includes(topic) ? "selected" : ""
+                }`}
                 onClick={() => toggleTopic(topic)}
               >
                 {topic}
@@ -168,11 +181,11 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
             <div className="selected-topics">
               <h3>Selected Topics</h3>
               <ul className="topic-list">
-                {selectedTopics.map(topic => (
+                {selectedTopics.map((topic) => (
                   <li key={topic}>
                     <div className="topic-header">
                       <strong>{topic}</strong>
-                      <button 
+                      <button
                         className="remove-btn"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -185,7 +198,9 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
                     {topicWords[topic] && (
                       <div className="word-chips">
                         {topicWords[topic].map((word, index) => (
-                          <span key={index} className="word-chip">{word}</span>
+                          <span key={index} className="word-chip">
+                            {word}
+                          </span>
                         ))}
                       </div>
                     )}
@@ -198,10 +213,10 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       )}
 
       {/* Custom Words Input */}
-      {selectionType === 'custom' && (
+      {selectionType === "custom" && (
         <div className="custom-words">
           <h3>Add Your Own Words</h3>
-          
+
           <div className="form-group">
             <label htmlFor="custom-topic">Topic Name</label>
             <input
@@ -213,7 +228,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
               onChange={(e) => setCustomTopicName(e.target.value)}
             />
           </div>
-          
+
           <div className="form-row">
             <div className="form-group flex-grow">
               <label htmlFor="custom-word">Word</label>
@@ -224,7 +239,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
                 placeholder="Enter a word"
                 value={customWordInput}
                 onChange={(e) => setCustomWordInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addCustomWord()}
+                onKeyPress={(e) => e.key === "Enter" && addCustomWord()}
               />
             </div>
             <div className="form-group">
@@ -238,7 +253,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
               </button>
             </div>
           </div>
-          
+
           {Object.keys(customWords).length > 0 && (
             <div className="custom-topics-list">
               {Object.entries(customWords).map(([topic, words]) => (
@@ -248,7 +263,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
                     {words.map((word, index) => (
                       <span key={index} className="word-chip">
                         {word}
-                        <button 
+                        <button
                           className="remove-word-btn"
                           onClick={() => removeCustomWord(topic, word)}
                         >
@@ -265,14 +280,15 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       )}
 
       {/* File Upload */}
-      {selectionType === 'file' && (
+      {selectionType === "file" && (
         <div className="file-upload">
           <h3>Upload Words File</h3>
           <p className="upload-instructions">
-            Upload a text file containing your words. The file should have the following format:
+            Upload a text file containing your words. The file should have the
+            following format:
           </p>
           <pre className="format-example">
-{`>TOPIC NAME
+            {`>TOPIC NAME
 word1
 word2
 word3
@@ -282,7 +298,7 @@ word1
 word2
 word3`}
           </pre>
-          
+
           <div className="upload-control">
             <input
               type="file"

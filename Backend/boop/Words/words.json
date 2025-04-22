@@ -1,72 +1,23 @@
 {
-    "CULTURE": {
+    "ASTROMONY": {
         "Normal": [
             [
-                "Diversity",
-                "Saga",
-                "Clan",
-                "Lineages",
-                "Mythology",
-                "Ziggurats",
-                "Archetype",
-                "Typography",
-                "Philosophy",
-                "Renaissance"
+                "Variable",
+                "exosphere",
+                "Tides",
+                "Plasma",
+                "Protostar",
+                "meteorite",
+                "Ellipse",
+                "Meteor",
+                "Gasgiant",
+                "Heliopause"
             ]
         ],
-        "Hard": [
-            [
-                "Chieftain",
-                "Ziggurats",
-                "Ritualistic",
-                "Ethnography",
-                "Multitude",
-                "Reverence",
-                "Festival",
-                "Artistry",
-                "Archetype",
-                "Language",
-                "Habitats",
-                "Practices",
-                "Zealous",
-                "Architecture",
-                "Linguistics"
-            ]
-        ],
+        "Hard": [],
         "Bonus": {
-            "Normal": [
-                [
-                    "Folkloric",
-                    "Temples",
-                    "Xenial",
-                    "Symbolism",
-                    "Vanguard",
-                    "Ancestral",
-                    "Guardians",
-                    "Lineation",
-                    "Worship",
-                    "Festivals"
-                ]
-            ],
-            "Hard": [
-                [
-                    "Festivals",
-                    "Mythology",
-                    "Ethnics",
-                    "Emblems",
-                    "Transience",
-                    "Symbolism",
-                    "Intangible",
-                    "Hieroglyph",
-                    "Hospitality",
-                    "Generational",
-                    "Reciprocity",
-                    "Ontology",
-                    "Sacrifice",
-                    "Stories",
-                    "Siblinghood"
-                ]
-            ]
+            "Normal": [],
+            "Hard": []
         }
     }
 }

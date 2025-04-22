@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './LoadingOverlay.css';
+import React, { useState, useEffect } from "react";
+import "./LoadingOverlay.css";
 
 const GRID_SIZE = 4;
 const QUOTES = [
@@ -7,16 +7,17 @@ const QUOTES = [
   "Puzzling out loud!",
   "Hang tight, letters are dancing!",
   "This is just a letter party!",
-  "Almost there, keep your eyes peeled!"
+  "Almost there, keep your eyes peeled!",
 ];
 
 const LoadingOverlay = ({ text }) => {
   const [grid, setGrid] = useState([]);
-  const [quote, setQuote] = useState('');
+  const [quote, setQuote] = useState("");
 
-  const genGrid = () => Array.from({ length: GRID_SIZE * GRID_SIZE }, () =>
-    String.fromCharCode(65 + Math.floor(Math.random() * 26))
-  );
+  const genGrid = () =>
+    Array.from({ length: GRID_SIZE * GRID_SIZE }, () =>
+      String.fromCharCode(65 + Math.floor(Math.random() * 26))
+    );
 
   useEffect(() => {
     setGrid(genGrid());
@@ -39,8 +40,13 @@ const LoadingOverlay = ({ text }) => {
               <div
                 key={i}
                 className="grid-cell"
-                style={{ animationDelay: `${randomDelay}s`, animationDuration: `${randomDuration}s` }}
-              >{letter}</div>
+                style={{
+                  animationDelay: `${randomDelay}s`,
+                  animationDuration: `${randomDuration}s`,
+                }}
+              >
+                {letter}
+              </div>
             );
           })}
         </div>

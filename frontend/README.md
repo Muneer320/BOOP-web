@@ -1,4 +1,5 @@
 # BOOP Web
+
 ![BOOP Logo](src/assets/logo.svg)
 
 BOOP Web is a React-based user interface for the BOOP puzzle generator API. It transforms the [original CLI tool](https://github.com/Muneer320/BOOP) into an accessible web experience, allowing users to configure and generate customizable word search puzzle books easily and conveniently.
@@ -105,13 +106,13 @@ frontend/
 
 The frontend consumes the BOOP Web API endpoints:
 
-| Endpoint                     | Method | Description                                           |
-| ---------------------------- | ------ | ----------------------------------------------------- |
-| `/api/status`                | GET    | Health check                                          |
-| `/api/settings`              | GET    | Fetch available difficulty, bonuses, masks, grid sizes|
-| `/api/templates`             | GET    | List built-in templates                               |
-| `/api/upload`                | POST   | Upload custom assets (multipart/form-data)           |
-| `/api/generate-puzzle`       | POST   | Generate and download puzzle book PDF                |
+| Endpoint               | Method | Description                                            |
+| ---------------------- | ------ | ------------------------------------------------------ |
+| `/api/status`          | GET    | Health check                                           |
+| `/api/settings`        | GET    | Fetch available difficulty, bonuses, masks, grid sizes |
+| `/api/templates`       | GET    | List built-in templates                                |
+| `/api/upload`          | POST   | Upload custom assets (multipart/form-data)             |
+| `/api/generate-puzzle` | POST   | Generate and download puzzle book PDF                  |
 
 Refer to the [Backend README](../Backend/README.md) for full API documentation.
 

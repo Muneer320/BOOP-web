@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
 
 // Create the context
 const GenerationContext = createContext();
@@ -29,14 +29,14 @@ export const GenerationProvider = ({ children }) => {
   };
 
   return (
-    <GenerationContext.Provider 
+    <GenerationContext.Provider
       value={{
         isGenerating,
         generatedFile,
         generationStarted,
         startGeneration,
         completeGeneration,
-        resetGeneration
+        resetGeneration,
       }}
     >
       {children}
@@ -48,7 +48,7 @@ export const GenerationProvider = ({ children }) => {
 export const useGeneration = () => {
   const context = useContext(GenerationContext);
   if (!context) {
-    throw new Error('useGeneration must be used within a GenerationProvider');
+    throw new Error("useGeneration must be used within a GenerationProvider");
   }
   return context;
 };

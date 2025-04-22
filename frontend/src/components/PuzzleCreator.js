@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import { useGeneration } from '../context/GenerationContext';
-import WordSelector from './WordSelector';
-import FileUploader from './FileUploader';
-import LoadingOverlay from './LoadingOverlay';
-import './PuzzleCreator.css';
+import React, { useState, useEffect } from "react";
+import { apiService } from "../services/api";
+import { useGeneration } from "../context/GenerationContext";
+import WordSelector from "./WordSelector";
+import FileUploader from "./FileUploader";
+import LoadingOverlay from "./LoadingOverlay";
+import "./PuzzleCreator.css";
 
 const PuzzleCreator = () => {
   const [step, setStep] = useState(1);
@@ -13,10 +13,10 @@ const PuzzleCreator = () => {
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Use global generation state
   const { isGenerating, startGeneration, completeGeneration } = useGeneration();
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: "My Word Search",
@@ -28,7 +28,7 @@ const PuzzleCreator = () => {
     background_id: null,
     puzzle_bg_id: null,
     words_payload: null,
-    words_file_id: null
+    words_file_id: null,
   });
 
   // Fetch initial data
@@ -36,19 +36,20 @@ const PuzzleCreator = () => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [settingsResponse, topicsResponse, templatesResponse] = await Promise.all([
-          apiService.getSettings(),
-          apiService.getTopics(),
-          apiService.getTemplates()
-        ]);
-        
+        const [settingsResponse, topicsResponse, templatesResponse] =
+          await Promise.all([
+            apiService.getSettings(),
+            apiService.getTopics(),
+            apiService.getTemplates(),
+          ]);
+
         setSettings(settingsResponse.data);
         setTopics(topicsResponse.data.topics);
         setTemplates(templatesResponse.data.templates);
         setError(null);
       } catch (err) {
-        setError('Failed to load required data. Please try again.');
-        console.error('Error fetching initial data:', err);
+        setError("Failed to load required data. Please try again.");
+        console.error("Error fetching initial data:", err);
       } finally {
         setIsLoading(false);
       }
@@ -60,13 +61,17 @@ const PuzzleCreator = () => {
   // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    if (name === 'name') {
+    if (name === "name") {
       const valid = /^[A-Za-z0-9\s\-']+$/.test(value);
-      setError(valid ? null : 'Title can only contain letters, numbers, spaces, hyphens, and apostrophes.');
+      setError(
+        valid
+          ? null
+          : "Title can only contain letters, numbers, spaces, hyphens, and apostrophes."
+      );
     }
     setFormData({
       ...formData,
-      [name]: type === 'number' ? parseInt(value, 10) : value
+      [name]: type === "number" ? parseInt(value, 10) : value,
     });
   };
 
@@ -74,7 +79,7 @@ const PuzzleCreator = () => {
   const handleFileUpload = (fileType, fileId) => {
     setFormData({
       ...formData,
-      [fileType]: fileId
+      [fileType]: fileId,
     });
   };
 
@@ -83,7 +88,7 @@ const PuzzleCreator = () => {
     setFormData({
       ...formData,
       words_payload: wordsPayload,
-      words_file_id: null // Clear file ID if we've set payload
+      words_file_id: null, // Clear file ID if we've set payload
     });
   };
 
@@ -92,7 +97,7 @@ const PuzzleCreator = () => {
     setFormData({
       ...formData,
       words_file_id: fileId,
-      words_payload: null // Clear payload if we've uploaded a file
+      words_payload: null, // Clear payload if we've uploaded a file
     });
   };
 
@@ -111,29 +116,29 @@ const PuzzleCreator = () => {
     try {
       startGeneration(); // Start global generation state
       setError(null);
-      
+
       const response = await apiService.generatePuzzle(formData);
-      
+
       // Create a download link for the PDF
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `${formData.name}.pdf`);
+      link.setAttribute("download", `${formData.name}.pdf`);
       document.body.appendChild(link);
       link.click();
-      
+
       // Store generated file in context for potential re-download
       completeGeneration(response.data);
-      
+
       // Clean up
       window.URL.revokeObjectURL(url);
       link.remove();
-      
+
       // Reset form or show success
       setStep(4); // Show success step
     } catch (err) {
-      setError('Failed to generate puzzle book. Please try again.');
-      console.error('Error generating puzzle:', err);
+      setError("Failed to generate puzzle book. Please try again.");
+      console.error("Error generating puzzle:", err);
       completeGeneration(null); // Reset generation state on error
     }
   };
@@ -160,7 +165,10 @@ const PuzzleCreator = () => {
           <div className="card">
             <h2>Error</h2>
             <p className="error-message">{error}</p>
-            <button onClick={() => window.location.reload()} className="btn btn-primary">
+            <button
+              onClick={() => window.location.reload()}
+              className="btn btn-primary"
+            >
               Try Again
             </button>
           </div>
@@ -173,14 +181,22 @@ const PuzzleCreator = () => {
     <div className="puzzle-creator">
       <div className="container">
         <div className="card">
-          {isGenerating && <LoadingOverlay text="Generating your puzzle book..." />}
+          {isGenerating && (
+            <LoadingOverlay text="Generating your puzzle book..." />
+          )}
           {/* Progress indicator */}
           <div className="progress-bar">
-            <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
+            <div className={`progress-step ${step >= 1 ? "active" : ""}`}>
+              1
+            </div>
             <div className="progress-line"></div>
-            <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2</div>
+            <div className={`progress-step ${step >= 2 ? "active" : ""}`}>
+              2
+            </div>
             <div className="progress-line"></div>
-            <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3</div>
+            <div className={`progress-step ${step >= 3 ? "active" : ""}`}>
+              3
+            </div>
             {step === 4 && (
               <>
                 <div className="progress-line"></div>
@@ -190,10 +206,10 @@ const PuzzleCreator = () => {
           </div>
 
           <h2 className="form-title">
-            {step === 1 && 'Basic Settings'}
-            {step === 2 && 'Word Selection'}
-            {step === 3 && 'Customize Appearance'}
-            {step === 4 && 'Puzzle Generated!'}
+            {step === 1 && "Basic Settings"}
+            {step === 2 && "Word Selection"}
+            {step === 3 && "Customize Appearance"}
+            {step === 4 && "Puzzle Generated!"}
           </h2>
 
           {/* Step 1: Basic Settings */}
@@ -275,7 +291,11 @@ const PuzzleCreator = () => {
               {error && <div className="alert alert-danger">{error}</div>}
 
               <div className="form-navigation">
-                <button className="btn btn-primary" onClick={nextStep} disabled={!!error}>
+                <button
+                  className="btn btn-primary"
+                  onClick={nextStep}
+                  disabled={!!error}
+                >
                   Next: Word Selection
                 </button>
               </div>
@@ -285,12 +305,12 @@ const PuzzleCreator = () => {
           {/* Step 2: Word Selection */}
           {step === 2 && (
             <div className="form-step">
-              <WordSelector 
-                topics={topics} 
-                onWordsUpdate={handleWordsUpdate} 
-                onFileUpload={handleWordsFileUpload} 
+              <WordSelector
+                topics={topics}
+                onWordsUpdate={handleWordsUpdate}
+                onFileUpload={handleWordsFileUpload}
               />
-              
+
               <div className="form-navigation">
                 <button className="btn btn-secondary" onClick={prevStep}>
                   Back
@@ -309,33 +329,39 @@ const PuzzleCreator = () => {
                 <FileUploader
                   label="Cover Image"
                   accept="image/*"
-                  onFileUploaded={(fileId) => handleFileUpload('cover_id', fileId)}
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("cover_id", fileId)
+                  }
                   description="Upload a custom cover image for your puzzle book"
                   hasDefaultOption={true}
                   defaultFile=""
                 />
-                
+
                 <FileUploader
                   label="Background Image"
                   accept="image/*"
-                  onFileUploaded={(fileId) => handleFileUpload('background_id', fileId)}
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("background_id", fileId)
+                  }
                   description="Upload a background for title and transition pages"
                   hasDefaultOption={true}
                   defaultFile=""
                 />
-                
+
                 <FileUploader
                   label="Puzzle Background"
                   accept="image/*"
-                  onFileUploaded={(fileId) => handleFileUpload('puzzle_bg_id', fileId)}
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("puzzle_bg_id", fileId)
+                  }
                   description="Upload a background for puzzle pages"
                   hasDefaultOption={true}
                   defaultFile=""
                 />
               </div>
-              
+
               {error && <div className="alert alert-danger">{error}</div>}
-              
+
               <div className="form-navigation">
                 <button className="btn btn-secondary" onClick={prevStep}>
                   Back
@@ -345,7 +371,7 @@ const PuzzleCreator = () => {
                   onClick={generatePuzzle}
                   disabled={isGenerating}
                 >
-                  {isGenerating ? 'Generating...' : 'Generate Puzzle Book'}
+                  {isGenerating ? "Generating..." : "Generate Puzzle Book"}
                 </button>
               </div>
             </div>
@@ -356,8 +382,10 @@ const PuzzleCreator = () => {
             <div className="form-step success-step">
               <div className="success-icon">✓</div>
               <h3>Your Puzzle Book is Ready!</h3>
-              <p>Your word search puzzle book has been successfully generated.</p>
-              
+              <p>
+                Your word search puzzle book has been successfully generated.
+              </p>
+
               <div className="action-buttons">
                 <button className="btn btn-primary" onClick={() => setStep(1)}>
                   Create Another Puzzle

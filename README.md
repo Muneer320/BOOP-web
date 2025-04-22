@@ -1,4 +1,5 @@
 # BOOP Web
+
 ![BOOP Logo](frontend/src/assets/logo.svg)
 
 BOOP Web is a full‑stack word search puzzle generator, evolving from a CLI tool into a modern web application. It consists of:
@@ -40,12 +41,14 @@ BOOP Web is a full‑stack word search puzzle generator, evolving from a CLI too
 ## Installation
 
 1. Clone repository:
+
    ```bash
    git clone https://github.com/Muneer320/BOOP-web.git
    cd BOOP-web
    ```
 
 2. Setup backend:
+
    ```bash
    cd Backend
    python -m venv venv
@@ -67,6 +70,7 @@ BOOP Web is a full‑stack word search puzzle generator, evolving from a CLI too
 cd Backend
 uvicorn main:app --reload
 ```
+
 Backend will run at `http://localhost:8000`.
 
 ### Start Frontend
@@ -75,6 +79,7 @@ Backend will run at `http://localhost:8000`.
 cd frontend
 npm start
 ```
+
 Frontend will launch at `http://localhost:3000` and proxy API calls to the backend.
 
 ## Project Structure
@@ -95,7 +100,7 @@ BOOP-web/
     ├── public/            # Static assets
     ├── README.md          # Frontend docs
     └── FUTURE_REQUIREMENTS.md
-```  
+```
 
 ## API Documentation
 

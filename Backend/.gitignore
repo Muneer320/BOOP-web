@@ -11,3 +11,6 @@ __pycache__/
 outputs/*
 jobs/*
 uploads/*
+*.pdf
+*.txt
+*.json

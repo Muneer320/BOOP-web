@@ -31,7 +31,7 @@
   mix-blend-mode: multiply;
   opacity: 0.95;
   border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
 .logo-text-block {
@@ -81,7 +81,7 @@
 }
 
 .nav a::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -100,16 +100,16 @@
     flex-direction: column;
     text-align: center;
   }
-  
+
   .nav {
     margin-top: 1rem;
   }
-  
+
   .nav ul {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .nav li {
     margin: 0.5rem 0;
     margin-left: 0;

@@ -38,7 +38,7 @@
 }
 
 .about-section h2::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: 0;
@@ -94,15 +94,15 @@
   .about-header {
     padding: 2rem 0;
   }
-  
+
   .about-header h1 {
     font-size: 2.5rem;
   }
-  
+
   .lead {
     font-size: 1.2rem;
   }
-  
+
   .cta-container {
     padding: 2rem 1rem;
   }
