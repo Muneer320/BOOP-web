@@ -31,6 +31,14 @@ def get_file(file_id: str):
         raise HTTPException(404, "File not found")
     return StreamingResponse(open(path, "rb"), media_type="application/octet-stream")
 
+@router.get("/files")
+def list_files():
+    """List all uploaded files"""
+    if not os.path.isdir(UPLOAD_DIR):
+        return {"files": []}
+    entries = os.listdir(UPLOAD_DIR)
+    return {"files": entries}
+
 @router.delete("/files/{file_id}")
 def delete_file(file_id: str):
     path = os.path.join(UPLOAD_DIR, file_id)
@@ -38,3 +46,17 @@ def delete_file(file_id: str):
         raise HTTPException(404, "File not found")
     os.remove(path)
     return {"deleted": file_id}
+
+@router.delete("/files")
+def delete_all_files():
+    """Delete all uploaded files"""
+    if not os.path.isdir(UPLOAD_DIR):
+        return {"deleted": []}
+    entries = os.listdir(UPLOAD_DIR)
+    deleted = []
+    for file_id in entries:
+        path = os.path.join(UPLOAD_DIR, file_id)
+        if os.path.exists(path):
+            os.remove(path)
+            deleted.append(file_id)
+    return {"deleted": deleted}
