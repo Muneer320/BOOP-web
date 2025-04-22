@@ -1,5 +1,6 @@
 import os
 import uuid
+import re
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 
@@ -9,6 +10,11 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
+    filename = file.filename
+    if not (1 <= len(filename) <= 100):
+        raise HTTPException(status_code=400, detail="Filename must be between 1 and 100 characters")
+    if not re.match(r'^[\w\-. ]+$', filename):
+        raise HTTPException(status_code=400, detail="Filename contains invalid characters")
     # Validate file type: allow images and plain text
     if not (file.content_type.startswith("image/") or file.content_type == "text/plain"):
         raise HTTPException(status_code=400, detail="Only image or text uploads allowed")

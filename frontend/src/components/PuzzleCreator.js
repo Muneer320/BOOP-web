@@ -60,6 +60,10 @@ const PuzzleCreator = () => {
   // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type } = e.target;
+    if (name === 'name') {
+      const valid = /^[A-Za-z0-9\s\-']+$/.test(value);
+      setError(valid ? null : 'Title can only contain letters, numbers, spaces, hyphens, and apostrophes.');
+    }
     setFormData({
       ...formData,
       [name]: type === 'number' ? parseInt(value, 10) : value
@@ -268,8 +272,10 @@ const PuzzleCreator = () => {
                 </div>
               </div>
 
+              {error && <div className="alert alert-danger">{error}</div>}
+
               <div className="form-navigation">
-                <button className="btn btn-primary" onClick={nextStep}>
+                <button className="btn btn-primary" onClick={nextStep} disabled={!!error}>
                   Next: Word Selection
                 </button>
               </div>

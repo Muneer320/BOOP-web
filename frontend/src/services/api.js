@@ -2,10 +2,12 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  // baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  baseURL: "http://localhost:8000/api",
+
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 // API service methods
@@ -24,11 +26,7 @@ export const apiService = {
   uploadFile: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return axios.post('/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    return api.post('/upload', formData);
   },
   getFile: (fileId) => api.get(`/files/${fileId}`, {
     responseType: 'blob'
