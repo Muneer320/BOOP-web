@@ -48,7 +48,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       return;
     }
 
-    const inputWords = customWordInput.trim().split(/[,\/;]+/);
+    const inputWords = customWordInput.trim().split(/[,/;]+/);
     const words = inputWords.filter((word) => !!word.trim());
     if (words.length === 0) {
       setError("Please enter a word");

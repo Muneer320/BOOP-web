@@ -24,7 +24,7 @@ const FileUploader = ({
       setFileName(defaultFile);
       setIsUploaded(true);
     }
-  }, [useDefault]);
+  }, [useDefault, defaultFile, onFileUploaded]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];

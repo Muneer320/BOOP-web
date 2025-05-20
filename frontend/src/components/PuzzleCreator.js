@@ -10,7 +10,7 @@ const PuzzleCreator = () => {
   const [step, setStep] = useState(1);
   const [settings, setSettings] = useState(null);
   const [topics, setTopics] = useState([]);
-  const [templates, setTemplates] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -36,16 +36,13 @@ const PuzzleCreator = () => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [settingsResponse, topicsResponse, templatesResponse] =
-          await Promise.all([
-            apiService.getSettings(),
-            apiService.getTopics(),
-            apiService.getTemplates(),
-          ]);
+        const [settingsResponse, topicsResponse] = await Promise.all([
+          apiService.getSettings(),
+          apiService.getTopics(),
+        ]);
 
         setSettings(settingsResponse.data);
         setTopics(topicsResponse.data.topics);
-        setTemplates(templatesResponse.data.templates);
         setError(null);
       } catch (err) {
         setError("Failed to load required data. Please try again.");
