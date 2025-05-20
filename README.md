@@ -2,7 +2,7 @@
 
 ![BOOP Logo](frontend/src/assets/logo.svg)
 
-BOOP Web is a full‑stack word search puzzle generator, evolving from a CLI tool into a modern web application. It consists of:
+BOOP Web is a full‑stack word search puzzle generator, evolving from a [CLI tool](https://github.com/muneer320/boop) into a modern web application. It consists of:
 
 - **Backend API:** A Python FastAPI service for puzzle generation and asset management.
 - **Frontend UI:** A React app that provides an intuitive interface for users to easily configure, and download custom word-search puzzle books, making [BOOP](https://github.com/Muneer320/BOOP) more accessible and user-friendly than ever, from anywhere and at any time.
