@@ -29,7 +29,7 @@ const Header = () => {
             <span className={`menu-icon ${menuOpen ? "open" : ""}`}></span>
           </button>
 
-          {/* Desktop navigation - always visible on desktop, toggled on mobile */}
+          {/* Navigation - always visible on desktop, toggled on mobile */}
           <nav className={`nav ${menuOpen ? "visible" : ""}`}>
             <ul className="main-nav-list">
               <li>
@@ -48,32 +48,6 @@ const Header = () => {
                 </Link>
               </li>
             </ul>
-
-            {/* Footer links - only visible on mobile when menu is expanded */}
-            <div className="footer-links">
-              <ul>
-                <li>
-                  <a
-                    href="https://github.com/muneer320/boop-web"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a href="#" onClick={() => setMenuOpen(false)}>
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" onClick={() => setMenuOpen(false)}>
-                    Terms of Use
-                  </a>
-                </li>
-              </ul>
-            </div>
           </nav>
         </div>
       </div>

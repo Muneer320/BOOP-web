@@ -10,6 +10,8 @@ import Home from "./components/Home";
 import PuzzleCreator from "./components/PuzzleCreator";
 import About from "./components/About";
 import GenerationStatus from "./components/GenerationStatus";
+import PrivacyPolicy from './components/pages/PrivacyPolicy';
+import TermsOfService from './components/pages/TermsOfService';
 
 // Context
 import { GenerationProvider } from "./context/GenerationContext";
@@ -31,6 +33,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/create" element={<PuzzleCreator />} />
               <Route path="/about" element={<About />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
             </Routes>
           </main>
           <Footer />

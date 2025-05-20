@@ -19,9 +19,9 @@ const Footer = () => {
             GitHub
           </a>
           <span className="divider">|</span>
-          <a href="#">Privacy Policy</a>
+          <a href="/privacy-policy">Privacy Policy</a>
           <span className="divider">|</span>
-          <a href="#">Terms of Use</a>
+          <a href="/terms-of-service">Terms of Service</a>
         </div>
       </div>
     </footer>
