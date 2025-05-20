@@ -20,8 +20,8 @@ const PuzzleCreator = () => {
   // Form state
   const [formData, setFormData] = useState({
     name: "My Word Search",
-    normal: 10,
-    hard: 5,
+    normal: 5,
+    hard: 2,
     bonus_normal: 1,
     bonus_hard: 1,
     cover_id: null,
@@ -71,7 +71,7 @@ const PuzzleCreator = () => {
     }
     setFormData({
       ...formData,
-      [name]: type === "number" ? parseInt(value, 10) : value,
+      [name]: type === "number" ? parseInt(value, 5) : value,
     });
   };
 

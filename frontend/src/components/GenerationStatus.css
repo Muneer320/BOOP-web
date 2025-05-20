@@ -136,3 +136,15 @@
     opacity: 1;
   }
 }
+
+@media (max-width: 768px) {
+  .generation-status-container {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .generation-status {
+    max-width: 100%;
+  }
+}

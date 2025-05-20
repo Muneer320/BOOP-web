@@ -114,9 +114,19 @@
 
   .progress-bar {
     padding: 0 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .progress-line {
     max-width: 40px;
+  }
+
+  .image-uploads {
+    grid-template-columns: 1fr;
+  }
+
+  .form-step {
+    padding: 0 10px;
   }
 }
