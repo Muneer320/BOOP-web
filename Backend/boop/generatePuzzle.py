@@ -444,10 +444,8 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder, progress
 
 def create_transition_svg(filename, topic_name, mode_name, background_image=None):
     dwg = Drawing(filename, size=(2480, 3508))  # A4 size at 300 DPI
-
-    if background_image:
-        dwg.add(dwg.image(background_image, insert=(
-            0, 0), size=("2480px", "3508px")))
+    # Background is added by append_puzzle_page at PDF assembly time;
+    # do NOT embed it here to avoid double rendering.
 
     # Use Courier New for the topic name
     topic_font_size = 120
