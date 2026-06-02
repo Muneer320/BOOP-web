@@ -66,6 +66,86 @@
   margin-bottom: 2rem;
 }
 
+/* Legal Page Styles */
+.legal-page {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f9fafb;
+}
+
+.legal-content {
+  max-width: 56rem;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.legal-content .legal-h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.legal-content .legal-h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.legal-content .legal-h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.legal-content .legal-h4 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.legal-content .legal-p {
+  color: #374151;
+  margin-bottom: 1rem;
+  line-height: 1.625;
+}
+
+.legal-content .legal-list {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #374151;
+}
+
+.legal-content .legal-li {
+  margin-bottom: 0.5rem;
+  line-height: 1.625;
+}
+
+.legal-content .legal-link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.legal-content .legal-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.legal-content .legal-spacer {
+  height: 1rem;
+}
+
 .mt-1 {
   margin-top: 0.5rem;
 }
