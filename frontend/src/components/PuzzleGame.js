@@ -550,7 +550,7 @@ const PuzzleGame = () => {
                       onMouseMove={() => handleMouseMove(ri, ci)}
                       onMouseUp={handleMouseUp}
                       onClick={() => handleCellClick(ri, ci)}>
-                      {cell}
+                      <span className="pg-cell-letter" data-char={cell} aria-hidden="true" />
                     </div>
                   );
                 }))}

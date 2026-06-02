@@ -346,6 +346,17 @@
   visibility: hidden;
 }
 
+.pg-cell-letter {
+  display: contents;
+}
+.pg-cell-letter::before {
+  content: attr(data-char);
+}
+.pg-cell-letter {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .pg-cell:hover { background: var(--gray-light); }
 .pg-cell.selecting {
   background: var(--primary) !important;
