@@ -314,10 +314,10 @@
 .pg-grid-wrap {
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .pg-grid {
@@ -326,17 +326,19 @@
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
-  max-width: 580px;
   width: 100%;
+  max-width: 100%;
 }
 
 .pg-cell {
+  min-width: 22px;
+  max-width: 38px;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: clamp(0.55rem, 2vw, 0.9rem);
+  font-size: clamp(0.45rem, min(2.5vw, 0.9rem), 0.9rem);
   font-weight: 600;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -598,6 +600,8 @@
   border: 2px solid var(--border-color);
   margin-bottom: 1.5rem;
   background: var(--border-color);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pg-complete-row {
@@ -606,13 +610,10 @@
 }
 
 .pg-complete-cell {
-  width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
   background: var(--bg-primary);
   color: var(--text-secondary);
 }
@@ -631,6 +632,21 @@
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+}
+
+/* File upload panel */
+.pg-file-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.pg-file-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-family: var(--font-ui);
 }
 
 /* ======== LOADING ======== */
@@ -658,16 +674,15 @@
   .pg-modes { grid-template-columns: repeat(3, 1fr); }
   .pg-play-header { flex-direction: column; align-items: flex-start; }
   .pg-play-actions { width: 100%; justify-content: flex-end; }
-  .pg-grid-wrap { justify-content: flex-start; overflow-x: auto; }
-  .pg-grid { max-width: none; width: 100%; }
-  .pg-cell { font-size: clamp(0.5rem, 3.5vw, 0.85rem); }
+  .pg-grid-wrap { max-width: 100%; overflow: visible; justify-content: center; }
+  .pg-grid { width: 100%; max-width: 100%; }
+  .pg-cell { min-width: 18px; max-width: 34px; font-size: clamp(0.4rem, 3.5vw, 0.8rem); }
 }
 
 @media (max-width: 480px) {
   .pg-modes { grid-template-columns: repeat(2, 1fr); }
-  .pg-cell { font-size: clamp(0.45rem, 4vw, 0.7rem); }
   .pg-start-card { padding: 1.25rem; }
   .pg-complete-card { padding: 1.5rem; }
   .pg-grid { gap: 1px; }
-  .pg-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pg-cell { min-width: 14px; max-width: 28px; font-size: clamp(0.35rem, 4vw, 0.65rem); }
 }

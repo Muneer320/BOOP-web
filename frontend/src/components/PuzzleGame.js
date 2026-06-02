@@ -5,12 +5,12 @@ import useTimer from "../hooks/useTimer";
 import "./PuzzleGame.css";
 
 const MODES = [
-  { id: "easy",      label: "Easy",     grid: 10, minW: 5,  maxW: 10, back: false, mask: null },
-  { id: "normal",    label: "Normal",   grid: 13, minW: 8,  maxW: 15, back: true,  mask: null },
-  { id: "hard",      label: "Hard",     grid: 15, minW: 10, maxW: 18, back: true,  mask: null },
-  { id: "veryhard",  label: "Very Hard", grid: 18, minW: 12, maxW: 25, back: true,  mask: null },
-  { id: "nightmare", label: "Nightmare", grid: 20, minW: 15, maxW: 30, back: true,  mask: null },
-  { id: "bonus",     label: "Bonus",    grid: 15, minW: 8,  maxW: 15, back: true,  mask: "circle" },
+  { id: "easy",      label: "Easy",     grid: 10, minW: 4,  maxW: 7,  back: false, mask: null },
+  { id: "normal",    label: "Normal",   grid: 13, minW: 6,  maxW: 10, back: true,  mask: null },
+  { id: "hard",      label: "Hard",     grid: 15, minW: 8,  maxW: 13, back: true,  mask: null },
+  { id: "veryhard",  label: "Very Hard", grid: 18, minW: 10, maxW: 16, back: true,  mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 20, back: true,  mask: null },
+  { id: "bonus",     label: "Bonus",    grid: 15, minW: 6,  maxW: 11, back: true,  mask: "circle" },
 ];
 
 const COLORS = ["#3a6b35","#8b3a3a","#b8860b","#4a6fa5","#6b4a8b","#c4956a","#2d6b5e","#8b5e3a","#4a7c5e","#7a5e3a"];
@@ -39,6 +39,7 @@ const PuzzleGame = () => {
   const [hintCooldowns, setHintCooldowns] = useState({});
   const [hintWord, setHintWord] = useState(null);
   const [fullSolutionMode, setFullSolutionMode] = useState(null); // null | "confirm" | "done"
+  const lastGlobalHintRef = useRef(0);
   const gameStartTime = useRef(null);
 
   /* ---- Config State (start screen + modify panel) ---- */
@@ -390,6 +391,7 @@ const PuzzleGame = () => {
     if (!positions.length) return;
     const newFound = { ...foundWords, [word]: positions };
     setFoundWords(newFound);
+    lastGlobalHintRef.current = Date.now();
     setHintCooldowns(prev => ({ ...prev, [word]: Date.now() }));
     setHintWord(null);
     if (Object.keys(newFound).length === puzzle.words.length) {
@@ -402,10 +404,9 @@ const PuzzleGame = () => {
     const now = Date.now();
     const elapsed = (now - (gameStartTime.current || now)) / 1000;
     if (elapsed < 60) return;
-    const lastHint = hintCooldowns[word] || 0;
-    if (now - lastHint < 30000) return;
+    if (now - lastGlobalHintRef.current < 30000) return;
     setHintWord(word);
-  }, [hintCooldowns]);
+  }, []);
 
   const handleFullSolution = useCallback(() => {
     if (!puzzle) return;
@@ -435,10 +436,9 @@ const PuzzleGame = () => {
     const now = Date.now();
     const elapsed = (now - (gameStartTime.current || now)) / 1000;
     if (elapsed < 60) return false;
-    const lastHint = hintCooldowns[word] || 0;
-    if (now - lastHint < 30000) return false;
+    if (now - lastGlobalHintRef.current < 30000) return false;
     return true;
-  }, [foundWords, hintCooldowns]);
+  }, [foundWords]);
 
   const canFullSolution = useCallback(() => {
     if (!puzzle || fullSolutionMode === "done") return false;
@@ -610,6 +610,7 @@ const PuzzleGame = () => {
 
           {wordSource === "file" && (
             <div className="pg-file-panel">
+              <p className="pg-file-hint">Upload a .txt file with one word per line, or comma separated.</p>
               <label className="btn btn-outline" style={{ cursor: "pointer" }}>
                 Choose .txt File
                 <input type="file" accept=".txt" onChange={handleFileUpload} style={{ display: "none" }} />
@@ -719,7 +720,7 @@ const PuzzleGame = () => {
                     {!foundWords[word] && (
                       <button className="pg-hint-btn" onClick={() => handleRequestHint(word)}
                         disabled={!canHintWord(word)}
-                        title={canHintWord(word) ? "Show hint" : "Hint available after 1 min (30s cooldown)"}>
+                        title={canHintWord(word) ? "Show hint" : "Hint available after 1 min (30s cooldown between hints)"}>
                         &#128161;
                       </button>
                     )}
@@ -771,14 +772,16 @@ const PuzzleGame = () => {
           <h2>Puzzle Complete!</h2>
           {timerEnabled && <p className="pg-complete-time">Time: {timer.formatTime}</p>}
           <p className="pg-complete-stat">{completedWordCount} word{completedWordCount > 1 ? "s" : ""} found</p>
-          <div className="pg-complete-grid">
+          <div className="pg-complete-grid"
+            style={{ "--grid-size": puzzle.grid_size }}>
             {puzzle.grid.map((row, ri) => (
               <div key={ri} className="pg-complete-row">
                 {row.map((cell, ci) => {
                   const found = inFound(ri, ci);
+                  const cellPx = Math.min(24, Math.floor((Math.min(500, window.innerWidth - 64)) / puzzle.grid_size));
                   return (
                     <span key={ci} className={`pg-complete-cell${found ? " found" : ""}`}
-                      style={found ? { color: getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))), fontWeight: 700 } : {}}>
+                      style={{ width: cellPx, height: cellPx, fontSize: Math.max(6, cellPx * 0.5), ...(found ? { color: getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))), fontWeight: 700 } : {}) }}>
                       {cell}
                     </span>
                   );
