@@ -23,9 +23,17 @@ export function useGamePersistence() {
   }, []);
 
   const clearGame = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.gameId) {
+          localStorage.removeItem("boop_timer_" + data.gameId);
+        }
+      }
+    } catch { /* ignore */ }
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem("boop_timer_" + (loadGame()?.gameId || ""));
-  }, [loadGame]);
+  }, []);
 
   return { saveGame, loadGame, clearGame };
 }

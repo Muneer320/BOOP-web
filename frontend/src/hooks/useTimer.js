@@ -26,7 +26,7 @@ export default function useTimer() {
     const live = now - startRef.current;
     const total = pausedElapsedRef.current + live;
     setElapsed(total);
-    saveState({ startTime: now, pausedElapsed: pausedElapsedRef.current, running: true, paused: false });
+    saveState({ total, lastTick: now, running: true, paused: false });
   }, [saveState]);
 
   const start = useCallback((gameId) => {
@@ -37,7 +37,7 @@ export default function useTimer() {
     setPaused(false);
     setElapsed(0);
     intervalRef.current = setInterval(tick, 200);
-    saveState({ startTime: startRef.current, pausedElapsed: 0, running: true, paused: false });
+    saveState({ total: 0, lastTick: startRef.current, running: true, paused: false });
   }, [tick, saveState]);
 
   const doPause = useCallback(() => {
@@ -50,7 +50,7 @@ export default function useTimer() {
     intervalRef.current = null;
     setPaused(true);
     setElapsed(pausedElapsedRef.current);
-    saveState({ startTime: null, pausedElapsed: pausedElapsedRef.current, running: true, paused: true });
+    saveState({ total: pausedElapsedRef.current, lastTick: null, running: true, paused: true });
   }, [running, paused, saveState]);
 
   const resume = useCallback(() => {
@@ -58,7 +58,7 @@ export default function useTimer() {
     startRef.current = Date.now();
     setPaused(false);
     intervalRef.current = setInterval(tick, 200);
-    saveState({ startTime: startRef.current, pausedElapsed: pausedElapsedRef.current, running: true, paused: false });
+    saveState({ total: pausedElapsedRef.current, lastTick: startRef.current, running: true, paused: false });
   }, [running, paused, tick, saveState]);
 
   const stop = useCallback(() => {
@@ -85,18 +85,19 @@ export default function useTimer() {
       } catch { return null; }
     })();
     if (!saved || !saved.running) return false;
-    pausedElapsedRef.current = saved.pausedElapsed || 0;
     if (saved.paused) {
-      setElapsed(saved.pausedElapsed || 0);
+      pausedElapsedRef.current = saved.total || 0;
+      setElapsed(saved.total || 0);
       setRunning(true);
       setPaused(true);
-    } else if (saved.startTime) {
-      const live = Date.now() - saved.startTime;
-      const total = pausedElapsedRef.current + live;
+    } else if (saved.lastTick) {
+      const live = Date.now() - saved.lastTick;
+      const total = (saved.total || 0) + live;
+      pausedElapsedRef.current = total;
       setElapsed(total);
       setRunning(true);
       setPaused(false);
-      startRef.current = saved.startTime;
+      startRef.current = Date.now();
       intervalRef.current = setInterval(tick, 200);
     }
     return true;
