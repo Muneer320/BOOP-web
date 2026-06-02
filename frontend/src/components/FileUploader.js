@@ -15,20 +15,32 @@ const FileUploader = ({
   const [error, setError] = useState(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const [useDefault, setUseDefault] = useState(hasDefaultOption);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
-  // apply defaultFile on mount or when toggled on
   useEffect(() => {
     if (useDefault) {
-      // apply UI default display, but send null id for backend
       onFileUploaded(null);
       setFileName(defaultFile);
       setIsUploaded(true);
+      setPreviewUrl(null);
     }
   }, [useDefault]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.type.startsWith("image/")) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
 
     try {
       setIsUploading(true);
@@ -39,7 +51,6 @@ const FileUploader = ({
       const response = await apiService.uploadFile(file);
       const fileId = response.data.file_id;
 
-      // Pass the file ID to the parent component
       onFileUploaded(fileId);
       setIsUploaded(true);
     } catch (err) {
@@ -111,6 +122,12 @@ const FileUploader = ({
           )}
         </label>
       </div>
+
+      {previewUrl && (
+        <div className="upload-preview">
+          <img src={previewUrl} alt="Preview" className="upload-thumbnail" />
+        </div>
+      )}
 
       <p className="file-name">{fileName || defaultFile}</p>
 

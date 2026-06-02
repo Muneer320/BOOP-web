@@ -102,6 +102,20 @@
   gap: 0.5rem;
 }
 
+.upload-preview {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.upload-thumbnail {
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
 .upload-error {
   color: var(--danger);
   font-size: 0.85rem;
