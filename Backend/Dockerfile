@@ -4,7 +4,10 @@ WORKDIR /app
 RUN mkdir -p /app/outputs && chmod -R a+rw /app/outputs
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential pkg-config libcairo2-dev \
+ && rm -rf /var/lib/apt/lists/* \
+ && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
