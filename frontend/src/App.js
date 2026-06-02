@@ -6,6 +6,7 @@ import { apiService } from "./services/api";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import GenerationStatus from "./components/GenerationStatus";
+import NotFound from "./components/NotFound";
 
 import { GenerationProvider } from "./context/GenerationContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/play" element={<PlayArea />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </main>
