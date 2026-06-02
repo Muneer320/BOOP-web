@@ -323,7 +323,7 @@
     justify-content: center;
   }
   .hero-visual {
-    order: -1;
+    order: 1;
   }
   .puzzle-preview {
     max-width: 340px;
