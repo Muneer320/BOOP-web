@@ -314,8 +314,10 @@
 .pg-grid-wrap {
   flex: 1;
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  justify-content: center;
 }
 
 .pg-grid {
@@ -325,6 +327,7 @@
   -webkit-user-select: none;
   touch-action: manipulation;
   max-width: 580px;
+  width: 100%;
 }
 
 .pg-cell {
@@ -629,12 +632,16 @@
   .pg-modes { grid-template-columns: repeat(3, 1fr); }
   .pg-play-header { flex-direction: column; align-items: flex-start; }
   .pg-play-actions { width: 100%; justify-content: flex-end; }
-  .pg-grid { max-width: 100%; }
+  .pg-grid-wrap { justify-content: flex-start; overflow-x: auto; }
+  .pg-grid { max-width: none; width: 100%; }
+  .pg-cell { font-size: clamp(0.5rem, 3.5vw, 0.85rem); }
 }
 
 @media (max-width: 480px) {
   .pg-modes { grid-template-columns: repeat(2, 1fr); }
-  .pg-cell { font-size: clamp(0.45rem, 3vw, 0.7rem); }
+  .pg-cell { font-size: clamp(0.45rem, 4vw, 0.7rem); }
   .pg-start-card { padding: 1.25rem; }
   .pg-complete-card { padding: 1.5rem; }
+  .pg-grid { gap: 1px; }
+  .pg-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
