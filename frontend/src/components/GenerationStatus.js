@@ -3,17 +3,17 @@ import { useGeneration } from "../context/GenerationContext";
 import "./GenerationStatus.css";
 
 const GenerationStatus = () => {
-  const { isGenerating, generatedFile, generatedFileName, generationStarted, generationError, resetGeneration } = useGeneration();
+  const { isGenerating, generatedFile, generatedFileName, generationStarted, generationDuration, generationError, resetGeneration } = useGeneration();
   const [durationText, setDurationText] = useState("");
 
   useEffect(() => {
-    if (!generationStarted) return;
+    if (!generationStarted || generatedFile) return;
     const timer = setInterval(() => {
       const duration = Math.floor((new Date() - new Date(generationStarted)) / 1000);
       setDurationText(duration < 60 ? `${duration} seconds` : `${Math.floor(duration / 60)} min ${duration % 60} sec`);
     }, 1000);
     return () => clearInterval(timer);
-  }, [generationStarted]);
+  }, [generationStarted, generatedFile]);
 
   const handleDownload = () => {
     if (!generatedFile) return;
@@ -61,7 +61,9 @@ const GenerationStatus = () => {
           <div className="status-icon success">&#10003;</div>
           <div className="status-info">
             <p className="status-title">Book Ready!</p>
-            <p className="status-subtitle">Generated in {durationText}</p>
+            {generationDuration != null && (
+              <p className="status-subtitle">Generated in {generationDuration < 60 ? `${generationDuration} seconds` : `${Math.floor(generationDuration / 60)} min ${generationDuration % 60} sec`}</p>
+            )}
           </div>
           <button className="download-again-btn" onClick={handleDownload}>Download</button>
           <button className="close-status-btn" onClick={resetGeneration}>&times;</button>

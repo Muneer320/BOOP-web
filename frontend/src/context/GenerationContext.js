@@ -8,6 +8,7 @@ export const GenerationProvider = ({ children }) => {
   const [generatedFile, setGeneratedFile] = useState(null);
   const [generatedFileName, setGeneratedFileName] = useState("");
   const [generationStarted, setGenerationStarted] = useState(null);
+  const [generationDuration, setGenerationDuration] = useState(null);
   const [generationError, setGenerationError] = useState(null);
   const [progress, setProgress] = useState(null);
   const abortRef = useRef(null);
@@ -19,6 +20,7 @@ export const GenerationProvider = ({ children }) => {
     setGeneratedFile(null);
     setGeneratedFileName("");
     setGenerationStarted(new Date());
+    setGenerationDuration(null);
     setGenerationError(null);
     setProgress({ step: "starting", detail: "Initializing…" });
     sessionIdRef.current = "gen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
@@ -28,12 +30,13 @@ export const GenerationProvider = ({ children }) => {
     setIsGenerating(false);
     setGeneratedFile(fileData);
     setGeneratedFileName(fileName || "puzzle-book.pdf");
+    setGenerationDuration(generationStarted ? Math.floor((new Date() - new Date(generationStarted)) / 1000) : null);
     setGenerationError(null);
     setProgress({ step: "complete", detail: "PDF ready", done: true });
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
     sessionIdRef.current = null;
-  }, []);
+  }, [generationStarted]);
 
   const failGeneration = useCallback((error) => {
     setIsGenerating(false);
@@ -48,6 +51,7 @@ export const GenerationProvider = ({ children }) => {
     setGeneratedFile(null);
     setGeneratedFileName("");
     setGenerationStarted(null);
+    setGenerationDuration(null);
     setGenerationError(null);
     setProgress(null);
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
@@ -98,7 +102,7 @@ export const GenerationProvider = ({ children }) => {
   return (
     <GenerationContext.Provider value={{
       isGenerating, generatedFile, generatedFileName, generationStarted,
-      generationError, progress, startGeneration, completeGeneration,
+      generationDuration, generationError, progress, startGeneration, completeGeneration,
       resetGeneration, generatePuzzle,
     }}>
       {children}
