@@ -23,14 +23,20 @@ BOOP Web is a full‑stack word search puzzle generator, evolving from a [CLI to
 
 - Select difficulty levels, bonus modes, mask types, and grid sizes.
 - Upload custom word lists, covers, and backgrounds.
-- Live PDF puzzle preview and download.
-- Responsive and accessible design.
+- Live SVG puzzle preview while configuring settings.
+- Image upload preview thumbnails.
+- Dark mode toggle with system preference detection.
+- Animated success page with download button.
+- Responsive and accessible design with skeleton loading states.
+- Route-based code splitting for faster page loads.
+- Active nav indicator and CSS page transitions.
+- Tooltip help text for bonus modes.
 - CLI‑free workflow for end users.
 
 ## Tech Stack
 
-- **Backend:** Python, FastAPI.
-- **Frontend:** React, Axios, React Router.
+- **Backend:** Python, FastAPI, svgwrite, reportlab.
+- **Frontend:** React, React Router, Axios.
 - **Deployment:** Vercel for frontend; Hugging Face with Docker SDK for backend.
 
 ## Prerequisites
