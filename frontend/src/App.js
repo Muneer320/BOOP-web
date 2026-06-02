@@ -15,6 +15,7 @@ const PuzzleCreator = lazy(() => import("./components/PuzzleCreator"));
 const About = lazy(() => import("./components/About"));
 const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
+const PlayArea = lazy(() => import("./components/pages/PlayArea"));
 
 function App() {
   useEffect(() => {
@@ -41,6 +42,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/play" element={<PlayArea />} />
               </Routes>
             </Suspense>
           </main>

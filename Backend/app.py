@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import generate, files, templates, status, settings, words
+from routers import generate, files, templates, status, settings, words, play
 import os
 import threading
 import time
@@ -51,5 +51,6 @@ app.include_router(templates.router, prefix="/api")
 app.include_router(files.router, prefix="/api")
 app.include_router(generate.router, prefix="/api")
 app.include_router(words.router, prefix="/api")
+app.include_router(play.router, prefix="/api")
 
 # Run it with: uvicorn app:app --reload

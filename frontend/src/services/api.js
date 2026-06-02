@@ -39,6 +39,13 @@ const apiService = {
         Accept: "application/octet-stream",
       },
     }),
+
+  playGenerate: (words, gridSize = 15, allowBackwards = true) =>
+    api.post("/play/generate", {
+      words,
+      grid_size: gridSize,
+      allow_backwards: allowBackwards,
+    }),
 };
 
 export { apiService };

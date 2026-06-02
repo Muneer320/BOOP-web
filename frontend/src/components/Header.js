@@ -47,6 +47,11 @@ const Header = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)}>
+                  Play
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)}>
                   About
                 </Link>
