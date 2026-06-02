@@ -530,8 +530,11 @@ const PuzzleGame = () => {
     ctx.lineWidth = 1;
     ctx.strokeRect(bgX, bgY, bgW, bgH);
 
+    const isCircle = puzzle.mask === "circle";
+    const center = (gs - 1) / 2;
     for (let r = 0; r < gs; r++) {
       for (let c = 0; c < gs; c++) {
+        if (isCircle && Math.hypot(r - center, c - center) > center) continue;
         const x = gridX + c * (cellPx + gap);
         const cy = gridY + r * (cellPx + gap);
         const letter = puzzle.grid[r][c];
@@ -543,7 +546,13 @@ const PuzzleGame = () => {
         } else {
           ctx.fillStyle = "#2a2a2a";
         }
-        ctx.fillRect(x, cy, cellPx, cellPx);
+        if (isCircle) {
+          ctx.beginPath();
+          ctx.arc(x + cellPx / 2, cy + cellPx / 2, cellPx / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, cy, cellPx, cellPx);
+        }
         ctx.fillStyle = found ? "#ffffff" : "#94a3b8";
         ctx.font = `bold ${Math.floor(cellPx * 0.52)}px sans-serif`;
         ctx.textAlign = "center";
@@ -585,12 +594,12 @@ const PuzzleGame = () => {
     ctx.fillStyle = "#fdfaf4";
     ctx.font = "20px sans-serif";
     ctx.textAlign = "center";
-    const timeStr = timer?.formatted || "00:00";
+    const timeStr = timer?.formatTime || "00:00";
     ctx.fillText(`Time: ${timeStr}`, pW / 2, y);
     y += 26;
-    ctx.fillStyle = "#64748b";
+    ctx.fillStyle = "#94a3b8";
     ctx.font = "14px sans-serif";
-    ctx.fillText("boop.app", pW / 2, y);
+    ctx.fillText("https://boop.app", pW / 2, y);
 
     return canvas;
   }, [puzzle, foundWords, timer]);
