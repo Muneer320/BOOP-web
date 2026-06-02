@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import ThemeToggle from "./ThemeToggle";
 import "./Header.css";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path ? "active" : "";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -34,17 +37,17 @@ const Header = () => {
           <nav className={`nav ${menuOpen ? "visible" : ""}`}>
             <ul className="main-nav-list">
               <li>
-                <Link to="/" onClick={() => setMenuOpen(false)}>
+                <Link to="/" className={isActive("/")} onClick={() => setMenuOpen(false)}>
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/create" onClick={() => setMenuOpen(false)}>
+                <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)}>
                   Create Puzzle
                 </Link>
               </li>
               <li>
-                <Link to="/about" onClick={() => setMenuOpen(false)}>
+                <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)}>
                   About
                 </Link>
               </li>

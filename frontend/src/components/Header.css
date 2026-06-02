@@ -96,6 +96,7 @@
   transition: width 0.3s;
 }
 
+.nav a.active::after,
 .nav a:hover::after {
   width: 100%;
 }
