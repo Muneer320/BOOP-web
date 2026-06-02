@@ -144,7 +144,7 @@ def generate_wordsearch(*args, **kwargs):
     """Make a word search, attempting to fit words into the specified grid."""
 
     # We try NATTEMPTS times (with random orientations) before giving up.
-    NATTEMPTS = 50
+    NATTEMPTS = 15
     for i in range(NATTEMPTS):
         grid, solution = _generate_wordsearch(*args, **kwargs)
         if grid:
@@ -361,7 +361,7 @@ def create_puzzle_and_solution(puzzle_filename, wordlist, nrows: int, ncols: int
         return puzzle_filename
 
 
-def create_all_puzzles(word_json_path, background_image, puzzle_folder):
+def create_all_puzzles(word_json_path, background_image, puzzle_folder, progress_callback=None):
     fails = []
 
     with open(word_json_path, "r") as file:
@@ -369,13 +369,18 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
 
     os.makedirs(puzzle_folder, exist_ok=True)
 
+    total = sum(
+        len(modes.get("Normal", [])) + len(modes.get("Hard", []))
+        + len(modes.get("Bonus", {}).get("Normal", [])) + len(modes.get("Bonus", {}).get("Hard", []))
+        for modes in words_data.values()
+    )
+    done = 0
+
     current_puzzle = 1
     current_topic = None
     current_mode = None
 
     for topic_index, (topic_name, modes) in enumerate(words_data.items(), start=1):
-        print(f"Generating puzzles for topic '{topic_name}'...")
-
         for mode in ['Normal', 'Hard']:
             mode_data = modes.get(mode, [])
 
@@ -388,6 +393,9 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
                     current_mode = mode
 
             for puzzle_number, word_list in enumerate(mode_data, start=1):
+                done += 1
+                if progress_callback:
+                    progress_callback(done, total)
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}{mode[0]}{puzzle_number}"
                 puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
@@ -396,7 +404,7 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
                 puzzle = create_puzzle_and_solution(
                     puzzle_filename, word_list, size, size, mask_type=None, background_image=background_image, page_number=page_number
                 )
-                current_puzzle += 1  # Update progress
+                current_puzzle += 1
                 if puzzle is not None:
                     fails.append(page_number)
 
@@ -413,6 +421,9 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
                     current_mode = f"Bonus {bonus_mode}"
 
             for puzzle_number, word_list in enumerate(bonus_data, start=1):
+                done += 1
+                if progress_callback:
+                    progress_callback(done, total)
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}B{bonus_mode[0]}{puzzle_number}"
                 puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
@@ -421,17 +432,12 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder):
                 puzzle = create_puzzle_and_solution(
                     puzzle_filename, word_list, size, size, mask_type="circle", background_image=background_image, page_number=page_number
                 )
-                current_puzzle += 1  # Update progress
+                current_puzzle += 1
                 if puzzle is not None:
                     fails.append(page_number)
 
-    # Make solution page
     create_transition_svg(f"{puzzle_folder}//S.svg",
                           "SOLUTIONS", "", background_image)
-
-    print(len(fails))
-    for fail in fails:
-        print(f"Failed to generate puzzle {fail}.")
 
     return [fail.partition(". ")[2] for fail in fails]
 

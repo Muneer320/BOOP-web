@@ -144,11 +144,67 @@
   font-weight: 700;
 }
 
-.pg-word-count {
+.pg-word-count, .pg-word-count-total {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin: 0.5rem 0 0;
   font-family: var(--font-ui);
+}
+
+.pg-loading-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+}
+
+/* Collapsible topic cards */
+.pg-topic-card {
+  border: 1px solid var(--border-color);
+  margin-bottom: 0.375rem;
+  background: var(--bg-primary);
+  transition: border-color 0.15s;
+}
+.pg-topic-card.expanded {
+  border-color: var(--primary);
+}
+.pg-topic-card.all-selected {
+  border-color: var(--success);
+}
+
+.pg-topic-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+.pg-topic-header:hover { background: var(--bg-secondary); }
+
+.pg-topic-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.pg-topic-meta {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+}
+
+.pg-topic-arrow {
+  font-size: 0.6rem;
+  color: var(--gray);
+}
+
+.pg-topic-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0 0.625rem 0.5rem;
 }
 
 /* Chips */
@@ -285,6 +341,9 @@
   cursor: pointer;
   transition: background 0.12s, color 0.12s, transform 0.08s;
   line-height: 1;
+}
+.pg-cell-hidden {
+  visibility: hidden;
 }
 
 .pg-cell:hover { background: var(--gray-light); }

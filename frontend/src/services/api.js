@@ -32,12 +32,16 @@ const apiService = {
   getTopics: () => api.get("/topics"),
   getTopicWords: (topic) => api.get(`/topics/${topic}/words`),
 
-  generatePuzzle: (data, signal) =>
+  generatePuzzle: (data, signal, sessionId) =>
     api.post("/generate-puzzle", data, {
       responseType: "blob",
       headers: { Accept: "application/octet-stream" },
       signal,
+      params: sessionId ? { session_id: sessionId } : {},
     }),
+
+  getGenerationProgress: (sessionId) =>
+    api.get(`/generation-progress/${sessionId}`),
 
   playGenerate: (words, mode = "normal") =>
     api.post("/play/generate", { words, mode }),

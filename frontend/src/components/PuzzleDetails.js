@@ -3,7 +3,7 @@ import "./PuzzleDetails.css";
 
 const GRID_SIZES = { normal: 13, hard: 17 };
 
-const PuzzleDetails = ({ formData }) => {
+const PuzzleDetails = ({ formData, wordsPayload }) => {
   const { normal = 0, hard = 0, bonus_normal = 0, bonus_hard = 0 } = formData;
   const totalNormal = normal + bonus_normal;
   const totalHard = hard + bonus_hard;
@@ -12,6 +12,9 @@ const PuzzleDetails = ({ formData }) => {
   const totalWords = (normal + bonus_normal) * wordsPerPuzzle.normal
     + (hard + bonus_hard) * wordsPerPuzzle.hard;
   const totalPages = totalPuzzles * 2 + 2;
+  const selectedWordCount = wordsPayload
+    ? Object.values(wordsPayload).reduce((sum, arr) => sum + arr.length, 0)
+    : 0;
 
   if (totalPuzzles === 0) {
     return (
@@ -42,6 +45,12 @@ const PuzzleDetails = ({ formData }) => {
       <DetailRow label="Total puzzles" value={totalPuzzles} />
       <DetailRow label="Total words" value={totalWords} />
       <DetailRow label="Est. pages" value={totalPages} />
+      {selectedWordCount > 0 && (
+        <>
+          <hr className="details-divider" />
+          <DetailRow label="Words selected" value={selectedWordCount} />
+        </>
+      )}
       <hr className="details-divider" />
       <div className="details-grid-size">
         {bonus_hard + hard > 0 && (

@@ -17,11 +17,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
   background: var(--card-bg);
   border: 2px solid var(--border-color);
-  max-width: 460px;
+  padding: 2rem 1.5rem;
+  max-width: 420px;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -29,44 +29,87 @@
   display: grid;
   grid-template-columns: repeat(4, 30px);
   grid-gap: 6px;
+  margin-bottom: 1.5rem;
 }
 
 .grid-cell {
   width: 30px;
   height: 30px;
   background: var(--primary);
-  color: white;
+  color: #fdfaf4;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  font-weight: bold;
-  border-radius: 4px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  border-radius: 2px;
   animation: cellFade 1.2s infinite ease-in-out;
   will-change: transform, opacity;
 }
 
-.loading-text {
-  margin-top: 0.75rem;
-  color: var(--dark);
-  font-size: 1rem;
-}
-
-.loading-quote {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--gray);
-  font-style: italic;
-}
-
 @keyframes cellFade {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
+  0%, 100% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Progress steps */
+.progress-steps {
+  width: 100%;
+  text-align: left;
+}
+
+.progress-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  animation: stepSlideIn 0.35s ease forwards;
+}
+
+@keyframes stepSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-step-item.active {
+  color: var(--text-primary);
+  opacity: 1;
+  font-weight: 700;
+}
+
+.progress-step-item.done {
+  color: var(--success);
+  opacity: 0.8;
+  text-decoration: line-through;
+}
+
+.progress-step-icon {
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.progress-step-label {
+  flex-shrink: 0;
+}
+
+.progress-step-detail {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+  font-weight: 400;
+}
+
+.loading-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  font-family: var(--font-ui);
 }

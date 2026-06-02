@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { apiService } from "../services/api";
 import { useGamePersistence } from "../hooks/useGamePersistence";
 import useTimer from "../hooks/useTimer";
@@ -17,8 +17,6 @@ const COLORS = ["#3a6b35","#8b3a3a","#b8860b","#4a6fa5","#6b4a8b","#c4956a","#2d
 
 const DIRECTIONS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
 
-const PAGE_SIZE = 5;
-
 const PuzzleGame = () => {
   const { saveGame, loadGame, clearGame } = useGamePersistence();
 
@@ -33,7 +31,6 @@ const PuzzleGame = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [highlightCells, setHighlightCells] = useState([]);
   const [paused, setPaused] = useState(false);
-  const [showModify, setShowModify] = useState(false);
   const [showConfirmNew, setShowConfirmNew] = useState(false);
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
@@ -41,15 +38,15 @@ const PuzzleGame = () => {
   /* ---- Config State (start screen + modify panel) ---- */
   const [modeId, setModeId] = useState("normal");
   const [wordSource, setWordSource] = useState("preset"); // preset | manual | file
-  const [customWords, setCustomWords] = useState("");
+  const [customWords] = useState("");
   const [wordChips, setWordChips] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [topicWords, setTopicWords] = useState([]);
-  const [filteredTopicWords, setFilteredTopicWords] = useState([]);
+  const [selectedTopic] = useState("");
   const [addedWords, setAddedWords] = useState([]);
   const [removedWords, setRemovedWords] = useState([]);
   const [loadingTopics, setLoadingTopics] = useState(false);
+  const [expandedTopics, setExpandedTopics] = useState({});
+  const [topicWordMap, setTopicWordMap] = useState({});
   const [manualInput, setManualInput] = useState("");
 
   const mode = MODES.find(m => m.id === modeId) || MODES[1];
@@ -60,36 +57,42 @@ const PuzzleGame = () => {
   /* ---- Load topics on mount ---- */
   useEffect(() => {
     apiService.getTopics().then(r => {
-      const t = r.data.topics || [];
-      setTopics(t);
-      if (t.length > 0) { setSelectedTopic(t[0]); }
+      setTopics(r.data.topics || []);
     }).catch(() => {});
   }, []);
 
-  /* ---- Fetch topic words ---- */
-  useEffect(() => {
-    if (!selectedTopic) return;
+  /* ---- Fetch topic words lazily ---- */
+  const ensureTopicWords = useCallback(async (topic) => {
+    if (topicWordMap[topic]) return;
     setLoadingTopics(true);
-    apiService.getTopicWords(selectedTopic)
-      .then(r => { setTopicWords(r.data.words || []); setFilteredTopicWords(r.data.words || []); })
-      .catch(() => setTopicWords([]))
-      .finally(() => setLoadingTopics(false));
-  }, [selectedTopic]);
+    try {
+      const r = await apiService.getTopicWords(topic);
+      setTopicWordMap(prev => ({ ...prev, [topic]: r.data.words || [] }));
+    } catch {
+      setTopicWordMap(prev => ({ ...prev, [topic]: [] }));
+    }
+    setLoadingTopics(false);
+  }, [topicWordMap]);
+
+  const toggleTopic = useCallback((topic) => {
+    setExpandedTopics(prev => {
+      const next = { ...prev };
+      if (next[topic]) { delete next[topic]; }
+      else { next[topic] = true; ensureTopicWords(topic); }
+      return next;
+    });
+  }, [ensureTopicWords]);
 
   /* ---- Compute final word list ---- */
   const computeWords = useCallback(() => {
     if (wordSource === "preset") {
-      const base = topicWords.filter(w => !removedWords.includes(w));
+      const allTopicWords = Object.values(topicWordMap).flat();
+      const base = allTopicWords.filter(w => !removedWords.includes(w));
       return [...base, ...addedWords];
     }
     if (wordSource === "manual") return wordChips;
-    return []; /* file — needs upload */
-  }, [wordSource, topicWords, removedWords, addedWords, wordChips]);
-
-  /* ---- Validate word count ---- */
-  const wordCountValid = useCallback((words) => {
-    return words.length >= mode.minW && words.length <= mode.maxW;
-  }, [mode]);
+    return [];
+  }, [wordSource, topicWordMap, removedWords, addedWords, wordChips]);
 
   /* ---- Generate puzzle ---- */
   const generatePuzzle = useCallback(async (words, timerOn) => {
@@ -367,6 +370,38 @@ const PuzzleGame = () => {
     } catch { setError("Failed to parse uploaded file."); }
   }, [mode.maxW]);
 
+  /* ---- Topic card helper ---- */
+  const renderTopicCard = useCallback((topic) => {
+    const words = topicWordMap[topic] || [];
+    const isExpanded = !!expandedTopics[topic];
+    const wordCount = words.length;
+    const addedCount = words.filter(w => addedWords.includes(w)).length;
+    const removedCount = words.filter(w => removedWords.includes(w)).length;
+    return (
+      <div key={topic} className={`pg-topic-card${isExpanded ? " expanded" : ""}${wordCount > 0 && addedCount === wordCount - removedCount ? " all-selected" : ""}`}>
+        <div className="pg-topic-header" onClick={() => toggleTopic(topic)}>
+          <span className="pg-topic-name">{topic}</span>
+          <span className="pg-topic-meta">
+            {wordCount > 0 && `${addedCount > 0 ? addedCount + '/' : ''}${wordCount}`} words
+          </span>
+          <span className="pg-topic-arrow">{isExpanded ? "\u25BC" : "\u25B6"}</span>
+        </div>
+        {isExpanded && wordCount > 0 && (
+          <div className="pg-topic-words">
+            {words.map(w => (
+              <span key={w}
+                className={`pg-word-tag${addedWords.includes(w) ? " added" : ""}${removedWords.includes(w) ? " removed" : ""}`}
+                onClick={() => removedWords.includes(w) ? toggleRemoveWord(w) : toggleAddWord(w)}>
+                {w}
+                <span className="pg-tag-action">{addedWords.includes(w) ? "\u2713" : "+"}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }, [topicWordMap, expandedTopics, addedWords, removedWords, toggleTopic, toggleAddWord, toggleRemoveWord]);
+
   /* ======== RENDER: START SCREEN ======== */
   const renderStart = () => (
     <div className="pg-start">
@@ -401,30 +436,14 @@ const PuzzleGame = () => {
 
           {wordSource === "preset" && (
             <div className="pg-preset-panel">
-              {loadingTopics ? <p>Loading topics…</p> : topics.length === 0 ? <p>No topics available.</p> : (
-                <>
-                  <select className="form-control" value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
-                    {topics.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <div className="pg-word-tags">
-                    {topicWords.map(w => (
-                      <span key={w}
-                        className={`pg-word-tag${addedWords.includes(w) ? " added" : ""}${removedWords.includes(w) ? " removed" : ""}`}
-                        onClick={() => removedWords.includes(w) ? toggleRemoveWord(w) : toggleAddWord(w)}>
-                        {w}
-                        <span className="pg-tag-action">
-                          {removedWords.includes(w) ? "+" : addedWords.includes(w) ? "−" : "+"}
-                        </span>
-                      </span>
-                    ))}
-                  </div>
-                  {(addedWords.length > 0 || removedWords.length > 0) && (
-                    <p className="pg-word-count">
-                      {topicWords.length - removedWords.length + addedWords.length} words selected
-                      (min {mode.minW}, max {mode.maxW})
-                    </p>
-                  )}
-                </>
+              {loadingTopics && <p className="pg-loading-hint">Loading words…</p>}
+              {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
+                renderTopicCard(topic)
+              )}
+              {(addedWords.length > 0 || removedWords.length > 0) && (
+                <p className="pg-word-count-total">
+                  {computeWords().length} words selected (min {mode.minW}, max {mode.maxW})
+                </p>
               )}
             </div>
           )}
@@ -507,7 +526,6 @@ const PuzzleGame = () => {
             </div>
             <div className="pg-play-actions">
               {timerEnabled && !paused && <button className="btn btn-outline btn-sm" onClick={handlePause}>Pause</button>}
-              <button className="btn btn-outline btn-sm" onClick={() => setShowModify(true)}>Modify</button>
               <button className="btn btn-outline btn-sm" onClick={handleNewGame}>New</button>
             </div>
           </div>
@@ -518,6 +536,10 @@ const PuzzleGame = () => {
                 onMouseLeave={handleMouseUp}
                 style={{ gridTemplateColumns: `repeat(${puzzle.grid_size}, 1fr)` }}>
                 {puzzle.grid.map((row, ri) => row.map((cell, ci) => {
+                  const isCircle = puzzle.mask === "circle";
+                  const center = (puzzle.grid_size - 1) / 2;
+                  const inCircle = !isCircle || Math.hypot(ri - center, ci - center) <= center;
+                  if (isCircle && !inCircle) return <div key={`${ri}-${ci}`} className="pg-cell pg-cell-hidden" />;
                   const found = inFound(ri, ci);
                   const sel = isSelected(ri, ci);
                   const hl = isHighlighted(ri, ci);
@@ -551,49 +573,9 @@ const PuzzleGame = () => {
             </div>
           </div>
         </div>
-
-        {showModify && renderModifyPanel()}
-        {showConfirmNew && renderConfirm("Start a new game? Your current game will be lost.", confirmNewGame, () => setShowConfirmNew(false))}
-        {showConfirmQuit && renderConfirm("Quit this game? All progress will be lost.", confirmNewGame, () => setShowConfirmQuit(false))}
       </>
     );
   };
-
-  /* ======== RENDER: MODIFY PANEL ======== */
-  const renderModifyPanel = () => (
-    <div className="pg-modal" onClick={() => setShowModify(false)}>
-      <div className="pg-modal-content" onClick={e => e.stopPropagation()}>
-        <h3>Modify Settings</h3>
-        <button className="pg-modal-close" onClick={() => setShowModify(false)}>&times;</button>
-
-        <div className="pg-modes" style={{ marginBottom: "1rem" }}>
-          {MODES.map(m => (
-            <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
-              onClick={() => setModeId(m.id)}>
-              <span className="pg-mode-label">{m.label}</span>
-              <span className="pg-mode-size">{m.grid}×{m.grid}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="pg-timer-option">
-          <label className="pg-toggle">
-            <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
-            <span>Show timer</span>
-          </label>
-        </div>
-
-        <button className="btn btn-primary" onClick={async () => {
-          setShowModify(false);
-          const words = computeWords();
-          if (words.length < mode.minW) { setError(`Need at least ${mode.minW} words.`); return; }
-          if (words.length > mode.maxW) { setError(`Max ${mode.maxW} words.`); return; }
-          timer.stop();
-          await generatePuzzle(words, timerEnabled);
-        }}>Apply &amp; Restart</button>
-      </div>
-    </div>
-  );
 
   /* ======== RENDER: CONFIRM ======== */
   const renderConfirm = (msg, onConfirm, onCancel) => (

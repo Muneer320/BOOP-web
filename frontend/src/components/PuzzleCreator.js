@@ -5,7 +5,6 @@ import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
 import PuzzleDetails from "./PuzzleDetails";
-import GenerationProgress from "./GenerationProgress";
 import Tooltip from "./Tooltip";
 import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
@@ -98,21 +97,28 @@ const PuzzleCreator = () => {
     }));
   }, []);
 
+  const hasWords = formData.words_payload
+    ? Object.keys(formData.words_payload).length > 0
+    : !!formData.words_file_id;
+
   const nextStep = useCallback(() => {
+    if (step === 2 && !hasWords) {
+      setError("Please select topics, add custom words, or upload a word file before proceeding.");
+      return;
+    }
+    setError(null);
     setStep((prev) => prev + 1);
-  }, []);
+  }, [step, hasWords]);
 
   const prevStep = useCallback(() => {
     setStep((prev) => prev - 1);
   }, []);
 
-  const [progressComplete, setProgressComplete] = useState(false);
+
 
   const generatePuzzle = useCallback(async () => {
     try {
       setError(null);
-      setProgressComplete(false);
-
       const fileData = await contextGenerate(formData);
       if (!fileData) return;
 
@@ -123,7 +129,6 @@ const PuzzleCreator = () => {
       document.body.appendChild(link);
       link.click();
 
-      setProgressComplete(true);
       completeGeneration(fileData, `${formData.name}.pdf`);
 
       window.URL.revokeObjectURL(url);
@@ -171,11 +176,7 @@ const PuzzleCreator = () => {
     <div className="puzzle-creator">
       <div className="container">
         <div className="card">
-          {isGenerating && (
-            <LoadingOverlay>
-              <GenerationProgress formData={formData} isComplete={progressComplete} />
-            </LoadingOverlay>
-          )}
+          <LoadingOverlay />
           {/* Progress indicator */}
           <div className="progress-bar">
             <div className={`progress-step ${step >= 1 ? "active" : ""}`}>
@@ -303,76 +304,84 @@ const PuzzleCreator = () => {
 
           {/* Step 2: Word Selection */}
           {step === 2 && (
-            <div className="form-step">
-              <WordSelector
-                topics={topics}
-                onWordsUpdate={handleWordsUpdate}
-                onFileUpload={handleWordsFileUpload}
-              />
+            <div className="form-step form-with-preview">
+              <div className="form-fields">
+                <WordSelector
+                  topics={topics}
+                  onWordsUpdate={handleWordsUpdate}
+                  onFileUpload={handleWordsFileUpload}
+                />
 
-              <div className="form-navigation">
-                <button className="btn btn-secondary" onClick={prevStep}>
-                  Back
-                </button>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Next: Customize Appearance
-                </button>
+                {error && <div className="alert alert-danger">{error}</div>}
+
+                <div className="form-navigation">
+                  <button className="btn btn-secondary" onClick={prevStep}>
+                    Back
+                  </button>
+                  <button className="btn btn-primary" onClick={nextStep}>
+                    Next: Customize Appearance
+                  </button>
+                </div>
               </div>
+              <PuzzleDetails formData={formData} wordsPayload={formData.words_payload} />
             </div>
           )}
 
           {/* Step 3: File Uploads & Generation */}
           {step === 3 && (
-            <div className="form-step">
-              <div className="image-uploads">
-                <FileUploader
-                  label="Cover Image"
-                  accept="image/*"
-                  onFileUploaded={(fileId) =>
-                    handleFileUpload("cover_id", fileId)
-                  }
-                  description="Upload a custom cover image for your puzzle book"
-                  hasDefaultOption={true}
-                  defaultFile=""
-                />
+            <div className="form-step form-with-preview">
+              <div className="form-fields">
+                <div className="image-uploads">
+                  <FileUploader
+                    label="Cover Image"
+                    accept="image/*"
+                    onFileUploaded={(fileId) =>
+                      handleFileUpload("cover_id", fileId)
+                    }
+                    description="Upload a custom cover image for your puzzle book"
+                    hasDefaultOption={true}
+                    defaultFile=""
+                  />
 
-                <FileUploader
-                  label="Background Image"
-                  accept="image/*"
-                  onFileUploaded={(fileId) =>
-                    handleFileUpload("background_id", fileId)
-                  }
-                  description="Upload a background for title and transition pages"
-                  hasDefaultOption={true}
-                  defaultFile=""
-                />
+                  <FileUploader
+                    label="Background Image"
+                    accept="image/*"
+                    onFileUploaded={(fileId) =>
+                      handleFileUpload("background_id", fileId)
+                    }
+                    description="Upload a background for title and transition pages"
+                    hasDefaultOption={true}
+                    defaultFile=""
+                  />
 
-                <FileUploader
-                  label="Puzzle Background"
-                  accept="image/*"
-                  onFileUploaded={(fileId) =>
-                    handleFileUpload("puzzle_bg_id", fileId)
-                  }
-                  description="Upload a background for puzzle pages"
-                  hasDefaultOption={true}
-                  defaultFile=""
-                />
+                  <FileUploader
+                    label="Puzzle Background"
+                    accept="image/*"
+                    onFileUploaded={(fileId) =>
+                      handleFileUpload("puzzle_bg_id", fileId)
+                    }
+                    description="Upload a background for puzzle pages"
+                    hasDefaultOption={true}
+                    defaultFile=""
+                  />
+                </div>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+
+                <div className="form-navigation">
+                  <button className="btn btn-secondary" onClick={prevStep}>
+                    Back
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={generatePuzzle}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? "Generating..." : "Generate Puzzle Book"}
+                  </button>
+                </div>
               </div>
-
-              {error && <div className="alert alert-danger">{error}</div>}
-
-              <div className="form-navigation">
-                <button className="btn btn-secondary" onClick={prevStep}>
-                  Back
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={generatePuzzle}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? "Generating..." : "Generate Puzzle Book"}
-                </button>
-              </div>
+              <PuzzleDetails formData={formData} wordsPayload={formData.words_payload} />
             </div>
           )}
 

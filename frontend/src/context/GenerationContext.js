@@ -9,7 +9,10 @@ export const GenerationProvider = ({ children }) => {
   const [generatedFileName, setGeneratedFileName] = useState("");
   const [generationStarted, setGenerationStarted] = useState(null);
   const [generationError, setGenerationError] = useState(null);
+  const [progress, setProgress] = useState(null);
   const abortRef = useRef(null);
+  const pollRef = useRef(null);
+  const sessionIdRef = useRef(null);
 
   const startGeneration = useCallback(() => {
     setIsGenerating(true);
@@ -17,6 +20,8 @@ export const GenerationProvider = ({ children }) => {
     setGeneratedFileName("");
     setGenerationStarted(new Date());
     setGenerationError(null);
+    setProgress({ step: "starting", detail: "Initializing…" });
+    sessionIdRef.current = "gen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   }, []);
 
   const completeGeneration = useCallback((fileData, fileName) => {
@@ -24,11 +29,18 @@ export const GenerationProvider = ({ children }) => {
     setGeneratedFile(fileData);
     setGeneratedFileName(fileName || "puzzle-book.pdf");
     setGenerationError(null);
+    setProgress({ step: "complete", detail: "PDF ready", done: true });
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+    sessionIdRef.current = null;
   }, []);
 
   const failGeneration = useCallback((error) => {
     setIsGenerating(false);
     setGenerationError(error?.message || "Generation failed");
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+    sessionIdRef.current = null;
   }, []);
 
   const resetGeneration = useCallback(() => {
@@ -37,18 +49,27 @@ export const GenerationProvider = ({ children }) => {
     setGeneratedFileName("");
     setGenerationStarted(null);
     setGenerationError(null);
-    if (abortRef.current) {
-      abortRef.current.abort();
-      abortRef.current = null;
-    }
+    setProgress(null);
+    if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    sessionIdRef.current = null;
   }, []);
 
   const generatePuzzle = useCallback(async (formData) => {
     startGeneration();
     const controller = new AbortController();
     abortRef.current = controller;
+    const sid = sessionIdRef.current;
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const r = await apiService.getGenerationProgress(sid);
+        if (r.data) setProgress(r.data);
+      } catch { /* poll quietly */ }
+    }, 600);
+
     try {
-      const response = await apiService.generatePuzzle(formData, controller.signal);
+      const response = await apiService.generatePuzzle(formData, controller.signal, sid);
       if (response?.data) {
         completeGeneration(response.data, `${formData.name}.pdf`);
       }
@@ -76,15 +97,9 @@ export const GenerationProvider = ({ children }) => {
 
   return (
     <GenerationContext.Provider value={{
-      isGenerating,
-      generatedFile,
-      generatedFileName,
-      generationStarted,
-      generationError,
-      startGeneration,
-      completeGeneration,
-      resetGeneration,
-      generatePuzzle,
+      isGenerating, generatedFile, generatedFileName, generationStarted,
+      generationError, progress, startGeneration, completeGeneration,
+      resetGeneration, generatePuzzle,
     }}>
       {children}
     </GenerationContext.Provider>
