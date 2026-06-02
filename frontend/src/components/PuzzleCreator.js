@@ -18,7 +18,7 @@ const PuzzleCreator = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { isGenerating, generatedFile, startGeneration, completeGeneration } = useGeneration();
+  const { isGenerating, generatedFile, generatePuzzle: contextGenerate, completeGeneration } = useGeneration();
 
   const [formData, setFormData] = useState({
     name: "My Word Search",
@@ -110,13 +110,13 @@ const PuzzleCreator = () => {
 
   const generatePuzzle = useCallback(async () => {
     try {
-      startGeneration();
       setError(null);
       setProgressComplete(false);
 
-      const response = await apiService.generatePuzzle(formData);
+      const fileData = await contextGenerate(formData);
+      if (!fileData) return;
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([fileData]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `${formData.name}.pdf`);
@@ -124,18 +124,19 @@ const PuzzleCreator = () => {
       link.click();
 
       setProgressComplete(true);
-      completeGeneration(response.data, `${formData.name}.pdf`);
+      completeGeneration(fileData, `${formData.name}.pdf`);
 
       window.URL.revokeObjectURL(url);
       link.remove();
 
       setStep(4);
     } catch (err) {
-      setError("Failed to generate puzzle book. Please try again.");
-      console.error("Error generating puzzle:", err);
-      completeGeneration(null);
+      if (err?.name !== "CanceledError") {
+        setError("Failed to generate puzzle book. Please try again.");
+        console.error("Error generating puzzle:", err);
+      }
     }
-  }, [formData, startGeneration, completeGeneration]);
+  }, [formData, contextGenerate, completeGeneration]);
 
   if (isLoading) {
     return (

@@ -32,20 +32,15 @@ const apiService = {
   getTopics: () => api.get("/topics"),
   getTopicWords: (topic) => api.get(`/topics/${topic}/words`),
 
-  generatePuzzle: (data) =>
+  generatePuzzle: (data, signal) =>
     api.post("/generate-puzzle", data, {
       responseType: "blob",
-      headers: {
-        Accept: "application/octet-stream",
-      },
+      headers: { Accept: "application/octet-stream" },
+      signal,
     }),
 
-  playGenerate: (words, gridSize = 15, allowBackwards = true) =>
-    api.post("/play/generate", {
-      words,
-      grid_size: gridSize,
-      allow_backwards: allowBackwards,
-    }),
+  playGenerate: (words, mode = "normal") =>
+    api.post("/play/generate", { words, mode }),
 };
 
 export { apiService };

@@ -1,196 +1,263 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { apiService } from "../services/api";
+import { useGamePersistence } from "../hooks/useGamePersistence";
+import useTimer from "../hooks/useTimer";
 import "./PuzzleGame.css";
 
-const DIRECTIONS = [
-  [0, 1], [1, 0], [1, 1], [1, -1],
-  [0, -1], [-1, 0], [-1, -1], [-1, 1]
+const MODES = [
+  { id: "easy",      label: "Easy",     grid: 10, minW: 5,  maxW: 12, back: false, mask: null },
+  { id: "normal",    label: "Normal",   grid: 13, minW: 8,  maxW: 20, back: true,  mask: null },
+  { id: "hard",      label: "Hard",     grid: 15, minW: 10, maxW: 25, back: true,  mask: null },
+  { id: "veryhard",  label: "Very Hard", grid: 18, minW: 12, maxW: 30, back: true,  mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 15, maxW: 35, back: true,  mask: null },
+  { id: "bonus",     label: "Bonus",    grid: 15, minW: 8,  maxW: 20, back: true,  mask: "circle" },
 ];
 
-const COLORS = [
-  "#4a6fa5", "#e67e22", "#27ae60", "#e74c3c",
-  "#9b59b6", "#1abc9c", "#f39c12", "#2ecc71",
-  "#3498db", "#e91e63"
-];
+const COLORS = ["#3a6b35","#8b3a3a","#b8860b","#4a6fa5","#6b4a8b","#c4956a","#2d6b5e","#8b5e3a","#4a7c5e","#7a5e3a"];
+
+const DIRECTIONS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
+
+const PAGE_SIZE = 5;
 
 const PuzzleGame = () => {
+  const { saveGame, loadGame, clearGame } = useGamePersistence();
+
+  /* ---- Core State ---- */
+  const [screen, setScreen] = useState("start"); // start | play | complete
   const [puzzle, setPuzzle] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [words, setWords] = useState("");
-  const [gridSize, setGridSize] = useState(15);
   const [foundWords, setFoundWords] = useState({});
-  const [highlightCells, setHighlightCells] = useState([]);
   const [selectedCells, setSelectedCells] = useState([]);
   const [dragCells, setDragCells] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [highlightCells, setHighlightCells] = useState([]);
+  const [paused, setPaused] = useState(false);
+  const [showModify, setShowModify] = useState(false);
+  const [showConfirmNew, setShowConfirmNew] = useState(false);
+  const [showConfirmQuit, setShowConfirmQuit] = useState(false);
+  const [timerEnabled, setTimerEnabled] = useState(true);
+
+  /* ---- Config State (start screen + modify panel) ---- */
+  const [modeId, setModeId] = useState("normal");
+  const [wordSource, setWordSource] = useState("preset"); // preset | manual | file
+  const [customWords, setCustomWords] = useState("");
+  const [wordChips, setWordChips] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState("");
+  const [topicWords, setTopicWords] = useState([]);
+  const [filteredTopicWords, setFilteredTopicWords] = useState([]);
+  const [addedWords, setAddedWords] = useState([]);
+  const [removedWords, setRemovedWords] = useState([]);
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  const [manualInput, setManualInput] = useState("");
+
+  const mode = MODES.find(m => m.id === modeId) || MODES[1];
+  const gameId = useRef(`game_${Date.now()}`);
+  const timer = useTimer(gameId.current);
   const gridRef = useRef(null);
 
-  const generatePuzzle = useCallback(async () => {
-    const wordList = words.split(/[,\n\r]+/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 2);
-    if (wordList.length < 3) {
-      setError("Enter at least 3 words (comma or newline separated)");
-      return;
+  /* ---- Load topics on mount ---- */
+  useEffect(() => {
+    apiService.getTopics().then(r => {
+      const t = r.data.topics || [];
+      setTopics(t);
+      if (t.length > 0) { setSelectedTopic(t[0]); }
+    }).catch(() => {});
+  }, []);
+
+  /* ---- Fetch topic words ---- */
+  useEffect(() => {
+    if (!selectedTopic) return;
+    setLoadingTopics(true);
+    apiService.getTopicWords(selectedTopic)
+      .then(r => { setTopicWords(r.data.words || []); setFilteredTopicWords(r.data.words || []); })
+      .catch(() => setTopicWords([]))
+      .finally(() => setLoadingTopics(false));
+  }, [selectedTopic]);
+
+  /* ---- Compute final word list ---- */
+  const computeWords = useCallback(() => {
+    if (wordSource === "preset") {
+      const base = topicWords.filter(w => !removedWords.includes(w));
+      return [...base, ...addedWords];
     }
+    if (wordSource === "manual") return wordChips;
+    return []; /* file — needs upload */
+  }, [wordSource, topicWords, removedWords, addedWords, wordChips]);
+
+  /* ---- Validate word count ---- */
+  const wordCountValid = useCallback((words) => {
+    return words.length >= mode.minW && words.length <= mode.maxW;
+  }, [mode]);
+
+  /* ---- Generate puzzle ---- */
+  const generatePuzzle = useCallback(async (words, timerOn) => {
     setLoading(true);
     setError(null);
-    setFoundWords({});
-    setHighlightCells([]);
-    setSelectedCells([]);
-    setShowSuccess(false);
     try {
-      const response = await apiService.playGenerate(wordList, gridSize);
-      setPuzzle(response.data);
+      const resp = await apiService.playGenerate(words, modeId);
+      const data = resp.data;
+      data.words.sort();
+      setPuzzle(data);
+      setFoundWords({});
+      setSelectedCells([]);
+      setDragCells([]);
+      setScreen("play");
+      if (timerOn) timer.start();
+      saveGame({ gameId: gameId.current, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords });
     } catch (err) {
-      setError(err.response?.data?.detail || "Failed to generate puzzle. Try fewer or shorter words.");
+      setError(err.response?.data?.detail || "Could not generate puzzle. Try different words.");
     } finally {
       setLoading(false);
     }
-  }, [words, gridSize]);
+  }, [modeId, saveGame, timer, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords]);
 
-  const reset = useCallback(() => {
-    setPuzzle(null);
-    setFoundWords({});
-    setHighlightCells([]);
-    setSelectedCells([]);
-    setShowSuccess(false);
-    setError(null);
-  }, []);
+  /* ---- Start game ---- */
+  const handleStart = useCallback(async () => {
+    const words = computeWords();
+    if (words.length < mode.minW) {
+      setError(`Need at least ${mode.minW} words. Selected ${words.length}. Try a different topic or add words.`);
+      return;
+    }
+    if (words.length > mode.maxW) {
+      setError(`Maximum ${mode.maxW} words. Remove ${words.length - mode.maxW} words first.`);
+      return;
+    }
+    gameId.current = `game_${Date.now()}`;
+    await generatePuzzle(words, timerEnabled);
+  }, [computeWords, mode, generatePuzzle, timerEnabled]);
 
-  const cellKey = (r, c) => `${r}-${c}`;
-  const inFound = (r, c) => {
-    for (const positions of Object.values(foundWords)) {
-      for (const [fr, fc] of positions) {
-        if (fr === r && fc === c) return true;
+  /* ---- Restore game from localStorage ---- */
+  useEffect(() => {
+    const saved = loadGame();
+    if (saved && saved.puzzle) {
+      setPuzzle(saved.puzzle);
+      setFoundWords(saved.foundWords || {});
+      setModeId(saved.mode || "normal");
+      setTimerEnabled(saved.timerEnabled !== false);
+      gameId.current = saved.gameId || `game_${Date.now()}`;
+      const restored = timer.restore();
+      if (restored || saved.screen === "complete") {
+        setScreen("play");
       }
     }
-    return false;
-  };
+  // eslint-disable-next-line
+  }, []);
 
-  const getWordColor = (word) => {
+  /* ---- Persist progress ---- */
+  useEffect(() => {
+    if (screen === "play" && puzzle) {
+      saveGame({ gameId: gameId.current, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords, words: puzzle.words });
+    }
+  }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords]);
+
+  /* ---- Cell helpers ---- */
+  const inFound = useCallback((r, c) => {
+    for (const positions of Object.values(foundWords)) {
+      if (positions.some(([fr, fc]) => fr === r && fc === c)) return true;
+    }
+    return false;
+  }, [foundWords]);
+
+  const getWordColor = useCallback((word) => {
     const idx = Object.keys(foundWords).indexOf(word);
     return idx >= 0 ? COLORS[idx % COLORS.length] : null;
-  };
+  }, [foundWords]);
 
-  const cellsEqual = (a, b) => a[0] === b[0] && a[1] === b[1];
-
-  const getDirection = (start, end) => {
+  const getDirection = useCallback((start, end) => {
     const dr = end[0] - start[0];
     const dc = end[1] - start[1];
     const gcd = (a, b) => b === 0 ? Math.abs(a) : gcd(b, a % b);
     const g = gcd(dr, dc);
     return [dr / g, dc / g];
-  };
+  }, []);
 
+  /* ---- Word selection ---- */
   const attemptWord = useCallback((start, end) => {
     if (!puzzle) return;
-    if (cellsEqual(start, end)) return;
+    if (start[0] === end[0] && start[1] === end[1]) return;
 
-    const dr = end[0] - start[0];
-    const dc = end[1] - start[1];
     const dir = getDirection(start, end);
-
     if (!DIRECTIONS.some(d => d[0] === dir[0] && d[1] === dir[1])) return;
 
     const cells = [];
     let r = start[0], c = start[1];
-    const maxSteps = Math.max(Math.abs(dr), Math.abs(dc)) + 1;
+    const maxSteps = Math.max(Math.abs(end[0] - start[0]), Math.abs(end[1] - start[1])) + 1;
     for (let i = 0; i < maxSteps; i++) {
       if (r < 0 || r >= puzzle.grid_size || c < 0 || c >= puzzle.grid_size) break;
       cells.push([r, c]);
-      if (cellsEqual([r, c], end)) break;
-      r += dir[0];
-      c += dir[1];
+      if (r === end[0] && c === end[1]) break;
+      r += dir[0]; c += dir[1];
     }
+    if (!cells.length || cells[cells.length-1][0] !== end[0] || cells[cells.length-1][1] !== end[1]) return;
 
-    if (!cellsEqual(cells[cells.length - 1], end)) return;
-
-    const word = cells.map(([r, c]) => puzzle.grid[r][c]).join("");
-
-    const matchingWord = puzzle.words.find(w =>
-      w === word && !foundWords.hasOwnProperty(w)
-    );
-    if (!matchingWord) {
+    const word = cells.map(([rr, cc]) => puzzle.grid[rr][cc]).join("");
+    const matched = puzzle.words.find(w => w === word && !foundWords.hasOwnProperty(w));
+    if (!matched) {
       setHighlightCells(cells);
       setTimeout(() => setHighlightCells([]), 400);
       return;
     }
-
-    setFoundWords(prev => ({
-      ...prev,
-      [matchingWord]: cells
-    }));
-
-    const newFound = { ...foundWords, [matchingWord]: cells };
+    const newFound = { ...foundWords, [matched]: cells };
+    setFoundWords(newFound);
     if (Object.keys(newFound).length === puzzle.words.length) {
-      setTimeout(() => setShowSuccess(true), 300);
+      timer.stop();
+      setScreen("complete");
     }
-  }, [puzzle, foundWords]);
+  }, [puzzle, foundWords, getDirection, timer]);
 
+  /* ---- Click/tap handling ---- */
   const handleCellClick = useCallback((r, c) => {
-    if (!puzzle || foundWords.hasOwnProperty(
-      Object.keys(foundWords).find(k =>
-        foundWords[k].some(([fr, fc]) => fr === r && fc === c)
-      )
-    )) return;
-
+    if (!puzzle || paused || screen !== "play") return;
     setSelectedCells(prev => {
       if (prev.length === 0) return [[r, c]];
-      if (prev.length === 1) {
-        if (prev[0][0] === r && prev[0][1] === c) return [];
-        attemptWord(prev[0], [r, c]);
-        return [];
-      }
-      return [[r, c]];
+      if (prev[0][0] === r && prev[0][1] === c) return [];
+      attemptWord(prev[0], [r, c]);
+      return [];
     });
-  }, [puzzle, foundWords, attemptWord]);
+  }, [puzzle, paused, screen, attemptWord]);
 
+  /* ---- Drag handling ---- */
   const handleMouseDown = useCallback((r, c) => {
-    if (!puzzle || inFound(r, c)) return;
+    if (!puzzle || paused || screen !== "play" || inFound(r, c)) return;
     setIsDragging(true);
     setSelectedCells([[r, c]]);
     setDragCells([[r, c]]);
-  }, [puzzle, inFound]);
+  }, [puzzle, paused, screen, inFound]);
 
   const handleMouseMove = useCallback((r, c) => {
-    if (!isDragging || !puzzle) return;
+    if (!isDragging || !puzzle || paused) return;
     const start = selectedCells[0];
-    if (cellsEqual(start, [r, c])) return;
-    const dr = r - start[0];
-    const dc = c - start[1];
+    if (start[0] === r && start[1] === c) return;
     const dir = getDirection(start, [r, c]);
     if (!DIRECTIONS.some(d => d[0] === dir[0] && d[1] === dir[1])) return;
-
-    const newCells = [];
+    const cells = [];
     let cr = start[0], cc = start[1];
-    const maxSteps = Math.max(Math.abs(dr), Math.abs(dc)) + 1;
+    const maxSteps = Math.max(Math.abs(r - start[0]), Math.abs(c - start[1])) + 1;
     for (let i = 0; i < maxSteps; i++) {
       if (cr < 0 || cr >= puzzle.grid_size || cc < 0 || cc >= puzzle.grid_size) break;
-      newCells.push([cr, cc]);
-      if (cellsEqual([cr, cc], [r, c])) break;
-      cr += dir[0];
-      cc += dir[1];
+      cells.push([cr, cc]);
+      if (cr === r && cc === c) break;
+      cr += dir[0]; cc += dir[1];
     }
-    setDragCells(newCells);
-  }, [isDragging, selectedCells, puzzle]);
+    setDragCells(cells);
+  }, [isDragging, selectedCells, puzzle, paused, getDirection]);
 
   const handleMouseUp = useCallback(() => {
-    if (!isDragging || !puzzle) return;
+    if (!isDragging) return;
     setIsDragging(false);
     if (dragCells.length > 1) {
       attemptWord(selectedCells[0], dragCells[dragCells.length - 1]);
     }
     setSelectedCells([]);
     setDragCells([]);
-  }, [isDragging, dragCells, selectedCells, attemptWord, puzzle]);
+  }, [isDragging, dragCells, selectedCells, attemptWord]);
 
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      if (isDragging) handleMouseUp();
-    };
-    window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    const handler = () => { if (isDragging) handleMouseUp(); };
+    window.addEventListener("mouseup", handler);
+    return () => window.removeEventListener("mouseup", handler);
   }, [isDragging, handleMouseUp]);
 
   const isSelected = (r, c) =>
@@ -199,23 +266,407 @@ const PuzzleGame = () => {
   const isHighlighted = (r, c) =>
     highlightCells.some(([hr, hc]) => hr === r && hc === c);
 
-  if (puzzle && showSuccess) {
+  /* ---- Manual word chips ---- */
+  const handleManualInput = useCallback((e) => {
+    const val = e.target.value;
+    setManualInput(val);
+    const parts = val.split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+    if (parts.length > 1) {
+      setWordChips(prev => {
+        const combined = [...prev, ...parts.slice(0, -1)];
+        const unique = [...new Set(combined)];
+        return unique.slice(0, mode.maxW);
+      });
+      setManualInput(parts[parts.length - 1]);
+    }
+  }, [mode.maxW]);
+
+  const removeChip = useCallback((word) => {
+    setWordChips(prev => prev.filter(w => w !== word));
+  }, []);
+
+  const handleManualKeyDown = useCallback((e) => {
+    if (e.key === "Enter" && manualInput.trim()) {
+      const word = manualInput.trim().toUpperCase();
+      if (word && !wordChips.includes(word) && wordChips.length < mode.maxW) {
+        setWordChips(prev => [...prev, word]);
+      }
+      setManualInput("");
+      e.preventDefault();
+    }
+    if (e.key === "Backspace" && !manualInput && wordChips.length > 0) {
+      removeChip(wordChips[wordChips.length - 1]);
+    }
+  }, [manualInput, wordChips, mode.maxW, removeChip]);
+
+  /* ---- Reset to new game ---- */
+  const handleNewGame = useCallback(() => {
+    if (screen === "complete") {
+      setShowConfirmNew(true);
+    } else {
+      setShowConfirmQuit(true);
+    }
+  }, [screen]);
+
+  const confirmNewGame = useCallback(() => {
+    clearGame();
+    setPuzzle(null);
+    setFoundWords({});
+    setScreen("start");
+    setError(null);
+    setShowConfirmNew(false);
+    setShowConfirmQuit(false);
+    timer.stop();
+  }, [clearGame, timer]);
+
+  /* ---- Copy share link ---- */
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.origin + "/play").catch(() => {});
+  }, []);
+
+  /* ---- Share ---- */
+  const handleShare = useCallback((platform) => {
+    const url = encodeURIComponent(window.location.origin + "/play");
+    const text = encodeURIComponent("I just solved a word search puzzle on BOOP! Can you beat my time?");
+    const hrefs = {
+      x: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+    };
+    if (hrefs[platform]) window.open(hrefs[platform], "_blank", "noopener");
+  }, []);
+
+  /* ---- Pause ---- */
+  const handlePause = useCallback(() => {
+    timer.pause();
+    setPaused(true);
+  }, [timer]);
+
+  const handleResume = useCallback(() => {
+    timer.resume();
+    setPaused(false);
+  }, [timer]);
+
+  /* ---- Remove word from preset ---- */
+  const toggleRemoveWord = useCallback((word) => {
+    setRemovedWords(prev => prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]);
+  }, []);
+
+  const toggleAddWord = useCallback((word) => {
+    setAddedWords(prev => prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]);
+  }, []);
+
+  /* ---- File upload ---- */
+  const handleFileUpload = useCallback(async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const resp = await apiService.uploadFile(file);
+      const text = await apiService.getFile(resp.data.file_id).then(r => r.data.text());
+      const lines = text.split(/[\n\r,]+/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 2);
+      setWordChips(prev => { const combined = [...new Set([...prev, ...lines])]; return combined.slice(0, mode.maxW); });
+    } catch { setError("Failed to parse uploaded file."); }
+  }, [mode.maxW]);
+
+  /* ======== RENDER: START SCREEN ======== */
+  const renderStart = () => (
+    <div className="pg-start">
+      <div className="pg-start-card">
+        <h2 className="pg-start-title">Play Word Search</h2>
+        <p className="pg-start-sub">Choose your mode, pick words, and start solving.</p>
+
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <div className="pg-modes">
+          {MODES.map(m => (
+            <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
+              onClick={() => { setModeId(m.id); setError(null); }}>
+              <span className="pg-mode-label">{m.label}</span>
+              <span className="pg-mode-size">{m.grid}×{m.grid}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="pg-word-source">
+          <div className="pg-source-tabs">
+            {[
+              { id: "preset", label: "Themes" },
+              { id: "manual", label: "Type Words" },
+              { id: "file", label: "Upload" },
+            ].map(tab => (
+              <button key={tab.id}
+                className={`pg-source-tab${wordSource === tab.id ? " active" : ""}`}
+                onClick={() => setWordSource(tab.id)}>{tab.label}</button>
+            ))}
+          </div>
+
+          {wordSource === "preset" && (
+            <div className="pg-preset-panel">
+              {loadingTopics ? <p>Loading topics…</p> : topics.length === 0 ? <p>No topics available.</p> : (
+                <>
+                  <select className="form-control" value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
+                    {topics.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <div className="pg-word-tags">
+                    {topicWords.map(w => (
+                      <span key={w}
+                        className={`pg-word-tag${addedWords.includes(w) ? " added" : ""}${removedWords.includes(w) ? " removed" : ""}`}
+                        onClick={() => removedWords.includes(w) ? toggleRemoveWord(w) : toggleAddWord(w)}>
+                        {w}
+                        <span className="pg-tag-action">
+                          {removedWords.includes(w) ? "+" : addedWords.includes(w) ? "−" : "+"}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                  {(addedWords.length > 0 || removedWords.length > 0) && (
+                    <p className="pg-word-count">
+                      {topicWords.length - removedWords.length + addedWords.length} words selected
+                      (min {mode.minW}, max {mode.maxW})
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {wordSource === "manual" && (
+            <div className="pg-manual-panel">
+              <div className="form-group">
+                <label>Type words (comma or Enter to add)</label>
+                <input className="form-control" value={manualInput} onChange={handleManualInput}
+                  onKeyDown={handleManualKeyDown} placeholder="e.g. APPLE,BANANA,ORANGE" />
+              </div>
+              <div className="pg-chips">
+                {wordChips.map(w => (
+                  <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                    {w} <span className="pg-chip-remove">&times;</span>
+                  </span>
+                ))}
+              </div>
+              {wordChips.length > 0 && (
+                <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
+              )}
+            </div>
+          )}
+
+          {wordSource === "file" && (
+            <div className="pg-file-panel">
+              <label className="btn btn-outline" style={{ cursor: "pointer" }}>
+                Choose .txt File
+                <input type="file" accept=".txt" onChange={handleFileUpload} style={{ display: "none" }} />
+              </label>
+              {wordChips.length > 0 && (
+                <div className="pg-chips">
+                  {wordChips.map(w => (
+                    <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                      {w} <span className="pg-chip-remove">&times;</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="pg-timer-option">
+          <label className="pg-toggle">
+            <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
+            <span>Show timer</span>
+          </label>
+        </div>
+
+        <button className="btn btn-primary btn-lg pg-start-btn" onClick={handleStart} disabled={loading}>
+          {loading ? "Generating…" : "Start Game"}
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ======== RENDER: PLAY SCREEN ======== */
+  const renderPlay = () => {
+    if (!puzzle) return null;
+    const foundCount = Object.keys(foundWords).length;
+    const total = puzzle.words.length;
     return (
-      <div className="puzzle-game">
-        <div className="puzzle-success">
-          <h2>You found all words!</h2>
-          <button className="btn btn-primary" onClick={reset}>Play Again</button>
+      <>
+        {paused && (
+          <div className="pg-pause-overlay" onClick={handleResume}>
+            <div className="pg-pause-box" onClick={e => e.stopPropagation()}>
+              <h2>Paused</h2>
+              <p>Timer: {timer.formatTime}</p>
+              <button className="btn btn-primary btn-lg" onClick={handleResume}>Resume</button>
+            </div>
+          </div>
+        )}
+        <div className={`pg-play${paused ? " blurred" : ""}`}>
+          <div className="pg-play-header">
+            <div className="pg-play-info">
+              <span className="pg-mode-label-small">{mode.label}</span>
+              {timerEnabled && <span className="pg-timer">{timer.formatTime}</span>}
+              <span className="pg-found-count">{foundCount}/{total}</span>
+            </div>
+            <div className="pg-play-actions">
+              {timerEnabled && !paused && <button className="btn btn-outline btn-sm" onClick={handlePause}>Pause</button>}
+              <button className="btn btn-outline btn-sm" onClick={() => setShowModify(true)}>Modify</button>
+              <button className="btn btn-outline btn-sm" onClick={handleNewGame}>New</button>
+            </div>
+          </div>
+
+          <div className="pg-layout">
+            <div className="pg-grid-wrap">
+              <div className="pg-grid" ref={gridRef}
+                onMouseLeave={handleMouseUp}
+                style={{ gridTemplateColumns: `repeat(${puzzle.grid_size}, 1fr)` }}>
+                {puzzle.grid.map((row, ri) => row.map((cell, ci) => {
+                  const found = inFound(ri, ci);
+                  const sel = isSelected(ri, ci);
+                  const hl = isHighlighted(ri, ci);
+                  const color = found ? getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))) : null;
+                  return (
+                    <div key={`${ri}-${ci}`}
+                      className={`pg-cell${found ? " found" : ""}${sel ? " selecting" : ""}${hl ? " hilite" : ""}`}
+                      style={color ? { background: color, color: "#fff" } : sel ? { background: "var(--primary)", color: "#fff" } : {}}
+                      onMouseDown={() => handleMouseDown(ri, ci)}
+                      onMouseMove={() => handleMouseMove(ri, ci)}
+                      onMouseUp={handleMouseUp}
+                      onClick={() => handleCellClick(ri, ci)}>
+                      {cell}
+                    </div>
+                  );
+                }))}
+              </div>
+            </div>
+
+            <div className="pg-words-panel">
+              <h3>Find These Words</h3>
+              <div className="pg-words-list">
+                {puzzle.words.map(word => (
+                  <div key={word} className={`pg-word${foundWords[word] ? " found" : ""}`}
+                    style={foundWords[word] ? { color: getWordColor(word) } : {}}>
+                    <span className="pg-word-bullet">{foundWords[word] ? "\u2713" : "\u25CB"}</span>
+                    {word}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showModify && renderModifyPanel()}
+        {showConfirmNew && renderConfirm("Start a new game? Your current game will be lost.", confirmNewGame, () => setShowConfirmNew(false))}
+        {showConfirmQuit && renderConfirm("Quit this game? All progress will be lost.", confirmNewGame, () => setShowConfirmQuit(false))}
+      </>
+    );
+  };
+
+  /* ======== RENDER: MODIFY PANEL ======== */
+  const renderModifyPanel = () => (
+    <div className="pg-modal" onClick={() => setShowModify(false)}>
+      <div className="pg-modal-content" onClick={e => e.stopPropagation()}>
+        <h3>Modify Settings</h3>
+        <button className="pg-modal-close" onClick={() => setShowModify(false)}>&times;</button>
+
+        <div className="pg-modes" style={{ marginBottom: "1rem" }}>
+          {MODES.map(m => (
+            <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
+              onClick={() => setModeId(m.id)}>
+              <span className="pg-mode-label">{m.label}</span>
+              <span className="pg-mode-size">{m.grid}×{m.grid}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="pg-timer-option">
+          <label className="pg-toggle">
+            <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
+            <span>Show timer</span>
+          </label>
+        </div>
+
+        <button className="btn btn-primary" onClick={async () => {
+          setShowModify(false);
+          const words = computeWords();
+          if (words.length < mode.minW) { setError(`Need at least ${mode.minW} words.`); return; }
+          if (words.length > mode.maxW) { setError(`Max ${mode.maxW} words.`); return; }
+          timer.stop();
+          await generatePuzzle(words, timerEnabled);
+        }}>Apply &amp; Restart</button>
+      </div>
+    </div>
+  );
+
+  /* ======== RENDER: CONFIRM ======== */
+  const renderConfirm = (msg, onConfirm, onCancel) => (
+    <div className="pg-modal" onClick={onCancel}>
+      <div className="pg-modal-content pg-confirm" onClick={e => e.stopPropagation()}>
+        <p>{msg}</p>
+        <div className="pg-confirm-actions">
+          <button className="btn btn-primary" onClick={onConfirm}>Yes</button>
+          <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
+  /* ======== RENDER: COMPLETE ======== */
+  const renderComplete = () => {
+    const completedWordCount = Object.keys(foundWords).length;
+    return (
+      <div className="pg-complete">
+        <div className="pg-complete-card">
+          <div className="pg-complete-icon">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="var(--success)" strokeWidth="4"
+                strokeDasharray="283" strokeDashoffset="0" className="pg-complete-circle" />
+              <path d="M30 55 L42 68 L72 35" fill="none" stroke="var(--success)" strokeWidth="6"
+                strokeLinecap="round" strokeLinejoin="round" className="pg-complete-check" />
+            </svg>
+          </div>
+          <h2>Puzzle Complete!</h2>
+          {timerEnabled && <p className="pg-complete-time">Time: {timer.formatTime}</p>}
+          <p className="pg-complete-stat">{completedWordCount} word{completedWordCount > 1 ? "s" : ""} found</p>
+          <div className="pg-complete-grid">
+            {puzzle.grid.map((row, ri) => (
+              <div key={ri} className="pg-complete-row">
+                {row.map((cell, ci) => {
+                  const found = inFound(ri, ci);
+                  return (
+                    <span key={ci} className={`pg-complete-cell${found ? " found" : ""}`}
+                      style={found ? { color: getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))), fontWeight: 700 } : {}}>
+                      {cell}
+                    </span>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div className="pg-share-buttons">
+            <button className="btn btn-outline btn-sm" onClick={handleCopyLink}>Copy Link</button>
+            <button className="btn btn-outline btn-sm" onClick={() => handleShare("x")}>Share on X</button>
+            <button className="btn btn-outline btn-sm" onClick={() => handleShare("whatsapp")}>WhatsApp</button>
+          </div>
+          <div className="pg-complete-actions">
+            <button className="btn btn-primary" onClick={handleNewGame}>New Game</button>
+          </div>
+        </div>
+        {showConfirmNew && renderConfirm("Share your result with friends first?", () => {
+          setShowConfirmNew(false);
+          handleShare("x");
+        }, () => confirmNewGame())}
+      </div>
+    );
+  };
+
+  /* ======== LOADING ======== */
   if (loading) {
     return (
       <div className="puzzle-game">
-        <div className="card p-3">
-          <h2>Generating puzzle...</h2>
-          <div className="game-spinner" />
+        <div className="card">
+          <div className="pg-loading">
+            <h2>Generating Puzzle…</h2>
+            <div className="spinner" />
+            <p className="text-secondary">Fitting words into a {mode.grid}×{mode.grid} grid</p>
+          </div>
         </div>
       </div>
     );
@@ -223,120 +674,9 @@ const PuzzleGame = () => {
 
   return (
     <div className="puzzle-game">
-      <div className="card p-3">
-        {!puzzle ? (
-          <>
-            <h2>Play Word Search</h2>
-            <p className="text-secondary">Enter words to create an interactive puzzle you can solve in your browser.</p>
-
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            <div className="form-group">
-              <label htmlFor="play-words">Words (comma or newline separated)</label>
-              <textarea
-                id="play-words"
-                className="form-control"
-                rows="5"
-                value={words}
-                onChange={e => setWords(e.target.value)}
-                placeholder="Enter at least 3 words, e.g.&#10;APPLE,BANANA,ORANGE"
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="play-grid-size">Grid Size</label>
-                <select
-                  id="play-grid-size"
-                  className="form-control"
-                  value={gridSize}
-                  onChange={e => setGridSize(Number(e.target.value))}
-                >
-                  <option value={10}>10 x 10</option>
-                  <option value={12}>12 x 12</option>
-                  <option value={15}>15 x 15</option>
-                  <option value={18}>18 x 18</option>
-                  <option value={20}>20 x 20</option>
-                </select>
-              </div>
-            </div>
-
-            <button className="btn btn-primary" onClick={generatePuzzle}>
-              Generate Puzzle
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="game-header">
-              <h2>Word Search</h2>
-              <div className="game-progress">
-                {Object.keys(foundWords).length} / {puzzle.words.length} found
-              </div>
-            </div>
-
-            <div className="game-layout">
-              <div className="game-grid-wrapper">
-                <div
-                  className="game-grid"
-                  ref={gridRef}
-                  onMouseLeave={handleMouseUp}
-                  style={{
-                    gridTemplateColumns: `repeat(${puzzle.grid_size}, minmax(28px, 1fr))`
-                  }}
-                >
-                  {puzzle.grid.map((row, ri) =>
-                    row.map((cell, ci) => {
-                      const found = inFound(ri, ci);
-                      const sel = isSelected(ri, ci);
-                      const hl = isHighlighted(ri, ci);
-                      const color = found ? getWordColor(
-                        Object.keys(foundWords).find(k =>
-                          foundWords[k].some(([fr, fc]) => fr === ri && fc === ci)
-                        )
-                      ) : null;
-                      return (
-                        <div
-                          key={cellKey(ri, ci)}
-                          className={`game-cell${found ? " found" : ""}${sel ? " selecting" : ""}${hl ? " highlight" : ""}`}
-                          style={{
-                            ...(color ? { backgroundColor: color, color: "#fff" } : {}),
-                            ...(sel && !found ? { backgroundColor: "var(--primary)", color: "#fff" } : {})
-                          }}
-                          onMouseDown={() => handleMouseDown(ri, ci)}
-                          onMouseMove={() => handleMouseMove(ri, ci)}
-                          onMouseUp={handleMouseUp}
-                          onClick={() => handleCellClick(ri, ci)}
-                        >
-                          {cell}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              <div className="game-words-panel">
-                <h3>Words to Find</h3>
-                <div className="word-list">
-                  {puzzle.words.map(word => (
-                    <div
-                      key={word}
-                      className={`word-item${foundWords[word] ? " found" : ""}`}
-                      style={foundWords[word] ? { color: getWordColor(word), textDecoration: "line-through" } : {}}
-                    >
-                      {word}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="game-actions">
-              <button className="btn btn-secondary" onClick={reset}>New Puzzle</button>
-            </div>
-          </>
-        )}
-      </div>
+      {screen === "start" && renderStart()}
+      {screen === "play" && renderPlay()}
+      {screen === "complete" && renderComplete()}
     </div>
   );
 };

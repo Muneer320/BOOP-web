@@ -3,28 +3,31 @@ import { useGeneration } from "../context/GenerationContext";
 import "./GenerationStatus.css";
 
 const GenerationStatus = () => {
-  const { isGenerating, generatedFile, generatedFileName, generationStarted } = useGeneration();
-
+  const { isGenerating, generatedFile, generatedFileName, generationStarted, generationError, resetGeneration } = useGeneration();
   const [durationText, setDurationText] = useState("");
 
   useEffect(() => {
     if (!generationStarted) return;
-
     const timer = setInterval(() => {
-      const duration = Math.floor(
-        (new Date() - new Date(generationStarted)) / 1000
-      );
-      setDurationText(
-        duration < 60
-          ? `${duration} seconds`
-          : `${Math.floor(duration / 60)} min ${duration % 60} sec`
-      );
+      const duration = Math.floor((new Date() - new Date(generationStarted)) / 1000);
+      setDurationText(duration < 60 ? `${duration}s` : `${Math.floor(duration / 60)}m ${duration % 60}s`);
     }, 1000);
-
     return () => clearInterval(timer);
   }, [generationStarted]);
 
-  if (!isGenerating && !generatedFile) return null;
+  const handleDownload = () => {
+    if (!generatedFile) return;
+    const url = window.URL.createObjectURL(new Blob([generatedFile]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", generatedFileName);
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
+    link.remove();
+  };
+
+  if (!isGenerating && !generatedFile && !generationError) return null;
 
   return (
     <div className="generation-status-container">
@@ -40,39 +43,27 @@ const GenerationStatus = () => {
             </div>
           </div>
           <div className="status-info">
-            <p className="status-title">Generating Puzzle Book</p>
-            <p className="status-subtitle">Started {durationText} ago</p>
+            <p className="status-title">Generating…</p>
+            <p className="status-subtitle">{durationText || "Starting…"}</p>
           </div>
+        </div>
+      ) : generationError ? (
+        <div className="generation-status error">
+          <div className="status-icon err">&#10007;</div>
+          <div className="status-info">
+            <p className="status-title">Generation Failed</p>
+            <p className="status-subtitle">{generationError}</p>
+          </div>
+          <button className="close-status-btn" onClick={resetGeneration}>&times;</button>
         </div>
       ) : generatedFile ? (
         <div className="generation-status complete">
-          <div className="status-icon success">✓</div>
+          <div className="status-icon success">&#10003;</div>
           <div className="status-info">
             <p className="status-title">Book Ready!</p>
-            <button
-              className="download-again-btn"
-              onClick={() => {
-                const url = window.URL.createObjectURL(
-                  new Blob([generatedFile])
-                );
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", generatedFileName);
-                document.body.appendChild(link);
-                link.click();
-                window.URL.revokeObjectURL(url);
-                link.remove();
-              }}
-            >
-              Download Again
-            </button>
           </div>
-          <button
-            className="close-status-btn"
-            onClick={() => window.location.reload()}
-          >
-            ×
-          </button>
+          <button className="download-again-btn" onClick={handleDownload}>Download</button>
+          <button className="close-status-btn" onClick={resetGeneration}>&times;</button>
         </div>
       ) : null}
     </div>
