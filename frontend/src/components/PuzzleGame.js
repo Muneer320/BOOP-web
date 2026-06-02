@@ -479,8 +479,6 @@ const PuzzleGame = () => {
 
     const wordList = puzzle.words || puzzle.words || [];
     const foundWordNames = Object.keys(foundWords);
-    const nFound = foundWordNames.length;
-    const nTotal = wordList.length;
     const cols = 2;
     const wordRows = Math.ceil(wordList.length / cols);
 
@@ -568,14 +566,7 @@ const PuzzleGame = () => {
         ctx.fillText(letter, x + cellPx / 2, cy + cellPx / 2 + 1);
       }
     }
-    y += bgH + 18;
-
-    /* Stats */
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "18px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`Words Found: ${nFound} / ${nTotal}`, pW / 2, y);
-    y += 32;
+    y += bgH + 20;
 
     /* Word list */
     ctx.textAlign = "left";
