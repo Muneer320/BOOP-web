@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 from limiter import limiter
-import sys, os
+import sys, os, random
 
 boop_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
 sys.path.insert(0, boop_dir)
@@ -52,8 +52,10 @@ async def play_generate(req: PlayGenerateRequest, request: Request):
         raise HTTPException(400, f"Max {max_words} words for {req.mode or 'custom'} mode, got {len(wordlist)}")
 
     placed = None
-    for n in range(len(wordlist), min_words - 1, -1):
-        subset = wordlist[:n]
+    shuffled = wordlist[:]
+    random.shuffle(shuffled)
+    for n in range(len(shuffled), min_words - 1, -1):
+        subset = shuffled[:n]
         grid, positions = generate_wordsearch(
             grid_size, grid_size, subset,
             allow_backwards_words=allow_backwards,
