@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BOOP",
+  "name": "BOOP Word Search Generator",
   "icons": [
     {
       "src": "logo.svg",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#4a6fa5",
+  "background_color": "#f8f9fa"
 }

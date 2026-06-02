@@ -18,10 +18,13 @@ async def upload_file(file: UploadFile = File(...)):
     # Validate file type: allow images and plain text
     if not (file.content_type.startswith("image/") or file.content_type == "text/plain"):
         raise HTTPException(status_code=400, detail="Only image or text uploads allowed")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 10MB)")
     file_id = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
     file_path = os.path.join(UPLOAD_DIR, file_id)
     with open(file_path, "wb") as f:
-        f.write(await file.read())
+        f.write(content)
     return {"file_id": file_id}
 
 @router.get("/files/{file_id}")

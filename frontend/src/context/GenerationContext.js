@@ -1,30 +1,30 @@
 import React, { createContext, useState, useContext } from "react";
 
-// Create the context
 const GenerationContext = createContext();
 
 export const GenerationProvider = ({ children }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedFile, setGeneratedFile] = useState(null);
-  const [generationStarted, setGenerationStarted] = useState(null); // timestamp
+  const [generatedFileName, setGeneratedFileName] = useState("");
+  const [generationStarted, setGenerationStarted] = useState(null);
 
-  // Start a generation process
   const startGeneration = () => {
     setIsGenerating(true);
     setGeneratedFile(null);
+    setGeneratedFileName("");
     setGenerationStarted(new Date());
   };
 
-  // Complete a generation process
-  const completeGeneration = (fileData) => {
+  const completeGeneration = (fileData, fileName) => {
     setIsGenerating(false);
     setGeneratedFile(fileData);
+    setGeneratedFileName(fileName || "puzzle-book.pdf");
   };
 
-  // Cancel or reset generation status
   const resetGeneration = () => {
     setIsGenerating(false);
     setGeneratedFile(null);
+    setGeneratedFileName("");
     setGenerationStarted(null);
   };
 
@@ -33,6 +33,7 @@ export const GenerationProvider = ({ children }) => {
       value={{
         isGenerating,
         generatedFile,
+        generatedFileName,
         generationStarted,
         startGeneration,
         completeGeneration,
@@ -44,7 +45,6 @@ export const GenerationProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the context
 export const useGeneration = () => {
   const context = useContext(GenerationContext);
   if (!context) {

@@ -35,8 +35,8 @@ def start_cleanup_task():
     thread = threading.Thread(target=cleanup_uploads, daemon=True)
     thread.start()
 
-# CORS configuration
-origins = ["https://boop-web.vercel.app/", "http://localhost:3000"]
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+origins = [o.strip() for o in CORS_ORIGINS]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

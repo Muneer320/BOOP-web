@@ -3,7 +3,7 @@ import { useGeneration } from "../context/GenerationContext";
 import "./GenerationStatus.css";
 
 const GenerationStatus = () => {
-  const { isGenerating, generatedFile, generationStarted } = useGeneration();
+  const { isGenerating, generatedFile, generatedFileName, generationStarted } = useGeneration();
 
   const [durationText, setDurationText] = useState("");
 
@@ -57,7 +57,7 @@ const GenerationStatus = () => {
                 );
                 const link = document.createElement("a");
                 link.href = url;
-                link.setAttribute("download", "puzzle-book.pdf");
+                link.setAttribute("download", generatedFileName);
                 document.body.appendChild(link);
                 link.click();
                 window.URL.revokeObjectURL(url);

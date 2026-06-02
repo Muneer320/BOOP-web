@@ -71,7 +71,7 @@ const PuzzleCreator = () => {
     }
     setFormData({
       ...formData,
-      [name]: type === "number" ? parseInt(value, 5) : value,
+      [name]: type === "number" ? Number(value) : value,
     });
   };
 
@@ -127,8 +127,7 @@ const PuzzleCreator = () => {
       document.body.appendChild(link);
       link.click();
 
-      // Store generated file in context for potential re-download
-      completeGeneration(response.data);
+      completeGeneration(response.data, `${formData.name}.pdf`);
 
       // Clean up
       window.URL.revokeObjectURL(url);

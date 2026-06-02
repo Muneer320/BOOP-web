@@ -4,9 +4,9 @@ from starlette.background import BackgroundTask
 from pydantic import BaseModel
 from typing import Optional, Dict, List
 from routers.files import UPLOAD_DIR
-import os, shutil, tempfile, io
+import os, shutil, tempfile, io, re
+from pathlib import PurePath
 
-# Import BOOP logic
 import importlib.util
 base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
 import sys
@@ -17,6 +17,19 @@ from boop.appendImage import append_page, append_puzzle_page
 from boop.index import create_title_page
 
 router = APIRouter()
+
+SAFE_NAME_RE = re.compile(r'^[A-Za-z0-9\s\-_]+$')
+FILE_ID_RE = re.compile(r'^[a-f0-9\-]+\.[a-zA-Z0-9]+$')
+
+def sanitize_filename(name):
+    safe = re.sub(r'[^\w\s\-]', '', name).strip()
+    return safe or "PuzzleBook"
+
+def is_safe_file_id(file_id):
+    if not file_id:
+        return True
+    basename = os.path.basename(file_id)
+    return bool(FILE_ID_RE.match(basename)) and basename == file_id
 
 class GenerateRequest(BaseModel):
     name: str
@@ -32,9 +45,13 @@ class GenerateRequest(BaseModel):
 
 @router.post("/generate-puzzle")
 async def generate_puzzle(req: GenerateRequest):
-    # Prepare paths
+    if not req.name or not SAFE_NAME_RE.match(req.name):
+        raise HTTPException(400, "Invalid book name (letters, numbers, spaces, hyphens only)")
+    for field in [req.words_file_id, req.cover_id, req.background_id, req.puzzle_bg_id]:
+        if field and not is_safe_file_id(field):
+            raise HTTPException(400, "Invalid file reference")
+    safe_name = sanitize_filename(req.name)
     boop_dir = base
-    # Handle custom words input
     if req.words_payload:
         # write JSON payload to temp txt in BOOP/Words format
         output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
@@ -48,16 +65,15 @@ async def generate_puzzle(req: GenerateRequest):
         words_txt = temp_input
     elif req.words_file_id:
         output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
-        words_txt = os.path.join(UPLOAD_DIR, req.words_file_id)
+        words_txt = os.path.join(UPLOAD_DIR, os.path.basename(req.words_file_id))
     else:
         output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
         words_txt = os.path.join(boop_dir, 'Words', 'words.txt')
-    pdf_path = os.path.join(os.getcwd(), f"{req.name}.pdf")
+    pdf_path = os.path.join(os.getcwd(), f"{safe_name}.pdf")
 
-    # Resolve images (uploaded vs defaults)
     def resolve(img_id, default_path):
         if img_id:
-            path = os.path.join(UPLOAD_DIR, img_id)
+            path = os.path.join(UPLOAD_DIR, os.path.basename(img_id))
             if os.path.exists(path): return path
             print(f"Image {img_id} not found")
         return default_path
@@ -83,9 +99,8 @@ async def generate_puzzle(req: GenerateRequest):
     # Remove existing PDF
     if os.path.exists(pdf_path): os.remove(pdf_path)
 
-    # Step 2: cover + title
-    append_page(req.name, cover_img)
-    create_title_page(req.name, words_json, background_image=bg_img)
+    append_page(safe_name, cover_img)
+    create_title_page(safe_name, words_json, background_image=bg_img)
 
     # Step 3: puzzles
     fails = create_all_puzzles(words_json, pz_bg, output_folder)
@@ -93,7 +108,7 @@ async def generate_puzzle(req: GenerateRequest):
         create_individual_puzzle(fails, words_json, output_folder, background_image=pz_bg)
 
     # Step 4: append to PDF
-    append_puzzle_page(f"{req.name}.pdf", output_folder, background_image=pz_bg)
+    append_puzzle_page(f"{safe_name}.pdf", output_folder, background_image=pz_bg)
 
     # Stream PDF back
     if not os.path.exists(pdf_path):
@@ -103,7 +118,7 @@ async def generate_puzzle(req: GenerateRequest):
         response = FileResponse(
             path=pdf_path,
             media_type='application/octet-stream',
-            filename=f"{req.name}.pdf",
+            filename=f"{safe_name}.pdf",
             background=BackgroundTask(os.remove, pdf_path),
         )
     finally:
