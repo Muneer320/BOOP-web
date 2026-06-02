@@ -13,11 +13,10 @@ const PuzzleCreator = () => {
   const [step, setStep] = useState(1);
   const [settings, setSettings] = useState(null);
   const [topics, setTopics] = useState([]);
-  const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { isGenerating, generatedFile, generatePuzzle: contextGenerate, completeGeneration } = useGeneration();
+  const { isGenerating, generatedFile, generationDuration, generatePuzzle: contextGenerate, completeGeneration } = useGeneration();
 
   const [formData, setFormData] = useState({
     name: "My Word Search",
@@ -36,16 +35,14 @@ const PuzzleCreator = () => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [settingsResponse, topicsResponse, templatesResponse] =
+        const [settingsResponse, topicsResponse] =
           await Promise.all([
             apiService.getSettings(),
             apiService.getTopics(),
-            apiService.getTemplates(),
           ]);
 
         setSettings(settingsResponse.data);
         setTopics(topicsResponse.data.topics);
-        setTemplates(templatesResponse.data.templates);
         setError(null);
       } catch (err) {
         setError("Failed to load required data. Please try again.");
@@ -394,7 +391,10 @@ const PuzzleCreator = () => {
                   <path className="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
                 </svg>
               </div>
-              <h3 className="success-heading">Puzzle Book Generated!</h3>
+              <h3 className="success-heading">Book Ready</h3>
+              {generationDuration != null && (
+                <p className="pg-gen-time">Generated in {Math.floor(generationDuration / 60)}:{String(generationDuration % 60).padStart(2, "0")}</p>
+              )}
               <p className="success-description">
                 <strong>{formData.name}</strong> with {(formData.normal || 0) + (formData.hard || 0) + (formData.bonus_normal || 0) + (formData.bonus_hard || 0)} puzzles is ready to download.
               </p>
