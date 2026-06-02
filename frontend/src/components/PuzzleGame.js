@@ -914,6 +914,11 @@ const PuzzleGame = () => {
       {screen === "start" && renderStart()}
       {screen === "play" && renderPlay()}
       {screen === "complete" && renderComplete()}
+      {showConfirmQuit && renderConfirm(
+        "Quit current game and start a new one?",
+        confirmNewGame,
+        () => setShowConfirmQuit(false)
+      )}
     </div>
   );
 };

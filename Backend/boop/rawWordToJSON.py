@@ -29,25 +29,22 @@ def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_n
             result_list.append(sample)
             return pool, result_list
 
-        normal_needed = num_normal + bonus_normal
-        hard_needed = num_hard + bonus_hard
+    normal_needed = num_normal + bonus_normal
+    hard_needed = num_hard + bonus_hard
 
+    if normal_needed > 0:
+        if len(normal_pool) < normal_needed:
+            raise ValueError(f"Topic '{topic}' has only {len(normal_pool)} normal-length words (4-11 letters), needs at least {normal_needed} for {normal_needed} puzzle(s).")
+        normal_w_count = max(1, min(10, len(normal_pool) // normal_needed))
+    else:
         normal_w_count = 10
+
+    if hard_needed > 0:
+        if len(hard_pool) < hard_needed:
+            raise ValueError(f"Topic '{topic}' has only {len(hard_pool)} hard-length words (6-15 letters), needs at least {hard_needed} for {hard_needed} puzzle(s).")
+        hard_w_count = max(1, min(15, len(hard_pool) // hard_needed))
+    else:
         hard_w_count = 15
-
-        if normal_needed > 0:
-            normal_w_count = min(normal_w_count, len(normal_pool) // normal_needed)
-            if normal_w_count < 3:
-                normal_w_count = min(3, len(normal_pool))
-                if normal_w_count == 0:
-                    raise ValueError(f"Topic '{topic}' has no normal-length words (4-11 letters) for {normal_needed} puzzle(s).")
-
-        if hard_needed > 0:
-            hard_w_count = min(hard_w_count, len(hard_pool) // hard_needed) if hard_needed > 0 else 0
-            if hard_w_count < 3:
-                hard_w_count = min(3, len(hard_pool))
-                if hard_w_count == 0:
-                    hard_w_count = 0
 
         topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
         for _ in range(num_normal):

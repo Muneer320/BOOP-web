@@ -122,11 +122,14 @@ async def generate_puzzle(req: GenerateRequest, request: Request, session_id: st
             progress_store[session_id] = {"step": "error", "detail": "Generation failed", "done": True}
         raise
     except Exception as e:
+        import traceback
+        print(f"[generate-puzzle] ERROR: {e}")
+        traceback.print_exc()
         shutil.rmtree(work_dir, ignore_errors=True)
         os.chdir(old_cwd)
         if session_id:
-            progress_store[session_id] = {"step": "error", "detail": "Generation failed", "done": True}
-        raise HTTPException(500, "An internal error occurred during puzzle generation.") from e
+            progress_store[session_id] = {"step": "error", "detail": f"Generation failed: {e}", "done": True}
+        raise HTTPException(500, f"An internal error occurred during puzzle generation: {e}") from e
 
 @router.get("/generation-progress/{session_id}")
 def get_progress(session_id: str):
