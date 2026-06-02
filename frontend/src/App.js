@@ -1,5 +1,6 @@
 import React, { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import "./App.css";
 import { apiService } from "./services/api";
 
@@ -26,6 +27,7 @@ function App() {
   }, []);
 
   return (
+    <HelmetProvider>
     <ThemeProvider>
     <GenerationProvider>
       <Router>
@@ -54,6 +56,7 @@ function App() {
       </Router>
     </GenerationProvider>
     </ThemeProvider>
+    </HelmetProvider>
   );
 }
 
