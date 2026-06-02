@@ -6,22 +6,10 @@
 
 .main-content {
   flex: 1;
-  padding-top: 1rem;
-  animation: pageFadeIn 0.35s ease;
+  padding-top: 1.5rem;
+  animation: pageFadeIn 0.4s ease;
 }
 
-@keyframes pageFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Styling for loading indicators */
 .loading-indicator {
   display: flex;
   align-items: center;
@@ -30,22 +18,20 @@
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: 3px solid var(--border-color);
   border-radius: 50%;
   border-top-color: var(--primary);
-  animation: spinner 1s ease-in-out infinite;
+  animation: spinner 0.8s linear infinite;
 }
 
 @keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--gray-light) 25%, var(--bg-primary) 50%, var(--gray-light) 75%);
+  background: linear-gradient(90deg, var(--gray-light) 25%, var(--card-bg) 50%, var(--gray-light) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -60,27 +46,25 @@
   margin-bottom: 1.5rem;
 }
 
-/* Common Utility Classes */
-.text-center {
-  text-align: center;
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
-.mb-1 {
-  margin-bottom: 0.5rem;
-}
-.mb-2 {
-  margin-bottom: 1rem;
-}
-.mb-3 {
-  margin-bottom: 1.5rem;
-}
-.mb-4 {
-  margin-bottom: 2rem;
-}
-
-/* Legal Page Styles */
+/* Legal page */
 .legal-page {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg-secondary);
 }
 
@@ -89,7 +73,7 @@
   margin: 2rem auto;
   padding: 2rem;
   background: var(--card-bg);
-  border-radius: 8px;
+  border: 2px solid var(--border-color);
   box-shadow: var(--shadow);
   transition: background-color 0.2s;
 }
@@ -99,8 +83,9 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 3px double var(--border-color);
   padding-bottom: 1rem;
+  font-family: var(--font-heading);
 }
 
 .legal-content .legal-h2 {
@@ -109,6 +94,7 @@
   margin-top: 2rem;
   margin-bottom: 1rem;
   color: var(--text-primary);
+  font-family: var(--font-heading);
 }
 
 .legal-content .legal-h3 {
@@ -117,6 +103,7 @@
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
   color: var(--text-primary);
+  font-family: var(--font-heading);
 }
 
 .legal-content .legal-h4 {
@@ -125,6 +112,7 @@
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
   color: var(--text-primary);
+  font-family: var(--font-heading);
 }
 
 .legal-content .legal-p {
@@ -147,7 +135,8 @@
 
 .legal-content .legal-link {
   color: var(--primary);
-  text-decoration: none;
+  text-decoration: underline wavy;
+  text-underline-offset: 2px;
 }
 
 .legal-content .legal-link:hover {
@@ -157,25 +146,6 @@
 
 .legal-content .legal-spacer {
   height: 1rem;
-}
-
-.mt-1 {
-  margin-top: 0.5rem;
-}
-.mt-2 {
-  margin-top: 1rem;
-}
-.mt-3 {
-  margin-top: 1.5rem;
-}
-.mt-4 {
-  margin-top: 2rem;
-}
-
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
 }
 
 /* 404 page */
@@ -192,6 +162,7 @@
 .not-found-page h1 {
   font-size: 5rem;
   font-weight: 800;
+  font-family: var(--font-heading);
   color: var(--primary);
   margin: 0;
   line-height: 1;
@@ -201,6 +172,7 @@
   font-size: 1.5rem;
   color: var(--text-primary);
   margin: 1rem 0;
+  font-family: var(--font-heading);
 }
 
 .not-found-page p {
@@ -208,26 +180,6 @@
   margin-bottom: 2rem;
 }
 
-.not-found-page .btn {
-  margin: 0 0.25rem;
-}
-
-/* Alert */
-.alert {
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.alert-danger {
-  background: var(--bg-secondary);
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
 @media (max-width: 640px) {
-  .not-found-page h1 {
-    font-size: 3.5rem;
-  }
+  .not-found-page h1 { font-size: 3.5rem; }
 }
