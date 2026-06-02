@@ -15,8 +15,9 @@ const Home = () => {
             </h1>
             <p className="hero-description">
               Create custom word search puzzle books for education, events, or
-              just for fun. Choose from preset topics, add your own words, and
-              download a print-ready PDF &mdash; all from your browser.
+              just for fun &mdash; or jump straight in and play online right now.
+              Choose from preset topics, add your own words, and either generate a
+              print-ready PDF, or solve it on the go.
             </p>
             <div className="hero-buttons">
               <Link to="/create" className="btn btn-primary btn-lg">
@@ -83,8 +84,8 @@ const Home = () => {
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               </div>
-              <h3>3 Difficulty Levels</h3>
-              <p>Normal, Hard, and Bonus circular puzzles with adjustable counts per mode.</p>
+              <h3>6 Difficulty Levels</h3>
+              <p>Easy through Nightmare, plus Bonus circular grids. Play online or add to your book.</p>
             </div>
 
             <div className="feature-card">
@@ -111,6 +112,16 @@ const Home = () => {
               </div>
               <h3>PDF Export</h3>
               <p>Download a print-ready PDF including puzzles, solutions, and a table of contents.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M8 12h8M12 8v8" />
+                </svg>
+              </div>
+              <h3>Play Online</h3>
+              <p>Solve puzzles directly in your browser with timer, hints, touch support, and shareable results.</p>
             </div>
           </div>
         </div>
@@ -147,7 +158,7 @@ const Home = () => {
             <div className="step">
               <div className="step-circle">4</div>
               <h3>Download</h3>
-              <p>Generate and download your complete puzzle book as a PDF.</p>
+              <p>Generate and download your complete puzzle book as a PDF, or play it online instantly.</p>
             </div>
           </div>
           <div className="cta-container">
