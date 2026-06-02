@@ -53,58 +53,112 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* Progress steps */
+/* Slot-machine progress steps */
 .progress-steps {
   width: 100%;
-  text-align: left;
+  perspective: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 240px;
+  overflow: hidden;
 }
 
 .progress-step-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
   font-family: var(--font-mono);
   color: var(--text-secondary);
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+  border-radius: 4px;
+}
+
+/* Completed steps - above, smaller, dimmer */
+.progress-step-item.done {
+  color: var(--success);
   opacity: 0.5;
-  transition: all 0.3s ease;
-  animation: stepSlideIn 0.35s ease forwards;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  filter: blur(0.3px);
+  transform: translateY(0) scale(0.85);
 }
 
-@keyframes stepSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
+/* Active step - center, pops out */
 .progress-step-item.active {
   color: var(--text-primary);
   opacity: 1;
+  font-size: 0.95rem;
   font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  background: rgba(58, 107, 53, 0.06);
+  border: 1px solid var(--primary);
+  box-shadow:
+    0 4px 14px rgba(58, 107, 53, 0.25),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  transform: translateY(0) scale(1.05);
+  filter: none;
+  z-index: 2;
+  position: relative;
 }
 
-.progress-step-item.done {
-  color: var(--success);
-  opacity: 0.8;
-  text-decoration: line-through;
+/* Future steps - below, smaller, dimmer */
+.progress-step-item:not(.done):not(.active) {
+  opacity: 0.3;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  filter: blur(0.5px);
+  transform: translateY(0) scale(0.85);
+}
+
+/* Slide-in for new steps */
+@keyframes stepSlideIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.8); }
+  to { opacity: inherit; transform: translateY(0) scale(var(--step-scale, 1)); }
+}
+
+/* Entry animation for each step */
+.progress-step-item {
+  animation: stepSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Transitions between states */
+.progress-step-item.done .progress-step-icon,
+.progress-step-item.active .progress-step-icon {
+  transition: transform 0.3s ease;
+}
+
+.progress-step-item.active .progress-step-icon {
+  transform: scale(1.2);
 }
 
 .progress-step-icon {
-  width: 20px;
+  width: 22px;
   text-align: center;
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .progress-step-label {
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .progress-step-detail {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   margin-left: auto;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 .loading-error {
