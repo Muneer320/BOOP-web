@@ -58,19 +58,6 @@ const PuzzleGame = () => {
     }).catch(() => {});
   }, []);
 
-  /* ---- Fetch topic words lazily ---- */
-  const ensureTopicWords = useCallback(async (topic) => {
-    if (topicWordMap[topic]) return;
-    setLoadingTopics(true);
-    try {
-      const r = await apiService.getTopicWords(topic);
-      setTopicWordMap(prev => ({ ...prev, [topic]: r.data.words || [] }));
-    } catch {
-      setTopicWordMap(prev => ({ ...prev, [topic]: [] }));
-    }
-    setLoadingTopics(false);
-  }, [topicWordMap]);
-
   const selectTopic = useCallback(async (topic) => {
     if (activeTopic === topic) {
       setActiveTopic(null);
