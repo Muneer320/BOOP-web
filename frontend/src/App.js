@@ -1,20 +1,19 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import { apiService } from "./services/api";
 
-// Components
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Home from "./components/Home";
-import PuzzleCreator from "./components/PuzzleCreator";
-import About from "./components/About";
 import GenerationStatus from "./components/GenerationStatus";
-import PrivacyPolicy from './components/pages/PrivacyPolicy';
-import TermsOfService from './components/pages/TermsOfService';
 
-// Context
 import { GenerationProvider } from "./context/GenerationContext";
+
+const Home = lazy(() => import("./components/Home"));
+const PuzzleCreator = lazy(() => import("./components/PuzzleCreator"));
+const About = lazy(() => import("./components/About"));
+const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
 
 function App() {
   useEffect(() => {
@@ -29,13 +28,19 @@ function App() {
         <div className="app-wrapper">
           <Header />
           <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/create" element={<PuzzleCreator />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="loading-indicator">
+                <div className="spinner"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/create" element={<PuzzleCreator />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+              </Routes>
+            </Suspense>
           </main>
           <Footer />
           <GenerationStatus />
