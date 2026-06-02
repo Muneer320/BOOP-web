@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { apiService } from "../services/api";
 import { useGamePersistence } from "../hooks/useGamePersistence";
 import useTimer from "../hooks/useTimer";
@@ -38,14 +38,11 @@ const PuzzleGame = () => {
   /* ---- Config State (start screen + modify panel) ---- */
   const [modeId, setModeId] = useState("normal");
   const [wordSource, setWordSource] = useState("preset"); // preset | manual | file
-  const [customWords] = useState("");
   const [wordChips, setWordChips] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [selectedTopic] = useState("");
-  const [addedWords, setAddedWords] = useState([]);
-  const [removedWords, setRemovedWords] = useState([]);
+  const [activeTopic, setActiveTopic] = useState(null);
+  const [topicExcludedWords, setTopicExcludedWords] = useState([]);
   const [loadingTopics, setLoadingTopics] = useState(false);
-  const [expandedTopics, setExpandedTopics] = useState({});
   const [topicWordMap, setTopicWordMap] = useState({});
   const [manualInput, setManualInput] = useState("");
 
@@ -74,25 +71,44 @@ const PuzzleGame = () => {
     setLoadingTopics(false);
   }, [topicWordMap]);
 
-  const toggleTopic = useCallback((topic) => {
-    setExpandedTopics(prev => {
-      const next = { ...prev };
-      if (next[topic]) { delete next[topic]; }
-      else { next[topic] = true; ensureTopicWords(topic); }
-      return next;
-    });
-  }, [ensureTopicWords]);
-
-  /* ---- Compute final word list ---- */
-  const computeWords = useCallback(() => {
-    if (wordSource === "preset") {
-      const allTopicWords = Object.values(topicWordMap).flat();
-      const base = allTopicWords.filter(w => !removedWords.includes(w));
-      return [...base, ...addedWords];
+  const selectTopic = useCallback(async (topic) => {
+    if (activeTopic === topic) {
+      setActiveTopic(null);
+      setTopicExcludedWords([]);
+      return;
     }
+    setActiveTopic(topic);
+    setTopicExcludedWords([]);
+    if (!topicWordMap[topic]) {
+      setLoadingTopics(true);
+      try {
+        const r = await apiService.getTopicWords(topic);
+        setTopicWordMap(prev => ({ ...prev, [topic]: r.data.words || [] }));
+      } catch {
+        setTopicWordMap(prev => ({ ...prev, [topic]: [] }));
+      }
+      setLoadingTopics(false);
+    }
+  }, [activeTopic, topicWordMap]);
+
+  /* ---- Words of the active topic (minus excluded) ---- */
+  const topicSelectedWords = useMemo(() => {
+    if (!activeTopic || !topicWordMap[activeTopic]) return [];
+    return topicWordMap[activeTopic].filter(w => !topicExcludedWords.includes(w));
+  }, [activeTopic, topicWordMap, topicExcludedWords]);
+
+  const toggleExcludeWord = useCallback((word) => {
+    setTopicExcludedWords(prev =>
+      prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]
+    );
+  }, []);
+
+  /* ---- Compute final word list for the puzzle ---- */
+  const computeWords = useCallback(() => {
+    if (wordSource === "preset") return topicSelectedWords;
     if (wordSource === "manual") return wordChips;
     return [];
-  }, [wordSource, topicWordMap, removedWords, addedWords, wordChips]);
+  }, [wordSource, topicSelectedWords, wordChips]);
 
   /* ---- Generate puzzle ---- */
   const generatePuzzle = useCallback(async (words, timerOn) => {
@@ -108,24 +124,24 @@ const PuzzleGame = () => {
       setDragCells([]);
       setScreen("play");
       if (timerOn) timer.start();
-      saveGame({ gameId: gameId.current, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords });
+      saveGame({ gameId: gameId.current, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, wordChips });
     } catch (err) {
       setError(err.response?.data?.detail || "Could not generate puzzle. Try different words.");
     } finally {
       setLoading(false);
     }
-  }, [modeId, saveGame, timer, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords]);
+  }, [modeId, saveGame, timer, wordSource, wordChips]);
 
   /* ---- Start game ---- */
   const handleStart = useCallback(async () => {
-    const words = computeWords();
+    let words = computeWords();
     if (words.length < mode.minW) {
       setError(`Need at least ${mode.minW} words. Selected ${words.length}. Try a different topic or add words.`);
       return;
     }
     if (words.length > mode.maxW) {
-      setError(`Maximum ${mode.maxW} words. Remove ${words.length - mode.maxW} words first.`);
-      return;
+      const shuffled = [...words].sort(() => Math.random() - 0.5);
+      words = shuffled.slice(0, mode.maxW);
     }
     gameId.current = `game_${Date.now()}`;
     await generatePuzzle(words, timerEnabled);
@@ -151,9 +167,9 @@ const PuzzleGame = () => {
   /* ---- Persist progress ---- */
   useEffect(() => {
     if (screen === "play" && puzzle) {
-      saveGame({ gameId: gameId.current, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords, words: puzzle.words });
+      saveGame({ gameId: gameId.current, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words });
     }
-  }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, selectedTopic, addedWords, removedWords, wordChips, customWords]);
+  }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips]);
 
   /* ---- Cell helpers ---- */
   const inFound = useCallback((r, c) => {
@@ -349,15 +365,6 @@ const PuzzleGame = () => {
     setPaused(false);
   }, [timer]);
 
-  /* ---- Remove word from preset ---- */
-  const toggleRemoveWord = useCallback((word) => {
-    setRemovedWords(prev => prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]);
-  }, []);
-
-  const toggleAddWord = useCallback((word) => {
-    setAddedWords(prev => prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]);
-  }, []);
-
   /* ---- File upload ---- */
   const handleFileUpload = useCallback(async (e) => {
     const file = e.target.files[0];
@@ -373,34 +380,36 @@ const PuzzleGame = () => {
   /* ---- Topic card helper ---- */
   const renderTopicCard = useCallback((topic) => {
     const words = topicWordMap[topic] || [];
-    const isExpanded = !!expandedTopics[topic];
+    const isActive = activeTopic === topic;
     const wordCount = words.length;
-    const addedCount = words.filter(w => addedWords.includes(w)).length;
-    const removedCount = words.filter(w => removedWords.includes(w)).length;
+    const selectedCount = words.filter(w => !topicExcludedWords.includes(w)).length;
     return (
-      <div key={topic} className={`pg-topic-card${isExpanded ? " expanded" : ""}${wordCount > 0 && addedCount === wordCount - removedCount ? " all-selected" : ""}`}>
-        <div className="pg-topic-header" onClick={() => toggleTopic(topic)}>
+      <div key={topic} className={`pg-topic-card${isActive ? " expanded active" : ""}${isActive && wordCount > 0 && selectedCount === wordCount ? " all-selected" : ""}`}>
+        <div className="pg-topic-header" onClick={() => selectTopic(topic)}>
           <span className="pg-topic-name">{topic}</span>
           <span className="pg-topic-meta">
-            {wordCount > 0 && `${addedCount > 0 ? addedCount + '/' : ''}${wordCount}`} words
+            {wordCount > 0 && `${isActive ? selectedCount + '/' : ''}${wordCount}`} words
           </span>
-          <span className="pg-topic-arrow">{isExpanded ? "\u25BC" : "\u25B6"}</span>
+          <span className="pg-topic-arrow">{isActive ? "\u25BC" : "\u25B6"}</span>
         </div>
-        {isExpanded && wordCount > 0 && (
+        {isActive && wordCount > 0 && (
           <div className="pg-topic-words">
-            {words.map(w => (
-              <span key={w}
-                className={`pg-word-tag${addedWords.includes(w) ? " added" : ""}${removedWords.includes(w) ? " removed" : ""}`}
-                onClick={() => removedWords.includes(w) ? toggleRemoveWord(w) : toggleAddWord(w)}>
-                {w}
-                <span className="pg-tag-action">{addedWords.includes(w) ? "\u2713" : "+"}</span>
-              </span>
-            ))}
+            {words.map(w => {
+              const excluded = topicExcludedWords.includes(w);
+              return (
+                <span key={w}
+                  className={`pg-word-tag${excluded ? " removed" : " added"}`}
+                  onClick={() => toggleExcludeWord(w)}>
+                  {w}
+                  <span className="pg-tag-action">{excluded ? "+" : "\u2713"}</span>
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
     );
-  }, [topicWordMap, expandedTopics, addedWords, removedWords, toggleTopic, toggleAddWord, toggleRemoveWord]);
+  }, [topicWordMap, activeTopic, topicExcludedWords, selectTopic, toggleExcludeWord]);
 
   /* ======== RENDER: START SCREEN ======== */
   const renderStart = () => (
@@ -440,9 +449,10 @@ const PuzzleGame = () => {
               {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
                 renderTopicCard(topic)
               )}
-              {(addedWords.length > 0 || removedWords.length > 0) && (
+              {activeTopic && (
                 <p className="pg-word-count-total">
-                  {computeWords().length} words selected (min {mode.minW}, max {mode.maxW})
+                  {topicSelectedWords.length} word{topicSelectedWords.length !== 1 ? "s" : ""} selected
+                  {topicSelectedWords.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
                 </p>
               )}
             </div>
@@ -539,7 +549,8 @@ const PuzzleGame = () => {
                   const isCircle = puzzle.mask === "circle";
                   const center = (puzzle.grid_size - 1) / 2;
                   const inCircle = !isCircle || Math.hypot(ri - center, ci - center) <= center;
-                  if (isCircle && !inCircle) return <div key={`${ri}-${ci}`} className="pg-cell pg-cell-hidden" />;
+                  const isEmpty = !cell || cell === " " || cell === "";
+                  if (isCircle && !inCircle && isEmpty) return <div key={`${ri}-${ci}`} className="pg-cell pg-cell-hidden" />;
                   const found = inFound(ri, ci);
                   const sel = isSelected(ri, ci);
                   const hl = isHighlighted(ri, ci);
