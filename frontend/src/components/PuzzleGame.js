@@ -228,6 +228,17 @@ const PuzzleGame = () => {
     }
   }, [puzzle, foundWords, getDirection, timer]);
 
+  /* ---- Click/tap handling ---- */
+  const handleCellClick = useCallback((r, c) => {
+    if (!puzzle || paused || screen !== "play") return;
+    setSelectedCells(prev => {
+      if (prev.length === 0) return [[r, c]];
+      if (prev[0][0] === r && prev[0][1] === c) return [];
+      attemptWord(prev[0], [r, c]);
+      return [];
+    });
+  }, [puzzle, paused, screen, attemptWord]);
+
   /* ---- Keyboard navigation ---- */
   const handleCellKeyDown = useCallback((e, r, c) => {
     if (!puzzle || paused || screen !== "play") return;
@@ -244,17 +255,6 @@ const PuzzleGame = () => {
         break;
     }
   }, [puzzle, paused, screen, handleCellClick]);
-
-  /* ---- Click/tap handling ---- */
-  const handleCellClick = useCallback((r, c) => {
-    if (!puzzle || paused || screen !== "play") return;
-    setSelectedCells(prev => {
-      if (prev.length === 0) return [[r, c]];
-      if (prev[0][0] === r && prev[0][1] === c) return [];
-      attemptWord(prev[0], [r, c]);
-      return [];
-    });
-  }, [puzzle, paused, screen, attemptWord]);
 
   /* ---- Drag handling ---- */
   const dragCellsRef = useRef([]);
