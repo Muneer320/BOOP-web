@@ -34,6 +34,7 @@ const PuzzleGame = () => {
   const [showConfirmNew, setShowConfirmNew] = useState(false);
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
+  const [gameId, setGameId] = useState(null);
 
   /* ---- Config State (start screen + modify panel) ---- */
   const [modeId, setModeId] = useState("normal");
@@ -47,8 +48,7 @@ const PuzzleGame = () => {
   const [manualInput, setManualInput] = useState("");
 
   const mode = MODES.find(m => m.id === modeId) || MODES[1];
-  const gameId = useRef(`game_${Date.now()}`);
-  const timer = useTimer(gameId.current);
+  const timer = useTimer();
   const gridRef = useRef(null);
 
   /* ---- Load topics on mount ---- */
@@ -99,6 +99,8 @@ const PuzzleGame = () => {
 
   /* ---- Generate puzzle ---- */
   const generatePuzzle = useCallback(async (words, timerOn) => {
+    const id = `game_${Date.now()}`;
+    setGameId(id);
     setLoading(true);
     setError(null);
     try {
@@ -110,8 +112,8 @@ const PuzzleGame = () => {
       setSelectedCells([]);
       setDragCells([]);
       setScreen("play");
-      if (timerOn) timer.start();
-      saveGame({ gameId: gameId.current, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, wordChips });
+      if (timerOn) timer.start(id);
+      saveGame({ gameId: id, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, wordChips });
     } catch (err) {
       setError(err.response?.data?.detail || "Could not generate puzzle. Try different words.");
     } finally {
@@ -130,7 +132,6 @@ const PuzzleGame = () => {
       const shuffled = [...words].sort(() => Math.random() - 0.5);
       words = shuffled.slice(0, mode.maxW);
     }
-    gameId.current = `game_${Date.now()}`;
     await generatePuzzle(words, timerEnabled);
   }, [computeWords, mode, generatePuzzle, timerEnabled]);
 
@@ -142,8 +143,8 @@ const PuzzleGame = () => {
       setFoundWords(saved.foundWords || {});
       setModeId(saved.mode || "normal");
       setTimerEnabled(saved.timerEnabled !== false);
-      gameId.current = saved.gameId || `game_${Date.now()}`;
-      const restored = timer.restore();
+      setGameId(saved.gameId || null);
+      const restored = timer.restore(saved.gameId);
       if (restored || saved.screen === "complete") {
         setScreen("play");
       }
@@ -154,7 +155,7 @@ const PuzzleGame = () => {
   /* ---- Persist progress ---- */
   useEffect(() => {
     if (screen === "play" && puzzle) {
-      saveGame({ gameId: gameId.current, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words });
+      saveGame({ gameId, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words });
     }
   }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips]);
 

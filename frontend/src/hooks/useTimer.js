@@ -2,27 +2,23 @@ import { useState, useRef, useCallback, useEffect } from "react";
 
 const STORAGE_KEY_PREFIX = "boop_timer_";
 
-export default function useTimer(gameId) {
+const keyFor = (gameId) => STORAGE_KEY_PREFIX + gameId;
+
+export default function useTimer() {
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const startRef = useRef(null);
   const pausedElapsedRef = useRef(0);
   const intervalRef = useRef(null);
-  const storageKey = STORAGE_KEY_PREFIX + gameId;
+  const gameIdRef = useRef(null);
 
   const saveState = useCallback((state) => {
+    if (!gameIdRef.current) return;
     try {
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      localStorage.setItem(keyFor(gameIdRef.current), JSON.stringify(state));
     } catch { /* quota exceeded */ }
-  }, [storageKey]);
-
-  const loadState = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  }, [storageKey]);
+  }, []);
 
   const tick = useCallback(() => {
     if (!startRef.current) return;
@@ -33,7 +29,8 @@ export default function useTimer(gameId) {
     saveState({ startTime: now, pausedElapsed: pausedElapsedRef.current, running: true, paused: false });
   }, [saveState]);
 
-  const start = useCallback(() => {
+  const start = useCallback((gameId) => {
+    gameIdRef.current = gameId;
     pausedElapsedRef.current = 0;
     startRef.current = Date.now();
     setRunning(true);
@@ -74,11 +71,19 @@ export default function useTimer(gameId) {
     setRunning(false);
     setPaused(false);
     setElapsed(pausedElapsedRef.current);
-    localStorage.removeItem(storageKey);
-  }, [paused, storageKey]);
+    if (gameIdRef.current) localStorage.removeItem(keyFor(gameIdRef.current));
+    gameIdRef.current = null;
+  }, [paused]);
 
-  const restore = useCallback(() => {
-    const saved = loadState();
+  const restore = useCallback((gameId) => {
+    if (!gameId) return false;
+    gameIdRef.current = gameId;
+    const saved = (() => {
+      try {
+        const raw = localStorage.getItem(keyFor(gameId));
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    })();
     if (!saved || !saved.running) return false;
     pausedElapsedRef.current = saved.pausedElapsed || 0;
     if (saved.paused) {
@@ -95,7 +100,7 @@ export default function useTimer(gameId) {
       intervalRef.current = setInterval(tick, 200);
     }
     return true;
-  }, [loadState, tick]);
+  }, [tick]);
 
   useEffect(() => {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
