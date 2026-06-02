@@ -487,7 +487,7 @@ const PuzzleGame = () => {
     const rowH = 26;
     const wordSectionH = wordRows * rowH + 8;
     const headerH = 64;
-    const footerH = 60;
+    const footerH = 80;
 
     let pH = margin + headerH + 16 + gridPad * 2 + gridInner + 18 + 30 + wordSectionH + 20 + footerH + margin;
 
@@ -517,27 +517,41 @@ const PuzzleGame = () => {
     ctx.fillText(`Mode: ${(puzzle.mode || "custom").charAt(0).toUpperCase() + (puzzle.mode || "custom").slice(1)}`, pW / 2, y);
     y += 28;
 
-    /* Grid area */
-    const gridX = margin + gridPad;
-    const gridY = y + gridPad;
-    ctx.fillStyle = "#1e293b";
+    /* Grid background — clipped to circle for bonus mode */
     const bgX = margin;
     const bgY = y;
     const bgW = gridW;
     const bgH = gridPad * 2 + gridInner;
-    ctx.fillRect(bgX, bgY, bgW, bgH);
-    ctx.strokeStyle = "#334155";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bgX, bgY, bgW, bgH);
-
+    ctx.save();
     const isCircle = puzzle.mask === "circle";
+    if (isCircle) {
+      const cx = bgX + bgW / 2;
+      const cy2 = bgY + bgH / 2;
+      const r = (Math.min(bgW, bgH) - 4) / 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy2, r, 0, Math.PI * 2);
+      ctx.clip();
+    }
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(bgX, bgY, bgW, bgH);
+    ctx.restore();
+    if (!isCircle) {
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bgX, bgY, bgW, bgH);
+    }
+
+    const gridX = margin + gridPad;
+    const gridY = y + gridPad;
     const center = (gs - 1) / 2;
     for (let r = 0; r < gs; r++) {
       for (let c = 0; c < gs; c++) {
-        if (isCircle && Math.hypot(r - center, c - center) > center) continue;
+        const isOut = isCircle && Math.hypot(r - center, c - center) > center;
+        const letter = puzzle.grid[r][c];
+        const isEmpty = !letter || letter === " " || letter === "";
+        if (isOut && isEmpty) continue;
         const x = gridX + c * (cellPx + gap);
         const cy = gridY + r * (cellPx + gap);
-        const letter = puzzle.grid[r][c];
         const found = foundSetRef.current.has(`${r},${c}`);
         if (found) {
           const wordKey = Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === r && fc === c));
@@ -546,13 +560,7 @@ const PuzzleGame = () => {
         } else {
           ctx.fillStyle = "#2a2a2a";
         }
-        if (isCircle) {
-          ctx.beginPath();
-          ctx.arc(x + cellPx / 2, cy + cellPx / 2, cellPx / 2, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(x, cy, cellPx, cellPx);
-        }
+        ctx.fillRect(x, cy, cellPx, cellPx);
         ctx.fillStyle = found ? "#ffffff" : "#94a3b8";
         ctx.font = `bold ${Math.floor(cellPx * 0.52)}px sans-serif`;
         ctx.textAlign = "center";
@@ -597,9 +605,22 @@ const PuzzleGame = () => {
     const timeStr = timer?.formatTime || "00:00";
     ctx.fillText(`Time: ${timeStr}`, pW / 2, y);
     y += 26;
+    const url = "https://boop-web.vercel.app/";
+    ctx.textBaseline = "top";
+    ctx.font = "14px sans-serif";
+    const boldPart = "boop-web";
+    const before = url.slice(0, url.indexOf(boldPart));
+    const after = url.slice(url.indexOf(boldPart) + boldPart.length);
+    const beforeW = ctx.measureText(before).width;
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(before, pW / 2 - beforeW, y);
+    ctx.fillStyle = "#fdfaf4";
+    ctx.font = "bold 14px sans-serif";
+    const boldW = ctx.measureText(boldPart).width;
+    ctx.fillText(boldPart, pW / 2, y);
     ctx.fillStyle = "#94a3b8";
     ctx.font = "14px sans-serif";
-    ctx.fillText("https://boop.app", pW / 2, y);
+    ctx.fillText(after, pW / 2 + boldW, y);
 
     return canvas;
   }, [puzzle, foundWords, timer]);
