@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { apiService } from "../services/api";
 import "./FileUploader.css";
 
@@ -16,15 +16,17 @@ const FileUploader = ({
   const [isUploaded, setIsUploaded] = useState(false);
   const [useDefault, setUseDefault] = useState(hasDefaultOption);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const onFileUploadedRef = useRef(onFileUploaded);
+  useEffect(() => { onFileUploadedRef.current = onFileUploaded; });
 
   useEffect(() => {
     if (useDefault) {
-      onFileUploaded(null);
+      onFileUploadedRef.current(null);
       setFileName(defaultFile);
       setIsUploaded(true);
       setPreviewUrl(null);
     }
-  }, [useDefault]);
+  }, [useDefault, defaultFile]);
 
   useEffect(() => {
     return () => {
