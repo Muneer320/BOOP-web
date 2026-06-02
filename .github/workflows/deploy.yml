@@ -21,8 +21,9 @@ jobs:
 
       - name: Sync Backend files into Space
         run: |
-          rsync -a --delete --exclude=.git Backend/ ./hf-space/
+          rsync -a --delete --exclude=.git --exclude=venv --exclude=__pycache__ --exclude=.DS_Store --exclude=uploads --exclude=outputs Backend/ ./hf-space/
           cp .github/HF_README.md ./hf-space/README.md
+          cp .github/HF_gitattributes ./hf-space/.gitattributes
 
       - name: Commit and push to Hugging Face
         run: |
