@@ -7,6 +7,18 @@
 .main-content {
   flex: 1;
   padding-top: 1rem;
+  animation: pageFadeIn 0.35s ease;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Styling for loading indicators */
