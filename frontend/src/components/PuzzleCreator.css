@@ -146,11 +146,6 @@
   flex-wrap: wrap;
 }
 
-.btn-lg {
-  padding: 0.75rem 2rem;
-  font-size: 1.125rem;
-}
-
 .card {
   position: relative;
   overflow: hidden;
