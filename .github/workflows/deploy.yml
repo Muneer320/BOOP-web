@@ -20,7 +20,9 @@ jobs:
           python-version: '3.9'
           
       - name: Install Hugging Face CLI
-        run: pip install huggingface_hub
+        run: |
+          pip install huggingface_hub
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
         
       - name: Login to Hugging Face
         run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
