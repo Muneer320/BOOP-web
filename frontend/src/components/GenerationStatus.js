@@ -10,7 +10,7 @@ const GenerationStatus = () => {
     if (!generationStarted) return;
     const timer = setInterval(() => {
       const duration = Math.floor((new Date() - new Date(generationStarted)) / 1000);
-      setDurationText(duration < 60 ? `${duration}s` : `${Math.floor(duration / 60)}m ${duration % 60}s`);
+      setDurationText(duration < 60 ? `${duration} seconds` : `${Math.floor(duration / 60)} min ${duration % 60} sec`);
     }, 1000);
     return () => clearInterval(timer);
   }, [generationStarted]);
@@ -43,8 +43,8 @@ const GenerationStatus = () => {
             </div>
           </div>
           <div className="status-info">
-            <p className="status-title">Generating…</p>
-            <p className="status-subtitle">{durationText || "Starting…"}</p>
+            <p className="status-title">Generating Puzzle Book</p>
+            <p className="status-subtitle">Started {durationText || "just now"}</p>
           </div>
         </div>
       ) : generationError ? (
@@ -61,6 +61,7 @@ const GenerationStatus = () => {
           <div className="status-icon success">&#10003;</div>
           <div className="status-info">
             <p className="status-title">Book Ready!</p>
+            <p className="status-subtitle">Generated in {durationText}</p>
           </div>
           <button className="download-again-btn" onClick={handleDownload}>Download</button>
           <button className="close-status-btn" onClick={resetGeneration}>&times;</button>

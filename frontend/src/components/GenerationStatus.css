@@ -24,6 +24,10 @@
   border-left: 4px solid var(--success);
 }
 
+.generation-status.error {
+  border-left: 4px solid var(--danger);
+}
+
 .status-icon {
   margin-right: 12px;
   width: 40px;
@@ -48,14 +52,16 @@
 
 .status-title {
   margin: 0 0 4px 0;
-  font-weight: 600;
-  color: var(--dark);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
 }
 
 .status-subtitle {
   margin: 0;
-  font-size: 0.85rem;
-  color: var(--gray);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
 }
 
 .close-status-btn {
