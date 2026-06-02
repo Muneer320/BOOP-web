@@ -409,7 +409,32 @@
   transition: color 0.2s;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.2rem;
+}
+
+.pg-word-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pg-hint-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.3rem;
+  line-height: 1;
+  border-radius: 2px;
+  transition: border-color 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.pg-hint-btn:hover:not(:disabled) { border-color: var(--primary); }
+.pg-hint-btn:disabled { opacity: 0.3; cursor: default; }
+
+.pg-full-soln-btn {
+  margin-top: 0.75rem;
+  width: 100%;
 }
 
 .pg-word.found {

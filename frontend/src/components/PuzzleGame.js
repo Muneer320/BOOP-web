@@ -35,6 +35,10 @@ const PuzzleGame = () => {
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
   const [gameId, setGameId] = useState(null);
+  const [hintCooldowns, setHintCooldowns] = useState({});
+  const [hintWord, setHintWord] = useState(null);
+  const [fullSolutionMode, setFullSolutionMode] = useState(null); // null | "confirm" | "done"
+  const gameStartTime = useRef(null);
 
   /* ---- Config State (start screen + modify panel) ---- */
   const [modeId, setModeId] = useState("normal");
@@ -103,6 +107,10 @@ const PuzzleGame = () => {
     setGameId(id);
     setLoading(true);
     setError(null);
+    gameStartTime.current = Date.now();
+    setHintCooldowns({});
+    setHintWord(null);
+    setFullSolutionMode(null);
     try {
       const resp = await apiService.playGenerate(words, modeId);
       const data = resp.data;
@@ -305,6 +313,69 @@ const PuzzleGame = () => {
       removeChip(wordChips[wordChips.length - 1]);
     }
   }, [manualInput, wordChips, mode.maxW, removeChip]);
+
+  /* ---- Hint helpers ---- */
+  const hintWordCell = useCallback((word) => {
+    if (!puzzle) return;
+    const positions = puzzle.words_positions?.[word] || [];
+    if (!positions.length) return;
+    const newFound = { ...foundWords, [word]: positions };
+    setFoundWords(newFound);
+    setHintCooldowns(prev => ({ ...prev, [word]: Date.now() }));
+    setHintWord(null);
+    if (Object.keys(newFound).length === puzzle.words.length) {
+      timer.stop();
+      setScreen("complete");
+    }
+  }, [puzzle, foundWords, timer]);
+
+  const handleRequestHint = useCallback((word) => {
+    const now = Date.now();
+    const elapsed = (now - (gameStartTime.current || now)) / 1000;
+    if (elapsed < 60) return;
+    const lastHint = hintCooldowns[word] || 0;
+    if (now - lastHint < 30000) return;
+    setHintWord(word);
+  }, [hintCooldowns]);
+
+  const handleFullSolution = useCallback(() => {
+    if (!puzzle) return;
+    const now = Date.now();
+    const elapsed = (now - (gameStartTime.current || now)) / 1000;
+    if (elapsed < 120) return;
+    setFullSolutionMode("confirm");
+  }, [puzzle]);
+
+  const confirmFullSolution = useCallback(() => {
+    if (!puzzle || !puzzle.words_positions) return;
+    const newFound = { ...foundWords };
+    for (const word of puzzle.words) {
+      if (!newFound[word] && puzzle.words_positions[word]) {
+        newFound[word] = puzzle.words_positions[word];
+      }
+    }
+    setFoundWords(newFound);
+    setFullSolutionMode("done");
+    timer.stop();
+    setScreen("complete");
+  }, [puzzle, foundWords, timer]);
+
+  const canHintWord = useCallback((word) => {
+    if (foundWords[word]) return false;
+    const now = Date.now();
+    const elapsed = (now - (gameStartTime.current || now)) / 1000;
+    if (elapsed < 60) return false;
+    const lastHint = hintCooldowns[word] || 0;
+    if (now - lastHint < 30000) return false;
+    return true;
+  }, [foundWords, hintCooldowns]);
+
+  const canFullSolution = useCallback(() => {
+    if (!puzzle || fullSolutionMode === "done") return false;
+    const now = Date.now();
+    const elapsed = (now - (gameStartTime.current || now)) / 1000;
+    return elapsed >= 120;
+  }, [puzzle, fullSolutionMode]);
 
   /* ---- Reset to new game ---- */
   const handleNewGame = useCallback(() => {
@@ -565,13 +636,36 @@ const PuzzleGame = () => {
                   <div key={word} className={`pg-word${foundWords[word] ? " found" : ""}`}
                     style={foundWords[word] ? { color: getWordColor(word) } : {}}>
                     <span className="pg-word-bullet">{foundWords[word] ? "\u2713" : "\u25CB"}</span>
-                    {word}
+                    <span className="pg-word-text">{word}</span>
+                    {!foundWords[word] && (
+                      <button className="pg-hint-btn" onClick={() => handleRequestHint(word)}
+                        disabled={!canHintWord(word)}
+                        title={canHintWord(word) ? "Show hint" : "Hint available after 1 min (30s cooldown)"}>
+                        &#128161;
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
+              {canFullSolution() && fullSolutionMode !== "done" && (
+                <button className="btn btn-outline btn-sm pg-full-soln-btn" onClick={handleFullSolution}>
+                  Show Full Solution
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {hintWord && renderConfirm(
+          `Reveal "${hintWord}"? This will count as found.`,
+          () => { hintWordCell(hintWord); },
+          () => setHintWord(null)
+        )}
+        {fullSolutionMode === "confirm" && renderConfirm(
+          "Reveal the entire puzzle solution? All remaining words will be marked as found.",
+          confirmFullSolution,
+          () => setFullSolutionMode(null)
+        )}
       </>
     );
   };
