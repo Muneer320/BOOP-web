@@ -9,6 +9,7 @@ const NotFound = () => (
     <div>
       <Link to="/" className="btn btn-primary">Go Home</Link>
       <Link to="/create" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>Create Puzzle</Link>
+      <Link to="/play" className="btn btn-outline" style={{ marginLeft: "0.5rem" }}>Play Online</Link>
     </div>
   </div>
 );
