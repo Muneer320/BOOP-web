@@ -36,7 +36,6 @@ const PuzzleGame = () => {
   const [timerEnabled, setTimerEnabled] = useState(true);
   const [gameId, setGameId] = useState(null);
   const [focusedCell, setFocusedCell] = useState(null);
-  const [hintCooldowns, setHintCooldowns] = useState({});
   const [hintWord, setHintWord] = useState(null);
   const [fullSolutionMode, setFullSolutionMode] = useState(null); // null | "confirm" | "done"
   const lastGlobalHintRef = useRef(0);
@@ -113,7 +112,6 @@ const PuzzleGame = () => {
     setLoading(true);
     setError(null);
     gameStartTime.current = Date.now();
-    setHintCooldowns({});
     setHintWord(null);
     setFullSolutionMode(null);
     try {
@@ -173,7 +171,7 @@ const PuzzleGame = () => {
     if (screen === "play" && puzzle) {
       saveGame({ gameId, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words, gameStartTime: gameStartTime.current });
     }
-  }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips]);
+  }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips, gameId]);
 
   /* ---- Cell helpers ---- */
   const foundSetRef = useRef(new Set());
@@ -257,6 +255,7 @@ const PuzzleGame = () => {
         e.preventDefault();
         handleCellClick(r, c);
         break;
+      default: break;
     }
   }, [puzzle, paused, screen, handleCellClick]);
 
@@ -392,7 +391,6 @@ const PuzzleGame = () => {
     const newFound = { ...foundWords, [word]: positions };
     setFoundWords(newFound);
     lastGlobalHintRef.current = Date.now();
-    setHintCooldowns(prev => ({ ...prev, [word]: Date.now() }));
     setHintWord(null);
     if (Object.keys(newFound).length === puzzle.words.length) {
       timer.stop();
@@ -467,24 +465,75 @@ const PuzzleGame = () => {
     timer.stop();
   }, [clearGame, timer]);
 
-  /* ---- Download solved grid as PNG ---- */
-  const handleDownloadGrid = useCallback(() => {
-    if (!puzzle) return;
+  /* ---- Poster canvas (grid + word list + stats) ---- */
+  const renderPosterCanvas = useCallback(() => {
+    if (!puzzle) return null;
     const gs = puzzle.grid_size;
-    const cellPx = 28;
-    const gap = 1;
-    const padding = 12;
-    const size = gs * cellPx + (gs - 1) * gap + padding * 2;
+    const cellPx = Math.max(22, Math.min(36, Math.floor(500 / gs)));
+    const gap = 2;
+    const gridPad = 16;
+    const margin = 30;
+    const gridInner = gs * cellPx + (gs - 1) * gap;
+    const gridW = gridInner + gridPad * 2;
+    const pW = gridW + margin * 2;
+
+    const wordList = puzzle.words || puzzle.words || [];
+    const foundWordNames = Object.keys(foundWords);
+    const nFound = foundWordNames.length;
+    const nTotal = wordList.length;
+    const cols = 2;
+    const wordRows = Math.ceil(wordList.length / cols);
+
+    const rowH = 26;
+    const wordSectionH = wordRows * rowH + 8;
+    const headerH = 64;
+    const footerH = 60;
+
+    let pH = margin + headerH + 16 + gridPad * 2 + gridInner + 18 + 30 + wordSectionH + 20 + footerH + margin;
+
     const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = pW;
+    canvas.height = pH;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#1a1a1a";
-    ctx.fillRect(0, 0, size, size);
+
+    /* Background gradient */
+    const grad = ctx.createLinearGradient(0, 0, 0, pH);
+    grad.addColorStop(0, "#16213e");
+    grad.addColorStop(1, "#0f172a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, pW, pH);
+
+    let y = margin;
+
+    /* Title */
+    ctx.fillStyle = "#fdfaf4";
+    ctx.font = "bold 28px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("BOOP - Word Search", pW / 2, y);
+    y += 36;
+    ctx.fillStyle = "#a0aec0";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`Mode: ${(puzzle.mode || "custom").charAt(0).toUpperCase() + (puzzle.mode || "custom").slice(1)}`, pW / 2, y);
+    y += 28;
+
+    /* Grid area */
+    const gridX = margin + gridPad;
+    const gridY = y + gridPad;
+    ctx.fillStyle = "#1e293b";
+    const bgX = margin;
+    const bgY = y;
+    const bgW = gridW;
+    const bgH = gridPad * 2 + gridInner;
+    ctx.fillRect(bgX, bgY, bgW, bgH);
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bgX, bgY, bgW, bgH);
+
     for (let r = 0; r < gs; r++) {
       for (let c = 0; c < gs; c++) {
-        const x = padding + c * (cellPx + gap);
-        const y = padding + r * (cellPx + gap);
+        const x = gridX + c * (cellPx + gap);
+        const cy = gridY + r * (cellPx + gap);
         const letter = puzzle.grid[r][c];
         const found = foundSetRef.current.has(`${r},${c}`);
         if (found) {
@@ -494,59 +543,77 @@ const PuzzleGame = () => {
         } else {
           ctx.fillStyle = "#2a2a2a";
         }
-        ctx.fillRect(x, y, cellPx, cellPx);
-        ctx.fillStyle = "#fdfaf4";
-        ctx.font = `${Math.floor(cellPx * 0.55)}px monospace`;
+        ctx.fillRect(x, cy, cellPx, cellPx);
+        ctx.fillStyle = found ? "#ffffff" : "#94a3b8";
+        ctx.font = `bold ${Math.floor(cellPx * 0.52)}px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(letter, x + cellPx / 2, y + cellPx / 2 + 1);
+        ctx.fillText(letter, x + cellPx / 2, cy + cellPx / 2 + 1);
       }
     }
+    y += bgH + 18;
+
+    /* Stats */
+    ctx.fillStyle = "#fdfaf4";
+    ctx.font = "18px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Words Found: ${nFound} / ${nTotal}`, pW / 2, y);
+    y += 32;
+
+    /* Word list */
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    const colW = (pW - margin * 2) / cols;
+    for (let i = 0; i < wordList.length; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const wx = margin + col * colW + 8;
+      const wy = y + row * rowH;
+      const isFound = foundWordNames.includes(wordList[i]);
+      const idx = foundWordNames.indexOf(wordList[i]);
+      ctx.fillStyle = isFound ? COLORS[idx % COLORS.length] : "#475569";
+      ctx.beginPath();
+      ctx.arc(wx + 6, wy + 8, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = isFound ? "#e2e8f0" : "#64748b";
+      ctx.font = `${isFound ? "bold " : ""}14px sans-serif`;
+      ctx.fillText(wordList[i], wx + 16, wy + 1);
+    }
+    y += wordRows * rowH + 20;
+
+    /* Footer */
+    ctx.fillStyle = "#fdfaf4";
+    ctx.font = "20px sans-serif";
+    ctx.textAlign = "center";
+    const timeStr = timer?.formatted || "00:00";
+    ctx.fillText(`Time: ${timeStr}`, pW / 2, y);
+    y += 26;
+    ctx.fillStyle = "#64748b";
+    ctx.font = "14px sans-serif";
+    ctx.fillText("boop.app", pW / 2, y);
+
+    return canvas;
+  }, [puzzle, foundWords, timer]);
+
+  /* ---- Download poster as PNG ---- */
+  const handleDownloadGrid = useCallback(() => {
+    const canvas = renderPosterCanvas();
+    if (!canvas) return;
     const link = document.createElement("a");
     link.download = "boop-solved-grid.png";
     link.href = canvas.toDataURL();
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [puzzle, foundWords]);
+  }, [renderPosterCanvas]);
 
   /* ---- Share ---- */
   const handleShare = useCallback(async (platform) => {
     if (!puzzle) return;
     if (platform === "native" && navigator.share) {
       try {
-        const gs = puzzle.grid_size;
-        const cellPx = 28;
-        const gap = 1;
-        const padding = 12;
-        const size = gs * cellPx + (gs - 1) * gap + padding * 2;
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(0, 0, size, size);
-        for (let r = 0; r < gs; r++) {
-          for (let c = 0; c < gs; c++) {
-            const x = padding + c * (cellPx + gap);
-            const y = padding + r * (cellPx + gap);
-            const letter = puzzle.grid[r][c];
-            const found = foundSetRef.current.has(`${r},${c}`);
-            if (found) {
-              const wordKey = Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === r && fc === c));
-              const idx = wordKey ? Object.keys(foundWords).indexOf(wordKey) : -1;
-              ctx.fillStyle = idx >= 0 ? COLORS[idx % COLORS.length] : "#3a6b35";
-            } else {
-              ctx.fillStyle = "#2a2a2a";
-            }
-            ctx.fillRect(x, y, cellPx, cellPx);
-            ctx.fillStyle = "#fdfaf4";
-            ctx.font = `${Math.floor(cellPx * 0.55)}px monospace`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(letter, x + cellPx / 2, y + cellPx / 2 + 1);
-          }
-        }
+        const canvas = renderPosterCanvas();
+        if (!canvas) return;
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
         const file = new File([blob], "boop-solved-grid.png", { type: "image/png" });
         await navigator.share({ files: [file], title: "BOOP Word Search", text: "I just solved this word search on BOOP!" });
@@ -560,7 +627,7 @@ const PuzzleGame = () => {
       whatsapp: `https://wa.me/?text=${text}%20${url}`,
     };
     if (hrefs[platform]) window.open(hrefs[platform], "_blank", "noopener");
-  }, [puzzle, foundWords]);
+  }, [puzzle, renderPosterCanvas]);
 
   /* ---- Pause ---- */
   const handlePause = useCallback(() => {
@@ -948,7 +1015,7 @@ const ConfirmModal = ({ msg, onConfirm, onCancel }) => {
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, []);
+  }, [onCancel]);
 
   return (
     <div className="pg-modal" onClick={onCancel} role="dialog" aria-modal="true">
