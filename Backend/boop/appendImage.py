@@ -1,12 +1,11 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.graphics import renderPDF
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from svglib.svglib import svg2rlg
 import os
 import re
-import time
-import stat
+import tempfile
 
 
 def append_page(book_name, image_path):
@@ -21,49 +20,46 @@ def append_page(book_name, image_path):
         for page_num in range(len(existing_pdf.pages)):
             output.add_page(existing_pdf.pages[page_num])
 
-        packet = canvas.Canvas("temp_page.pdf", pagesize=A4)
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            temp_page = tmp.name
+
+        packet = canvas.Canvas(temp_page, pagesize=A4)
         packet.drawImage(image_path, 0, 0, width=page_width,
                          height=page_height)
         packet.save()
 
-        new_page = PdfReader("temp_page.pdf")
+        new_page = PdfReader(temp_page)
         output.add_page(new_page.pages[0])
 
         with open(pdf_filename, "wb") as output_stream:
             output.write(output_stream)
 
-        os.remove("temp_page.pdf")
+        os.unlink(temp_page)
 
     else:
-        print(f"Creating '{pdf_filename}' and adding the image.")
         c = canvas.Canvas(pdf_filename, pagesize=A4)
         c.drawImage(image_path, 0, 0, width=page_width, height=page_height)
         c.showPage()
         c.save()
 
-    print(f"{image_path} successfully added.")
-
-
-
-
-
 
 def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_callback=None):
-    temp_pdf = "temp.pdf"
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        temp_pdf = tmp.name
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        new_pdf = tmp.name
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        new_solutions_pdf = tmp.name
+
     if os.path.exists(pdf_file):
-        print(f"Reading existing PDF: {pdf_file}")
         with open(pdf_file, "rb") as f:
             existing_pdf = PdfReader(f)
             pdf_writer = PdfWriter()
-            for page_num, page in enumerate(existing_pdf.pages, start=1):
-                print(f"Adding existing page {page_num}")
-                pdf_writer.add_page(page)
+            for page_num in range(len(existing_pdf.pages)):
+                pdf_writer.add_page(existing_pdf.pages[page_num])
             with open(temp_pdf, "wb") as f_temp:
                 pdf_writer.write(f_temp)
-        print(f"Existing PDF pages saved to {temp_pdf}")
 
-    new_pdf = "new_pages.pdf"
-    new_solutions_pdf = "new_solutions.pdf"
     c = canvas.Canvas(new_pdf, pagesize=A4)
     c_solutions = canvas.Canvas(new_solutions_pdf, pagesize=A4)
     width, height = A4
@@ -76,9 +72,8 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
     )
     total_svgs = len(svg_files)
 
-    # Add "SOLUTIONS" cover page
     if prog_callback:
-        prog_callback("render_solutions", "Rendering solutions cover…")
+        prog_callback("render_solutions", "Rendering solutions cover\u2026")
     if background_image:
         c_solutions.drawImage(background_image, 0, 0,
                               width=width, height=height)
@@ -94,7 +89,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
         cover_drawing.scale(scale_cover, scale_cover)
         renderPDF.draw(cover_drawing, c_solutions, 0, 0)
         c_solutions.showPage()
-        print(f"Added SOLUTIONS cover page: {solutions_cover}")
     else:
         c_solutions.setFont("Helvetica-Bold", 48)
         solutions_text = "SOLUTIONS"
@@ -111,7 +105,7 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
     y_position = height - top_margin - 150
     solution_page_num = 0
     puzzle_count = 0
-    for page_num, svg_filename in enumerate(sorted(os.listdir(svg_directory), key=extract_order_number), start=1):
+    for svg_filename in sorted(os.listdir(svg_directory), key=extract_order_number):
         if svg_filename.endswith("S.svg") or not svg_filename.endswith(".svg"):
             continue
 
@@ -134,10 +128,8 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
         renderPDF.draw(drawing, c, (width - drawing_width * scale) /
                        2, (height - drawing_height * scale) / 2)
 
-        print(f"Adding new page: {svg_filename}")
         c.showPage()
 
-        # Add solution page
         solution_filename = svg_filename.replace(".svg", "S.svg")
         solution_filepath = os.path.join(svg_directory, solution_filename)
         if os.path.exists(solution_filepath):
@@ -190,7 +182,6 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
                         y_position = height - top_margin - 150
 
                 solution_page_num += 1
-                print(f"Adding solution: {solution_filename}")
 
         puzzle_count += 1
 
@@ -198,11 +189,9 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
     c.save()
 
     if prog_callback:
-        prog_callback("merge_pdfs", "Merging PDF pages…")
+        prog_callback("merge_pdfs", "Merging PDF pages\u2026")
 
-    # Merge puzzle and solution PDFs into the main PDF
     if os.path.exists(pdf_file):
-        print(f"Merging existing and new pages into {pdf_file}")
         with open(temp_pdf, "rb") as f_existing, open(new_pdf, "rb") as f_new, open(new_solutions_pdf, "rb") as f_solutions:
             existing_pdf = PdfReader(f_existing)
             new_pdf_content = PdfReader(f_new)
@@ -210,45 +199,16 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
             pdf_writer = PdfWriter()
 
             with open(pdf_file, "wb") as f_final:
-                for page_num, page in enumerate(existing_pdf.pages, start=1):
-                    print(f"Adding existing page: {page_num}")
+                for page in existing_pdf.pages:
                     pdf_writer.add_page(page)
-                for page_num, page in enumerate(new_pdf_content.pages, start=1):
-                    print(f"Adding new page: {page_num}")
+                for page in new_pdf_content.pages:
                     pdf_writer.add_page(page)
-                for page_num, page in enumerate(solutions_pdf_content.pages, start=1):
-                    print(f"Adding new solution: {page_num}")
+                for page in solutions_pdf_content.pages:
                     pdf_writer.add_page(page)
                 pdf_writer.write(f_final)
 
-        print(f"Final PDF saved as {pdf_file}")
-
-        f_existing.close()
-        f_new.close()
-        f_solutions.close()
-
-        time.sleep(1)
-
-        def force_delete(file_path):
-            try:
-                os.remove(file_path)
-                print(f"Successfully deleted {file_path}")
-            except PermissionError:
-                print(f"PermissionError: Changing permissions for {file_path}")
-                os.chmod(file_path, stat.S_IWUSR)
-                os.remove(file_path)
-                print(f"Successfully deleted {file_path} after changing permissions")
-            except Exception as e:
-                print(f"Error deleting {file_path}: {e}")
-
-        force_delete(temp_pdf)
-        force_delete(new_pdf)
-        force_delete(new_solutions_pdf)
-
-
-if __name__ == '__main__':
-    append_puzzle_page(
-        "Test.pdf", 
-        "generated_puzzles", 
-        "Assets/pageBackground.png"
-    )
+    for f in [temp_pdf, new_pdf, new_solutions_pdf]:
+        try:
+            os.unlink(f)
+        except OSError:
+            pass

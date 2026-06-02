@@ -86,40 +86,33 @@ def _generate_wordsearch(nrows, ncols, wordlist, allow_backwards_words=True, mas
         dxdy_choices = [(0, 1), (1, 0), (1, 1), (1, -1)]
         random.shuffle(dxdy_choices)
         for (dx, dy) in dxdy_choices:
-            if allow_backwards_words and random.choice([True, False]):
-                # If backwards words are allowed, simply reverse word.
-                word = word[::-1]
+            use_word = word[::-1] if (allow_backwards_words and random.choice([True, False])) else word
 
-            n = len(word)
+            n = len(use_word)
             colmin = 0
             colmax = ncols - n if dx else ncols - 1
             rowmin = 0 if dy >= 0 else n - 1
             rowmax = nrows - n if dy >= 0 else nrows - 1
 
             if colmax - colmin < 0 or rowmax - rowmin < 0:
-                # No possible place for the word in this orientation.
                 continue
 
-            # Build a list of candidate locations for the word.
             candidates = []
             for irow in range(rowmin, rowmax+1):
                 for icol in range(colmin, colmax+1):
-                    if test_candidate(irow, icol, dx, dy, word):
+                    if test_candidate(irow, icol, dx, dy, use_word):
                         candidates.append((irow, icol))
 
-            # If we don't have any candidates, try the next orientation.
             if not candidates:
                 continue
 
-            # Pick a random candidate location and place the word in this orientation.
             loc = irow, icol = random.choice(candidates)
             for j in range(n):
-                grid[irow][icol] = word[j]
+                grid[irow][icol] = use_word[j]
                 irow += dy
                 icol += dx
 
             wordPositions[word] = (loc[1], loc[0], icol-dx, irow-dy)
-            # We're done: no need to try any more orientations.
             break
         else:
             # If we're here, it's because we tried all orientations but

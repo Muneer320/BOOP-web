@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
+from limiter import limiter
 import sys, os
 
 boop_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
@@ -26,7 +27,8 @@ class PlayGenerateRequest(BaseModel):
     mask: Optional[str] = None
 
 @router.post("/play/generate")
-async def play_generate(req: PlayGenerateRequest):
+@limiter.limit("10/minute")
+async def play_generate(req: PlayGenerateRequest, request: Request):
     if req.mode and req.mode in MODE_PRESETS:
         preset = MODE_PRESETS[req.mode]
         grid_size = preset["grid_size"]
@@ -58,9 +60,24 @@ async def play_generate(req: PlayGenerateRequest):
     if not grid:
         raise HTTPException(500, "Could not fit words into grid")
 
+    cells_by_word = {}
+    for w, (sx, sy, ex, ey) in positions.items():
+        dr = 0 if ex == sx else (1 if ex > sx else -1)
+        dc = 0 if ey == sy else (1 if ey > sy else -1)
+        cells = []
+        x, y = sx, sy
+        while True:
+            cells.append([y, x])
+            if x == ex and y == ey:
+                break
+            x += dr
+            y += dc
+        cells_by_word[w] = cells
+
     return {
         "grid": [list(row) for row in grid],
         "positions": {w: {"start": [sx, sy], "end": [ex, ey]} for w, (sx, sy, ex, ey) in positions.items()},
+        "cells_by_word": cells_by_word,
         "words": wordlist,
         "grid_size": grid_size,
         "mode": req.mode or "custom",

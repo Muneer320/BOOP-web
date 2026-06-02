@@ -1,7 +1,7 @@
 from fpdf import FPDF
 import json
 import os
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 
 
 class PDF(FPDF):

@@ -6,4 +6,10 @@ __pycache__/
 venv/
 build/
 *.sqlite3
+outputs/
 output/
+.git/
+.github/
+.gitignore
+README.md
+uploads/*

@@ -1,11 +1,12 @@
 import asyncio
 import functools
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
 from typing import Optional, Dict, List
 from routers.files import UPLOAD_DIR
+from limiter import limiter
 import os, shutil, tempfile, re
 
 boop_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
@@ -46,12 +47,16 @@ class GenerateRequest(BaseModel):
     puzzle_bg_id: Optional[str] = None
 
 @router.post("/generate-puzzle")
-async def generate_puzzle(req: GenerateRequest, session_id: str = None):
+@limiter.limit("3/minute")
+async def generate_puzzle(req: GenerateRequest, request: Request, session_id: str = None):
     if not req.name or not SAFE_NAME_RE.match(req.name):
         raise HTTPException(400, "Invalid book name (letters, numbers, spaces, hyphens only)")
     for field in [req.words_file_id, req.cover_id, req.background_id, req.puzzle_bg_id]:
         if field and not is_safe_file_id(field):
             raise HTTPException(400, "Invalid file reference")
+    for count, label in [(req.normal, "Normal"), (req.hard, "Hard"), (req.bonus_normal, "Bonus Normal"), (req.bonus_hard, "Bonus Hard")]:
+        if not isinstance(count, int) or count < 0 or count > 100:
+            raise HTTPException(400, f"{label} puzzle count must be 0-100")
     safe_name = sanitize_filename(req.name)
 
     outputs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs"))
@@ -120,8 +125,8 @@ async def generate_puzzle(req: GenerateRequest, session_id: str = None):
         shutil.rmtree(work_dir, ignore_errors=True)
         os.chdir(old_cwd)
         if session_id:
-            progress_store[session_id] = {"step": "error", "detail": str(e), "done": True}
-        raise HTTPException(500, str(e))
+            progress_store[session_id] = {"step": "error", "detail": "Generation failed", "done": True}
+        raise HTTPException(500, "An internal error occurred during puzzle generation.") from e
 
 @router.get("/generation-progress/{session_id}")
 def get_progress(session_id: str):
