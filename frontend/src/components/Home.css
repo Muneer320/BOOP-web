@@ -55,7 +55,7 @@
   left: -15px;
   right: -15px;
   bottom: -15px;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--card-bg);
   border-radius: 12px;
   z-index: -1;
   transform: rotate(-1deg);
@@ -83,8 +83,9 @@
   justify-content: center;
   font-weight: bold;
   font-size: 1.2rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  background: var(--bg-primary);
   transition: all 0.2s;
 }
 

@@ -4,7 +4,7 @@
   padding: 1.5rem;
   margin-bottom: 1rem;
   transition: all 0.3s;
-  border: 2px dashed #e9ecef;
+  border: 2px dashed var(--border-color);
 }
 
 .default-option {
@@ -30,7 +30,7 @@
 
 .file-uploader.uploaded {
   border-color: var(--success);
-  background-color: rgba(40, 167, 69, 0.05);
+  background-color: rgba(76, 175, 125, 0.08);
 }
 
 .file-uploader h4 {
@@ -113,7 +113,7 @@
   max-height: 120px;
   border-radius: 6px;
   object-fit: cover;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); /* hardcoded shadow */
 }
 
 .upload-error {

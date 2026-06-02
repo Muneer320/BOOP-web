@@ -27,7 +27,7 @@
 }
 
 .topic-item:hover {
-  background-color: rgba(74, 111, 165, 0.2);
+  background-color: rgba(122, 168, 224, 0.15);
 }
 
 .topic-item.selected {
@@ -47,7 +47,7 @@
 
 .topic-list li {
   background-color: var(--bg-primary);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -104,7 +104,7 @@
 }
 
 .custom-topic-item {
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;

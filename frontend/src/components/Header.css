@@ -36,7 +36,12 @@
   mix-blend-mode: multiply;
   opacity: 0.95;
   border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .logo-image {
+  mix-blend-mode: screen;
+  opacity: 0.9;
 }
 
 .logo-text-block {
@@ -59,6 +64,12 @@
   font-size: 0.85rem;
   color: var(--gray);
   font-weight: 400;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .nav ul {
@@ -272,7 +283,7 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
 }
 
@@ -292,11 +303,12 @@
     display: none;
     width: 100%;
     flex-direction: column;
+    align-items: center;
     margin-top: 1rem;
   }
 
   .nav.visible {
-    display: block;
+    display: flex;
     animation: fadeIn 0.3s ease;
   }
 
@@ -308,7 +320,7 @@
   .nav ul.main-nav-list {
     flex-direction: column;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .nav ul.main-nav-list li {
