@@ -22,6 +22,7 @@ jobs:
       - name: Sync Backend files into Space
         run: |
           rsync -a --delete --exclude=.git Backend/ ./hf-space/
+          cp .github/HF_README.md ./hf-space/README.md
 
       - name: Commit and push to Hugging Face
         run: |
