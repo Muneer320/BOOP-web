@@ -53,7 +53,7 @@ const PuzzleGame = () => {
   const [manualInput, setManualInput] = useState("");
   const [topicError, setTopicError] = useState(null);
 
-  const mode = MODES.find(m => m.id === modeId) || MODES[1];
+  const mode = useMemo(() => MODES.find(m => m.id === modeId) || MODES[1], [modeId]);
   const timer = useTimer();
   const gridRef = useRef(null);
 
@@ -172,12 +172,14 @@ const PuzzleGame = () => {
   }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips]);
 
   /* ---- Cell helpers ---- */
+  const foundSetRef = useRef(new Set());
+  foundSetRef.current = new Set(
+    Object.values(foundWords).flatMap(cells => cells.map(([r, c]) => `${r},${c}`))
+  );
+
   const inFound = useCallback((r, c) => {
-    for (const positions of Object.values(foundWords)) {
-      if (positions.some(([fr, fc]) => fr === r && fc === c)) return true;
-    }
-    return false;
-  }, [foundWords]);
+    return foundSetRef.current.has(`${r},${c}`);
+  }, []);
 
   const getWordColor = useCallback((word) => {
     const idx = Object.keys(foundWords).indexOf(word);
