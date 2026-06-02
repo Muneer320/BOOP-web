@@ -10,12 +10,12 @@ from boop.generatePuzzle import generate_wordsearch
 router = APIRouter()
 
 MODE_PRESETS = {
-    "easy":      {"grid_size": 10, "allow_backwards": False, "mask": None, "min_words": 5,  "max_words": 12},
-    "normal":    {"grid_size": 13, "allow_backwards": True,  "mask": None, "min_words": 8,  "max_words": 20},
-    "hard":      {"grid_size": 15, "allow_backwards": True,  "mask": None, "min_words": 10, "max_words": 25},
-    "veryhard":  {"grid_size": 18, "allow_backwards": True,  "mask": None, "min_words": 12, "max_words": 30},
-    "nightmare": {"grid_size": 20, "allow_backwards": True,  "mask": None, "min_words": 15, "max_words": 35},
-    "bonus":     {"grid_size": 15, "allow_backwards": True,  "mask": "circle", "min_words": 8, "max_words": 20},
+    "easy":      {"grid_size": 10, "allow_backwards": False, "mask": None, "min_words": 5,  "max_words": 10},
+    "normal":    {"grid_size": 13, "allow_backwards": True,  "mask": None, "min_words": 8,  "max_words": 15},
+    "hard":      {"grid_size": 15, "allow_backwards": True,  "mask": None, "min_words": 10, "max_words": 18},
+    "veryhard":  {"grid_size": 18, "allow_backwards": True,  "mask": None, "min_words": 12, "max_words": 25},
+    "nightmare": {"grid_size": 20, "allow_backwards": True,  "mask": None, "min_words": 15, "max_words": 30},
+    "bonus":     {"grid_size": 15, "allow_backwards": True,  "mask": "circle", "min_words": 8,  "max_words": 15},
 }
 
 class PlayGenerateRequest(BaseModel):
