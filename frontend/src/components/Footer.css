@@ -9,10 +9,10 @@
 
 .footer-content {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .footer-links {
@@ -39,16 +39,19 @@
 }
 
 .footer-copy {
-  font-family: var(--font-ui);
+  font-family: var(--font-serif);
   font-size: 0.7rem;
   color: var(--gray);
   margin: 0;
+  font-style: italic;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 640px) {
   .footer-content {
     flex-direction: column;
     text-align: center;
+    justify-content: center;
   }
   .footer-links {
     gap: 1rem;
