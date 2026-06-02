@@ -125,7 +125,7 @@ const PuzzleGame = () => {
       setDragCells([]);
       setScreen("play");
       if (timerOn) timer.start(id);
-      saveGame({ gameId: id, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, wordChips });
+      saveGame({ gameId: id, puzzle: data, mode: modeId, timerEnabled: timerOn, wordSource, wordChips, gameStartTime: gameStartTime.current });
     } catch (err) {
       setError(err.response?.data?.detail || "Could not generate puzzle. Try different words.");
     } finally {
@@ -156,6 +156,9 @@ const PuzzleGame = () => {
       setModeId(saved.mode || "normal");
       setTimerEnabled(saved.timerEnabled !== false);
       setGameId(saved.gameId || null);
+      if (saved.gameStartTime) {
+        gameStartTime.current = saved.gameStartTime;
+      }
       const restored = timer.restore(saved.gameId);
       if (restored || saved.screen === "complete") {
         setScreen("play");
@@ -167,7 +170,7 @@ const PuzzleGame = () => {
   /* ---- Persist progress ---- */
   useEffect(() => {
     if (screen === "play" && puzzle) {
-      saveGame({ gameId, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words });
+      saveGame({ gameId, puzzle, mode: modeId, foundWords, timerEnabled, screen, wordSource, wordChips, words: puzzle.words, gameStartTime: gameStartTime.current });
     }
   }, [screen, puzzle, foundWords, modeId, timerEnabled, saveGame, wordSource, wordChips]);
 
@@ -310,16 +313,15 @@ const PuzzleGame = () => {
 
   /* ---- Touch handlers ---- */
   const handleTouchStart = useCallback((e, r, c) => {
-    e.preventDefault();
     if (!puzzle || paused || screen !== "play" || inFound(r, c)) return;
     setIsDragging(true);
     setSelectedCells([[r, c]]);
+    dragCellsRef.current = [[r, c]];
     setDragCells([[r, c]]);
   }, [puzzle, paused, screen, inFound]);
 
   const handleTouchMove = useCallback((e) => {
     if (!isDragging || !puzzle || paused) return;
-    e.preventDefault();
     const touch = e.touches[0];
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!el) return;
@@ -331,8 +333,7 @@ const PuzzleGame = () => {
     handleMouseMove(r, c);
   }, [isDragging, puzzle, paused, handleMouseMove]);
 
-  const handleTouchEnd = useCallback((e) => {
-    e.preventDefault();
+  const handleTouchEnd = useCallback(() => {
     handleMouseUp();
   }, [handleMouseUp]);
 
