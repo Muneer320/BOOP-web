@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./PuzzlePreview.css";
 
 const GRID_SIZE = 8;
@@ -7,6 +7,15 @@ const PuzzlePreview = ({ formData }) => {
   const totalNormal = (formData.normal || 0) + (formData.bonus_normal || 0);
   const totalHard = (formData.hard || 0) + (formData.bonus_hard || 0);
   const totalPuzzles = totalNormal + totalHard;
+
+  const grid = useMemo(() =>
+    Array.from({ length: GRID_SIZE }, () =>
+      Array.from({ length: GRID_SIZE }, () =>
+        String.fromCharCode(65 + Math.floor(Math.random() * 26))
+      )
+    ),
+    [totalPuzzles]
+  );
 
   if (totalPuzzles === 0) {
     return (
@@ -17,12 +26,6 @@ const PuzzlePreview = ({ formData }) => {
       </div>
     );
   }
-
-  const grid = Array.from({ length: GRID_SIZE }, () =>
-    Array.from({ length: GRID_SIZE }, () =>
-      String.fromCharCode(65 + Math.floor(Math.random() * 26))
-    )
-  );
 
   return (
     <div className="puzzle-preview-card">
@@ -81,4 +84,4 @@ const PuzzlePreview = ({ formData }) => {
   );
 };
 
-export default PuzzlePreview;
+export default React.memo(PuzzlePreview);

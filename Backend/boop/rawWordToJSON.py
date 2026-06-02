@@ -3,84 +3,54 @@ import json
 import random
 
 
-def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_normal=1, bonus_hard=1):
-    def filter_words(words, min_len, max_len):
-        return [word for word in words if min_len <= len(word) <= max_len]
-
+def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_normal=1, bonus_hard=1, output_path=None):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Error: File '{file_path}' does not exist.")
 
     with open(file_path, 'r') as file:
         data = file.read()
-        
 
-    # Words per puzzle for each mode
     normal_w_count = 10
     hard_w_count = 15
-
     sections = data.split('====================')
     result = {}
 
     for section in sections:
-        if section.strip():
-            lines = section.strip().splitlines()
-            topic = lines[0].strip('>').strip()
-            words = [word.strip() for word in lines[1:] if word.strip()]
+        if not section.strip():
+            continue
+        lines = section.strip().splitlines()
+        topic = lines[0].strip('>').strip()
+        words = [word.strip() for word in lines[1:] if word.strip()]
 
-            # Prepare pools and ensure enough words
-            normal_pool = filter_words(words, 4, 11)
-            hard_pool = filter_words(words, 6, 15)
+        normal_pool = {w for w in words if 4 <= len(w) <= 11}
+        hard_pool = {w for w in words if 6 <= len(w) <= 15}
 
-            # Required totals
-            total_normal_needed = num_normal * normal_w_count
-            total_hard_needed = num_hard * hard_w_count
-            total_bonus_norm_needed = bonus_normal * normal_w_count
-            total_bonus_hard_needed = bonus_hard * hard_w_count
-            # Check availability
-            if len(normal_pool) < total_normal_needed + total_bonus_norm_needed:
-                raise ValueError(f"Topic '{topic}' needs {total_normal_needed + total_bonus_norm_needed} normal words, found {len(normal_pool)}")
-            if len(hard_pool) < total_hard_needed + total_bonus_hard_needed:
-                raise ValueError(f"Topic '{topic}' needs {total_hard_needed + total_bonus_hard_needed} hard words, found {len(hard_pool)}")
+        if len(normal_pool) < (num_normal + bonus_normal) * normal_w_count:
+            raise ValueError(f"Topic '{topic}' needs {(num_normal + bonus_normal) * normal_w_count} normal words, found {len(normal_pool)}")
+        if len(hard_pool) < (num_hard + bonus_hard) * hard_w_count:
+            raise ValueError(f"Topic '{topic}' needs {(num_hard + bonus_hard) * hard_w_count} hard words, found {len(hard_pool)}")
 
-            topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
-            # Sample unique words
-            # Normal puzzles
-            for _ in range(num_normal):
-                sample = random.sample(normal_pool, normal_w_count)
-                topic_result["Normal"].append(sample)
-                for w in sample:
-                    if w in normal_pool: normal_pool.remove(w)
-                    #if w in hard_pool: hard_pool.remove(w)
-            
-            # Hard puzzles
-            for _ in range(num_hard):
-                sample = random.sample(hard_pool, hard_w_count)
-                topic_result["Hard"].append(sample)
-                for w in sample:
-                    if w in hard_pool: hard_pool.remove(w)
-                    #if w in normal_pool: normal_pool.remove(w)
-            
-            # Bonus Normal puzzles
-            for _ in range(bonus_normal):
-                sample = random.sample(normal_pool, normal_w_count)
-                topic_result["Bonus"]["Normal"].append(sample)
-                for w in sample:
-                    normal_pool.remove(w)
-                    #if w in hard_pool: hard_pool.remove(w)
-            
-            # Bonus Hard puzzles
-            for _ in range(bonus_hard):
-                sample = random.sample(hard_pool, hard_w_count)
-                topic_result["Bonus"]["Hard"].append(sample)
-                for w in sample:
-                    hard_pool.remove(w)
-                    #if w in normal_pool: normal_pool.remove(w)
-            
-            result[topic] = topic_result
+        def _sample(pool, count, result_list):
+            sample = random.sample(list(pool), count)
+            pool.difference_update(sample)
+            result_list.append(sample)
+            return pool, result_list
 
-    # Write JSON
-    base_dir = os.path.dirname(__file__)
-    with open(os.path.join(base_dir, "Words", "words.json"), "w") as f:
+        topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
+        for _ in range(num_normal):
+            normal_pool, topic_result["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Normal"])
+        for _ in range(num_hard):
+            hard_pool, topic_result["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Hard"])
+        for _ in range(bonus_normal):
+            normal_pool, topic_result["Bonus"]["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Bonus"]["Normal"])
+        for _ in range(bonus_hard):
+            hard_pool, topic_result["Bonus"]["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Bonus"]["Hard"])
+
+        result[topic] = topic_result
+
+    if output_path is None:
+        output_path = os.path.join(os.path.dirname(__file__), "Words", "words.json")
+    with open(output_path, "w") as f:
         json.dump(result, f, indent=4)
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/api";
 import { useGeneration } from "../context/GenerationContext";
 import WordSelector from "./WordSelector";
@@ -58,7 +58,7 @@ const PuzzleCreator = () => {
     fetchInitialData();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type } = e.target;
     if (name === "name") {
       const valid = /^[A-Za-z0-9\s\-']+$/.test(value);
@@ -68,44 +68,44 @@ const PuzzleCreator = () => {
           : "Title can only contain letters, numbers, spaces, hyphens, and apostrophes."
       );
     }
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "number" ? Number(value) : value,
-    });
-  };
+    }));
+  }, []);
 
-  const handleFileUpload = (fileType, fileId) => {
-    setFormData({
-      ...formData,
+  const handleFileUpload = useCallback((fileType, fileId) => {
+    setFormData((prev) => ({
+      ...prev,
       [fileType]: fileId,
-    });
-  };
+    }));
+  }, []);
 
-  const handleWordsUpdate = (wordsPayload) => {
-    setFormData({
-      ...formData,
+  const handleWordsUpdate = useCallback((wordsPayload) => {
+    setFormData((prev) => ({
+      ...prev,
       words_payload: wordsPayload,
-      words_file_id: null, // Clear file ID if we've set payload
-    });
-  };
+      words_file_id: null,
+    }));
+  }, []);
 
-  const handleWordsFileUpload = (fileId) => {
-    setFormData({
-      ...formData,
+  const handleWordsFileUpload = useCallback((fileId) => {
+    setFormData((prev) => ({
+      ...prev,
       words_file_id: fileId,
-      words_payload: null, // Clear payload if we've uploaded a file
-    });
-  };
+      words_payload: null,
+    }));
+  }, []);
 
-  const nextStep = () => {
-    setStep(step + 1);
-  };
+  const nextStep = useCallback(() => {
+    setStep((prev) => prev + 1);
+  }, []);
 
-  const prevStep = () => {
-    setStep(step - 1);
-  };
+  const prevStep = useCallback(() => {
+    setStep((prev) => prev - 1);
+  }, []);
 
-  const generatePuzzle = async () => {
+  const generatePuzzle = useCallback(async () => {
     try {
       startGeneration();
       setError(null);
@@ -130,7 +130,7 @@ const PuzzleCreator = () => {
       console.error("Error generating puzzle:", err);
       completeGeneration(null);
     }
-  };
+  }, [formData, startGeneration, completeGeneration]);
 
   if (isLoading) {
     return (

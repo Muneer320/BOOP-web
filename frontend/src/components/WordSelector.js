@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/api";
 import "./WordSelector.css";
 
@@ -12,7 +12,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   const [error, setError] = useState(null);
   const [selectionType, setSelectionType] = useState("preset");
 
-  const fetchTopicWords = async (topic) => {
+  const fetchTopicWords = useCallback(async (topic) => {
     try {
       setIsLoadingWords(true);
       const response = await apiService.getTopicWords(topic);
@@ -26,20 +26,19 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     } finally {
       setIsLoadingWords(false);
     }
-  };
+  }, []);
 
-  const toggleTopic = (topic) => {
-    if (selectedTopics.includes(topic)) {
-      setSelectedTopics((prev) => prev.filter((t) => t !== topic));
-    } else {
-      setSelectedTopics((prev) => [...prev, topic]);
-      if (!topicWords[topic]) {
-        fetchTopicWords(topic);
+  const toggleTopic = useCallback((topic) => {
+    setSelectedTopics((prev) => {
+      if (prev.includes(topic)) {
+        return prev.filter((t) => t !== topic);
       }
-    }
-  };
+      fetchTopicWords(topic);
+      return [...prev, topic];
+    });
+  }, [fetchTopicWords]);
 
-  const addCustomWord = () => {
+  const addCustomWord = useCallback(() => {
     if (!customTopicName.trim()) {
       setError("Please enter a topic name");
       return;
@@ -62,9 +61,9 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
 
     setCustomWordInput("");
     setError(null);
-  };
+  }, [customTopicName, customWordInput]);
 
-  const removeCustomWord = (topic, word) => {
+  const removeCustomWord = useCallback((topic, word) => {
     setCustomWords((prev) => {
       const updatedWords = prev[topic].filter((w) => w !== word);
       const updatedTopics = { ...prev };
@@ -77,9 +76,9 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
 
       return updatedTopics;
     });
-  };
+  }, []);
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -94,7 +93,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
       );
       console.error("Error uploading file:", err);
     }
-  };
+  }, [onFileUpload]);
 
   useEffect(() => {
     if (selectionType === "preset" && selectedTopics.length > 0) {
@@ -150,7 +149,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* Preset Topics Selection */}
       {selectionType === "preset" && (
         <div className="preset-topics">
           <h3>Select Topics</h3>
@@ -205,7 +203,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
         </div>
       )}
 
-      {/* Custom Words Input */}
       {selectionType === "custom" && (
         <div className="custom-words">
           <h3>Add Your Own Words</h3>
@@ -236,7 +233,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="add-word">&nbsp;</label>
               <button
                 id="add-word"
                 className="btn btn-primary form-control"
@@ -272,7 +268,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
         </div>
       )}
 
-      {/* File Upload */}
       {selectionType === "file" && (
         <div className="file-upload">
           <h3>Upload Words File</h3>
@@ -310,4 +305,4 @@ word3`}
   );
 };
 
-export default WordSelector;
+export default React.memo(WordSelector);

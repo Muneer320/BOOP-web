@@ -1,16 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends
+import asyncio
+import functools
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
 from typing import Optional, Dict, List
 from routers.files import UPLOAD_DIR
-import os, shutil, tempfile, io, re
-from pathlib import PurePath
+import os, shutil, tempfile, re
 
-import importlib.util
-base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
+boop_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
 import sys
-sys.path.insert(0, base)
+sys.path.insert(0, boop_dir)
 from boop.rawWordToJSON import word_to_json
 from boop.generatePuzzle import create_all_puzzles, create_individual_puzzle
 from boop.appendImage import append_page, append_puzzle_page
@@ -51,77 +51,76 @@ async def generate_puzzle(req: GenerateRequest):
         if field and not is_safe_file_id(field):
             raise HTTPException(400, "Invalid file reference")
     safe_name = sanitize_filename(req.name)
-    boop_dir = base
-    if req.words_payload:
-        # write JSON payload to temp txt in BOOP/Words format
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
-        temp_input = os.path.join(output_folder, 'input_words.txt')
-        with open(temp_input, 'w', encoding='utf-8') as f:
-            for topic, words in req.words_payload.items():
-                f.write(f"> {topic}\n\n")
-                for w in words:
-                    f.write(w + "\n")
-                f.write("\n\n====================\n")
-        words_txt = temp_input
-    elif req.words_file_id:
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
-        words_txt = os.path.join(UPLOAD_DIR, os.path.basename(req.words_file_id))
-    else:
-        output_folder = tempfile.mkdtemp(prefix='boop_', dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs")))
-        words_txt = os.path.join(boop_dir, 'Words', 'words.txt')
-    pdf_path = os.path.join(os.getcwd(), f"{safe_name}.pdf")
 
-    def resolve(img_id, default_path):
-        if img_id:
-            path = os.path.join(UPLOAD_DIR, os.path.basename(img_id))
-            if os.path.exists(path): return path
-            print(f"Image {img_id} not found")
-        return default_path
-
-    cover_img = resolve(req.cover_id, os.path.join(boop_dir, 'Assets', 'Cover.png'))
-    bg_img = resolve(req.background_id, os.path.join(boop_dir, 'Assets', 'Background.png'))
-    pz_bg = resolve(req.puzzle_bg_id, os.path.join(boop_dir, 'Assets', 'pageBackground.png'))
-
-    # Step 1: generate JSON
-    try:
-        # Generate words.json from specified source
-        word_to_json(file_path=words_txt,
-                     num_normal=req.normal,
-                     num_hard=req.hard,
-                     bonus_normal=req.bonus_normal,
-                     bonus_hard=req.bonus_hard)
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-    words_json = os.path.join(boop_dir, 'Words', 'words.json')
-
-    # Remove existing PDF
-    if os.path.exists(pdf_path): os.remove(pdf_path)
-
-    append_page(safe_name, cover_img)
-    create_title_page(safe_name, words_json, background_image=bg_img)
-
-    # Step 3: puzzles
-    fails = create_all_puzzles(words_json, pz_bg, output_folder)
-    if fails:
-        create_individual_puzzle(fails, words_json, output_folder, background_image=pz_bg)
-
-    # Step 4: append to PDF
-    append_puzzle_page(f"{safe_name}.pdf", output_folder, background_image=pz_bg)
-
-    # Stream PDF back
-    if not os.path.exists(pdf_path):
-        raise HTTPException(500, 'PDF generation failed')
+    outputs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "outputs"))
+    os.makedirs(outputs_dir, exist_ok=True)
+    work_dir = tempfile.mkdtemp(prefix='boop_', dir=outputs_dir)
 
     try:
-        response = FileResponse(
+        if req.words_payload:
+            temp_input = os.path.join(work_dir, 'input_words.txt')
+            with open(temp_input, 'w', encoding='utf-8') as f:
+                for topic, words in req.words_payload.items():
+                    f.write(f"> {topic}\n\n")
+                    for w in words:
+                        f.write(w + "\n")
+                    f.write("\n\n====================\n")
+            words_txt = temp_input
+        elif req.words_file_id:
+            words_txt = os.path.join(UPLOAD_DIR, os.path.basename(req.words_file_id))
+        else:
+            words_txt = os.path.join(boop_dir, 'Words', 'words.txt')
+
+        old_cwd = os.getcwd()
+        os.chdir(work_dir)
+
+        def resolve(img_id, default_path):
+            if img_id:
+                path = os.path.join(UPLOAD_DIR, os.path.basename(img_id))
+                if os.path.exists(path): return path
+            return default_path
+
+        cover_img = resolve(req.cover_id, os.path.join(boop_dir, 'Assets', 'Cover.png'))
+        bg_img = resolve(req.background_id, os.path.join(boop_dir, 'Assets', 'Background.png'))
+        pz_bg = resolve(req.puzzle_bg_id, os.path.join(boop_dir, 'Assets', 'pageBackground.png'))
+
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, functools.partial(
+            _generate_sync, safe_name, words_txt, req, work_dir, boop_dir,
+            cover_img, bg_img, pz_bg, old_cwd
+        ))
+
+        pdf_path = os.path.join(work_dir, f"{safe_name}.pdf")
+        if not os.path.exists(pdf_path):
+            raise HTTPException(500, 'PDF generation failed')
+
+        return FileResponse(
             path=pdf_path,
             media_type='application/octet-stream',
             filename=f"{safe_name}.pdf",
-            background=BackgroundTask(os.remove, pdf_path),
+            background=BackgroundTask(_cleanup, work_dir, old_cwd),
         )
-    finally:
-        shutil.rmtree(output_folder, ignore_errors=True)
+    except HTTPException:
+        shutil.rmtree(work_dir, ignore_errors=True)
+        os.chdir(old_cwd)
+        raise
+    except Exception as e:
+        shutil.rmtree(work_dir, ignore_errors=True)
+        os.chdir(old_cwd)
+        raise HTTPException(500, str(e))
 
-    return response
+def _generate_sync(safe_name, words_txt, req, work_dir, boop_dir, cover_img, bg_img, pz_bg, old_cwd):
+    words_json = os.path.join(work_dir, 'words.json')
+    word_to_json(file_path=words_txt, output_path=words_json,
+                 num_normal=req.normal, num_hard=req.hard,
+                 bonus_normal=req.bonus_normal, bonus_hard=req.bonus_hard)
+    append_page(safe_name, cover_img)
+    create_title_page(safe_name, words_json, background_image=bg_img)
+    fails = create_all_puzzles(words_json, pz_bg, work_dir)
+    if fails:
+        create_individual_puzzle(fails, words_json, work_dir, background_image=pz_bg)
+    append_puzzle_page(f"{safe_name}.pdf", work_dir, background_image=pz_bg)
+
+def _cleanup(work_dir, old_cwd):
+    os.chdir(old_cwd)
+    shutil.rmtree(work_dir, ignore_errors=True)

@@ -39,6 +39,7 @@
   font-weight: bold;
   border-radius: 4px;
   animation: cellFade 1.2s infinite ease-in-out;
+  will-change: transform, opacity;
 }
 
 .loading-text {

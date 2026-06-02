@@ -121,6 +121,7 @@
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
   animation: strokeAnim 0.6s ease-in-out forwards;
+  will-change: stroke-dashoffset;
 }
 
 .checkmark-check {
@@ -131,6 +132,7 @@
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
   animation: strokeAnim 0.3s 0.6s ease-in-out forwards;
+  will-change: stroke-dashoffset;
 }
 
 @keyframes strokeAnim {
