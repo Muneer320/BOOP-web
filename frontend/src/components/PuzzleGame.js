@@ -269,6 +269,34 @@ const PuzzleGame = () => {
     setDragCells([]);
   }, [isDragging, dragCells, selectedCells, attemptWord]);
 
+  /* ---- Touch handlers ---- */
+  const handleTouchStart = useCallback((e, r, c) => {
+    e.preventDefault();
+    if (!puzzle || paused || screen !== "play" || inFound(r, c)) return;
+    setIsDragging(true);
+    setSelectedCells([[r, c]]);
+    setDragCells([[r, c]]);
+  }, [puzzle, paused, screen, inFound]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!isDragging || !puzzle || paused) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    const cell = el.closest("[data-row]");
+    if (!cell) return;
+    const r = parseInt(cell.dataset.row, 10);
+    const c = parseInt(cell.dataset.col, 10);
+    if (isNaN(r) || isNaN(c)) return;
+    handleMouseMove(r, c);
+  }, [isDragging, puzzle, paused, handleMouseMove]);
+
+  const handleTouchEnd = useCallback((e) => {
+    e.preventDefault();
+    handleMouseUp();
+  }, [handleMouseUp]);
+
   useEffect(() => {
     const handler = () => { if (isDragging) handleMouseUp(); };
     window.addEventListener("mouseup", handler);
@@ -618,9 +646,13 @@ const PuzzleGame = () => {
                     <div key={`${ri}-${ci}`}
                       className={`pg-cell${found ? " found" : ""}${sel ? " selecting" : ""}${hl ? " hilite" : ""}`}
                       style={color ? { background: color, color: "#fff" } : sel ? { background: "var(--primary)", color: "#fff" } : {}}
+                      data-row={ri} data-col={ci}
                       onMouseDown={() => handleMouseDown(ri, ci)}
                       onMouseMove={() => handleMouseMove(ri, ci)}
                       onMouseUp={handleMouseUp}
+                      onTouchStart={e => handleTouchStart(e, ri, ci)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                       onClick={() => handleCellClick(ri, ci)}>
                       <span className="pg-cell-letter" data-char={cell} aria-hidden="true" />
                     </div>
