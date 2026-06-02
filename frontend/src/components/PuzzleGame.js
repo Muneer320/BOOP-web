@@ -345,7 +345,7 @@ const PuzzleGame = () => {
   /* ---- Hint helpers ---- */
   const hintWordCell = useCallback((word) => {
     if (!puzzle) return;
-    const positions = puzzle.words_positions?.[word] || [];
+    const positions = puzzle.positions?.[word] || puzzle.words_positions?.[word] || [];
     if (!positions.length) return;
     const newFound = { ...foundWords, [word]: positions };
     setFoundWords(newFound);
@@ -375,11 +375,12 @@ const PuzzleGame = () => {
   }, [puzzle]);
 
   const confirmFullSolution = useCallback(() => {
-    if (!puzzle || !puzzle.words_positions) return;
+    const positions = puzzle.positions || puzzle.words_positions;
+    if (!puzzle || !positions) return;
     const newFound = { ...foundWords };
     for (const word of puzzle.words) {
-      if (!newFound[word] && puzzle.words_positions[word]) {
-        newFound[word] = puzzle.words_positions[word];
+      if (!newFound[word] && positions[word]) {
+        newFound[word] = positions[word];
       }
     }
     setFoundWords(newFound);
