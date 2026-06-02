@@ -4,7 +4,6 @@ __pycache__/
 *.pyd
 .env
 venv/
-BOOP_API/
 build/
 *.sqlite3
 output/
