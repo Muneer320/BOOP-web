@@ -316,8 +316,8 @@
   min-width: 0;
   display: flex;
   justify-content: center;
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
 }
 
 .pg-grid {
@@ -706,8 +706,9 @@
   .pg-modes { grid-template-columns: repeat(3, 1fr); }
   .pg-play-header { flex-direction: column; align-items: flex-start; }
   .pg-play-actions { width: 100%; justify-content: flex-end; }
-  .pg-grid-wrap { max-width: 100%; overflow: visible; justify-content: center; }
-  .pg-grid { width: 100%; max-width: 100%; }
+  .puzzle-game { padding: 0; }
+  .pg-grid-wrap { overflow: visible; justify-content: center; }
+  .pg-grid { width: 100%; }
   .pg-cell { font-size: clamp(0.4rem, 3.5vw, 0.75rem); }
 }
 
