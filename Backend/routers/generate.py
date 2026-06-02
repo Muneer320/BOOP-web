@@ -145,8 +145,8 @@ def _generate_sync(safe_name, words_txt, req, work_dir, boop_dir, cover_img, bg_
     if fails:
         prog("puzzles", f"Retrying {len(fails)} failed puzzles…")
         create_individual_puzzle(fails, words_json, work_dir, background_image=pz_bg)
-    prog("assembling", "Assembling PDF pages…")
-    append_puzzle_page(f"{safe_name}.pdf", work_dir, background_image=pz_bg)
+    prog("render_puzzles", "Rendering puzzle pages…")
+    append_puzzle_page(f"{safe_name}.pdf", work_dir, background_image=pz_bg, prog_callback=prog)
     prog("finalizing", "Finalizing PDF…")
 
 def _cleanup(work_dir, old_cwd):

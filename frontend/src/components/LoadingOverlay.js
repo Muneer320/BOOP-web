@@ -13,7 +13,9 @@ const PROGRESS_STEPS = [
   { step: "cover", label: "Adding cover page" },
   { step: "toc", label: "Creating table of contents" },
   { step: "puzzles", label: "Generating puzzles" },
-  { step: "assembling", label: "Assembling PDF pages" },
+  { step: "render_puzzles", label: "Rendering puzzle pages" },
+  { step: "render_solutions", label: "Rendering solution pages" },
+  { step: "merge_pdfs", label: "Merging PDFs" },
   { step: "finalizing", label: "Finalizing PDF" },
 ];
 
@@ -51,7 +53,7 @@ const LoadingOverlay = () => {
 
         <div className="progress-steps">
           {PROGRESS_STEPS.map((ps, i) => {
-            const order = ["parsing","cover","toc","puzzles","assembling","finalizing"];
+            const order = ["parsing","cover","toc","puzzles","render_puzzles","render_solutions","merge_pdfs","finalizing"];
             const currentIdx = order.indexOf(currentStep);
             const stepIdx = order.indexOf(ps.step);
             let cls = "progress-step-item";

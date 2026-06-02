@@ -48,7 +48,7 @@ def append_page(book_name, image_path):
 
 
 
-def append_puzzle_page(pdf_file, svg_directory, background_image=None):
+def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_callback=None):
     temp_pdf = "temp.pdf"
     if os.path.exists(pdf_file):
         print(f"Reading existing PDF: {pdf_file}")
@@ -70,7 +70,15 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
     top_margin = 100
     bottom_margin = 100
 
+    svg_files = sorted(
+        f for f in os.listdir(svg_directory)
+        if f.endswith(".svg") and not f.endswith("S.svg")
+    )
+    total_svgs = len(svg_files)
+
     # Add "SOLUTIONS" cover page
+    if prog_callback:
+        prog_callback("render_solutions", "Rendering solutions cover…")
     if background_image:
         c_solutions.drawImage(background_image, 0, 0,
                               width=width, height=height)
@@ -100,12 +108,15 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
 
     solutions_per_line = 2
     max_lines_per_page = 3
-    # Starting position for the first line of solutions
     y_position = height - top_margin - 150
     solution_page_num = 0
+    puzzle_count = 0
     for page_num, svg_filename in enumerate(sorted(os.listdir(svg_directory), key=extract_order_number), start=1):
         if svg_filename.endswith("S.svg") or not svg_filename.endswith(".svg"):
             continue
+
+        if prog_callback:
+            prog_callback("render_puzzles", f"Puzzle page {puzzle_count + 1}/{total_svgs}")
 
         svg_filepath = os.path.join(svg_directory, svg_filename)
         drawing = svg2rlg(svg_filepath)
@@ -139,10 +150,9 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
             if solution_drawing:
                 solution_width = solution_drawing.width
                 solution_height = solution_drawing.height
-                # Two solutions per line
                 scale_solution_width = (width / 2 - 50) / solution_width
                 scale_solution_height = (height - top_margin - bottom_margin) / (
-                    max_lines_per_page + 1) / solution_height  # Adjust for multiple lines per page
+                    max_lines_per_page + 1) / solution_height
                 scale_solution = min(scale_solution_width,
                                      scale_solution_height) * 1.2
 
@@ -154,17 +164,14 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                     y_position = height - top_margin - 150
 
                 x_position = (width / 2 - solution_width * scale_solution) / 2 + (solution_page_num %
-                                                                                  # Adjust x-position for two solutions per line
                                                                                   solutions_per_line) * (width / 2)
 
-                # Manually scale and position the drawing
                 c_solutions.saveState()
                 c_solutions.translate(x_position, y_position)
                 c_solutions.scale(scale_solution, scale_solution)
                 renderPDF.draw(solution_drawing, c_solutions, 0, 0)
                 c_solutions.restoreState()
 
-                # Add the name below each solution
                 c_solutions.setFont("Helvetica", 12)
                 solution_name = os.path.basename(solution_filepath).split(".")[
                     1].replace("S", "")
@@ -183,12 +190,16 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None):
                         y_position = height - top_margin - 150
 
                 solution_page_num += 1
-
                 print(f"Adding solution: {solution_filename}")
-                
+
+        puzzle_count += 1
+
     c_solutions.save()
     c.save()
-    
+
+    if prog_callback:
+        prog_callback("merge_pdfs", "Merging PDF pages…")
+
     # Merge puzzle and solution PDFs into the main PDF
     if os.path.exists(pdf_file):
         print(f"Merging existing and new pages into {pdf_file}")
