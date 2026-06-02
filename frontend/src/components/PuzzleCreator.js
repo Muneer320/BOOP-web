@@ -4,7 +4,8 @@ import { useGeneration } from "../context/GenerationContext";
 import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
-import PuzzlePreview from "./PuzzlePreview";
+import PuzzleDetails from "./PuzzleDetails";
+import GenerationProgress from "./GenerationProgress";
 import Tooltip from "./Tooltip";
 import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
@@ -105,10 +106,13 @@ const PuzzleCreator = () => {
     setStep((prev) => prev - 1);
   }, []);
 
+  const [progressComplete, setProgressComplete] = useState(false);
+
   const generatePuzzle = useCallback(async () => {
     try {
       startGeneration();
       setError(null);
+      setProgressComplete(false);
 
       const response = await apiService.generatePuzzle(formData);
 
@@ -119,6 +123,7 @@ const PuzzleCreator = () => {
       document.body.appendChild(link);
       link.click();
 
+      setProgressComplete(true);
       completeGeneration(response.data, `${formData.name}.pdf`);
 
       window.URL.revokeObjectURL(url);
@@ -166,7 +171,9 @@ const PuzzleCreator = () => {
       <div className="container">
         <div className="card">
           {isGenerating && (
-            <LoadingOverlay text="Generating your puzzle book..." />
+            <LoadingOverlay>
+              <GenerationProgress formData={formData} isComplete={progressComplete} />
+            </LoadingOverlay>
           )}
           {/* Progress indicator */}
           <div className="progress-bar">
@@ -289,7 +296,7 @@ const PuzzleCreator = () => {
                   </button>
                 </div>
               </div>
-              <PuzzlePreview formData={formData} />
+                <PuzzleDetails formData={formData} />
             </div>
           )}
 

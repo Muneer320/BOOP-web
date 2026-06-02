@@ -10,7 +10,7 @@ const QUOTES = [
   "Almost there, keep your eyes peeled!",
 ];
 
-const LoadingOverlay = ({ text }) => {
+const LoadingOverlay = ({ text, children }) => {
   const [grid, setGrid] = useState([]);
   const [quote, setQuote] = useState("");
 
@@ -32,26 +32,30 @@ const LoadingOverlay = ({ text }) => {
   return (
     <div className="loading-overlay">
       <div className="loading-box">
-        <div className="grid-spinner">
-          {grid.map((letter, i) => {
-            const randomDelay = (Math.random() * 1).toFixed(2);
-            const randomDuration = (2 + Math.random() * 1).toFixed(2);
-            return (
-              <div
-                key={i}
-                className="grid-cell"
-                style={{
-                  animationDelay: `${randomDelay}s`,
-                  animationDuration: `${randomDuration}s`,
-                }}
-              >
-                {letter}
-              </div>
-            );
-          })}
-        </div>
-        <p className="loading-text">{text}</p>
-        <p className="loading-quote">{quote}</p>
+        {children ? children : (
+          <>
+            <div className="grid-spinner">
+              {grid.map((letter, i) => {
+                const randomDelay = (Math.random() * 1).toFixed(2);
+                const randomDuration = (2 + Math.random() * 1).toFixed(2);
+                return (
+                  <div
+                    key={i}
+                    className="grid-cell"
+                    style={{
+                      animationDelay: `${randomDelay}s`,
+                      animationDuration: `${randomDuration}s`,
+                    }}
+                  >
+                    {letter}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="loading-text">{text}</p>
+            <p className="loading-quote">{quote}</p>
+          </>
+        )}
       </div>
     </div>
   );
