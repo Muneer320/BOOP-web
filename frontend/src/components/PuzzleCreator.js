@@ -4,6 +4,7 @@ import { useGeneration } from "../context/GenerationContext";
 import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
+import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
 
 const PuzzleCreator = () => {
@@ -142,15 +143,11 @@ const PuzzleCreator = () => {
     }
   };
 
-  // Conditionally render loading state
   if (isLoading) {
     return (
       <div className="puzzle-creator loading">
         <div className="container">
-          <div className="card">
-            <h2>Loading...</h2>
-            <p>Preparing the puzzle creator...</p>
-          </div>
+          <SkeletonForm />
         </div>
       </div>
     );

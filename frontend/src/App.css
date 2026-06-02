@@ -32,6 +32,22 @@
   }
 }
 
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-light) 25%, #f0f0f0 50%, var(--gray-light) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Common Utility Classes */
 .text-center {
   text-align: center;
