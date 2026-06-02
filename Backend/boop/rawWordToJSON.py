@@ -46,17 +46,17 @@ def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_n
     else:
         hard_w_count = 15
 
-        topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
-        for _ in range(num_normal):
-            normal_pool, topic_result["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Normal"])
-        for _ in range(num_hard):
-            hard_pool, topic_result["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Hard"])
-        for _ in range(bonus_normal):
-            normal_pool, topic_result["Bonus"]["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Bonus"]["Normal"])
-        for _ in range(bonus_hard):
-            hard_pool, topic_result["Bonus"]["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Bonus"]["Hard"])
+    topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
+    for _ in range(num_normal):
+        normal_pool, topic_result["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Normal"])
+    for _ in range(num_hard):
+        hard_pool, topic_result["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Hard"])
+    for _ in range(bonus_normal):
+        normal_pool, topic_result["Bonus"]["Normal"] = _sample(normal_pool, normal_w_count, topic_result["Bonus"]["Normal"])
+    for _ in range(bonus_hard):
+        hard_pool, topic_result["Bonus"]["Hard"] = _sample(hard_pool, hard_w_count, topic_result["Bonus"]["Hard"])
 
-        result[topic] = topic_result
+    result[topic] = topic_result
 
     if output_path is None:
         output_path = os.path.join(os.path.dirname(__file__), "Words", "words.json")
