@@ -1,18 +1,20 @@
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 const apiService = {
-  checkStatus: () => axios.get(`${API_BASE_URL}/`),
+  checkStatus: () => api.get("/"),
 
-  getSettings: () => axios.get(`${API_BASE_URL}/settings`),
+  getSettings: () => api.get("/settings"),
 
-  getTemplates: () => axios.get(`${API_BASE_URL}/templates`),
+  getTemplates: () => api.get("/templates"),
 
   uploadFile: (file) => {
     const formData = new FormData();
@@ -38,3 +40,5 @@ const apiService = {
       },
     }),
 };
+
+export { apiService };
