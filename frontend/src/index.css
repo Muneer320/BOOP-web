@@ -42,7 +42,7 @@
   --bg-primary: #1f1b16;
   --bg-secondary: #1a1814;
   --text-primary: #e0d8cc;
-  --text-secondary: #a89880;
+  --text-secondary: #bcab95;
   --border-color: #3a3228;
   --card-bg: #25201a;
   --overlay-bg: rgba(26, 24, 20, 0.85);
@@ -243,6 +243,21 @@ textarea.form-control {
     transparent 10px
   );
   margin: 2rem 0;
+}
+
+/* === FOCUS === */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* === KEYFRAMES === */

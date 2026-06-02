@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -7,6 +7,25 @@ import "./Header.css";
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleOutside = (e) => {
+      if (headerRef.current && !headerRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
 
   const isActive = (path) => location.pathname === path ? "active" : "";
 
@@ -15,7 +34,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`header ${menuOpen ? "expanded" : ""}`}>
+    <header className={`header ${menuOpen ? "expanded" : ""}`} ref={headerRef}>
       <div className="container">
         <div className="header-content">
           <div className="logo">
@@ -29,12 +48,14 @@ const Header = () => {
           </div>
 
           {/* Hamburger menu button - visible only on mobile */}
-          <button className="menu-toggle" onClick={toggleMenu}>
+          <button className="menu-toggle" onClick={toggleMenu}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}>
             <span className={`menu-icon ${menuOpen ? "open" : ""}`}></span>
           </button>
 
           {/* Navigation - always visible on desktop, toggled on mobile */}
-          <nav className={`nav ${menuOpen ? "visible" : ""}`}>
+          <nav className={`nav ${menuOpen ? "visible" : ""}`} aria-label="Main navigation">
             <ul className="main-nav-list">
               <li>
                 <Link to="/" className={isActive("/")} onClick={() => setMenuOpen(false)}>

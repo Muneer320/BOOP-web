@@ -35,6 +35,7 @@ const PuzzleGame = () => {
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
   const [gameId, setGameId] = useState(null);
+  const [focusedCell, setFocusedCell] = useState(null);
   const [hintCooldowns, setHintCooldowns] = useState({});
   const [hintWord, setHintWord] = useState(null);
   const [fullSolutionMode, setFullSolutionMode] = useState(null); // null | "confirm" | "done"
@@ -50,6 +51,7 @@ const PuzzleGame = () => {
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [topicWordMap, setTopicWordMap] = useState({});
   const [manualInput, setManualInput] = useState("");
+  const [topicError, setTopicError] = useState(null);
 
   const mode = MODES.find(m => m.id === modeId) || MODES[1];
   const timer = useTimer();
@@ -59,7 +61,9 @@ const PuzzleGame = () => {
   useEffect(() => {
     apiService.getTopics().then(r => {
       setTopics(r.data.topics || []);
-    }).catch(() => {});
+    }).catch(() => {
+      setTopicError("Could not load topics. Check your connection and try again.");
+    });
   }, []);
 
   const selectTopic = useCallback(async (topic) => {
@@ -222,6 +226,23 @@ const PuzzleGame = () => {
     }
   }, [puzzle, foundWords, getDirection, timer]);
 
+  /* ---- Keyboard navigation ---- */
+  const handleCellKeyDown = useCallback((e, r, c) => {
+    if (!puzzle || paused || screen !== "play") return;
+    const s = puzzle.grid_size;
+    switch (e.key) {
+      case "ArrowUp":    e.preventDefault(); setFocusedCell([Math.max(0, r-1), c]); break;
+      case "ArrowDown":  e.preventDefault(); setFocusedCell([Math.min(s-1, r+1), c]); break;
+      case "ArrowLeft":  e.preventDefault(); setFocusedCell([r, Math.max(0, c-1)]); break;
+      case "ArrowRight": e.preventDefault(); setFocusedCell([r, Math.min(s-1, c+1)]); break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        handleCellClick(r, c);
+        break;
+    }
+  }, [puzzle, paused, screen, handleCellClick]);
+
   /* ---- Click/tap handling ---- */
   const handleCellClick = useCallback((r, c) => {
     if (!puzzle || paused || screen !== "play") return;
@@ -234,10 +255,14 @@ const PuzzleGame = () => {
   }, [puzzle, paused, screen, attemptWord]);
 
   /* ---- Drag handling ---- */
+  const dragCellsRef = useRef([]);
+  const dragRafRef = useRef(null);
+
   const handleMouseDown = useCallback((r, c) => {
     if (!puzzle || paused || screen !== "play" || inFound(r, c)) return;
     setIsDragging(true);
     setSelectedCells([[r, c]]);
+    dragCellsRef.current = [[r, c]];
     setDragCells([[r, c]]);
   }, [puzzle, paused, screen, inFound]);
 
@@ -256,18 +281,30 @@ const PuzzleGame = () => {
       if (cr === r && cc === c) break;
       cr += dir[0]; cc += dir[1];
     }
-    setDragCells(cells);
+    dragCellsRef.current = cells;
+    if (!dragRafRef.current) {
+      dragRafRef.current = requestAnimationFrame(() => {
+        dragRafRef.current = null;
+        setDragCells(dragCellsRef.current);
+      });
+    }
   }, [isDragging, selectedCells, puzzle, paused, getDirection]);
 
   const handleMouseUp = useCallback(() => {
     if (!isDragging) return;
-    setIsDragging(false);
-    if (dragCells.length > 1) {
-      attemptWord(selectedCells[0], dragCells[dragCells.length - 1]);
+    if (dragRafRef.current) {
+      cancelAnimationFrame(dragRafRef.current);
+      dragRafRef.current = null;
     }
+    setIsDragging(false);
+    const cells = dragCellsRef.current;
+    if (cells.length > 1) {
+      attemptWord(selectedCells[0], cells[cells.length - 1]);
+    }
+    dragCellsRef.current = [];
     setSelectedCells([]);
     setDragCells([]);
-  }, [isDragging, dragCells, selectedCells, attemptWord]);
+  }, [isDragging, selectedCells, attemptWord]);
 
   /* ---- Touch handlers ---- */
   const handleTouchStart = useCallback((e, r, c) => {
@@ -338,6 +375,7 @@ const PuzzleGame = () => {
       e.preventDefault();
     }
     if (e.key === "Backspace" && !manualInput && wordChips.length > 0) {
+      e.preventDefault();
       removeChip(wordChips[wordChips.length - 1]);
     }
   }, [manualInput, wordChips, mode.maxW, removeChip]);
@@ -533,7 +571,8 @@ const PuzzleGame = () => {
 
           {wordSource === "preset" && (
             <div className="pg-preset-panel">
-              {loadingTopics && <p className="pg-loading-hint">Loading words…</p>}
+              {topicError && <p className="alert alert-danger">{topicError}</p>}
+              {loadingTopics && <p className="pg-loading-hint">Loading words\u2026</p>}
               {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
                 renderTopicCard(topic)
               )}
@@ -642,19 +681,23 @@ const PuzzleGame = () => {
                   const found = inFound(ri, ci);
                   const sel = isSelected(ri, ci);
                   const hl = isHighlighted(ri, ci);
+                  const isFocused = focusedCell && focusedCell[0] === ri && focusedCell[1] === ci;
                   const color = found ? getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))) : null;
                   return (
                     <div key={`${ri}-${ci}`}
                       className={`pg-cell${found ? " found" : ""}${sel ? " selecting" : ""}${hl ? " hilite" : ""}`}
                       style={color ? { background: color, color: "#fff" } : sel ? { background: "var(--primary)", color: "#fff" } : {}}
                       data-row={ri} data-col={ci}
+                      role="gridcell"
+                      tabIndex={isFocused ? 0 : -1}
                       onMouseDown={() => handleMouseDown(ri, ci)}
                       onMouseMove={() => handleMouseMove(ri, ci)}
                       onMouseUp={handleMouseUp}
                       onTouchStart={e => handleTouchStart(e, ri, ci)}
                       onTouchMove={handleTouchMove}
                       onTouchEnd={handleTouchEnd}
-                      onClick={() => handleCellClick(ri, ci)}>
+                      onClick={() => { setFocusedCell([ri, ci]); handleCellClick(ri, ci); }}
+                      onKeyDown={e => handleCellKeyDown(e, ri, ci)}>
                       <span className="pg-cell-letter" data-char={cell} aria-hidden="true" />
                     </div>
                   );
@@ -705,15 +748,7 @@ const PuzzleGame = () => {
 
   /* ======== RENDER: CONFIRM ======== */
   const renderConfirm = (msg, onConfirm, onCancel) => (
-    <div className="pg-modal" onClick={onCancel}>
-      <div className="pg-modal-content pg-confirm" onClick={e => e.stopPropagation()}>
-        <p>{msg}</p>
-        <div className="pg-confirm-actions">
-          <button className="btn btn-primary" onClick={onConfirm}>Yes</button>
-          <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal msg={msg} onConfirm={onConfirm} onCancel={onCancel} />
   );
 
   /* ======== RENDER: COMPLETE ======== */
@@ -785,6 +820,46 @@ const PuzzleGame = () => {
       {screen === "start" && renderStart()}
       {screen === "play" && renderPlay()}
       {screen === "complete" && renderComplete()}
+    </div>
+  );
+};
+
+/* ---- Focus-trapping Confirm Modal ---- */
+const ConfirmModal = ({ msg, onConfirm, onCancel }) => {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const el = modalRef.current;
+    if (!el) return;
+    const focusable = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length) focusable[0].focus();
+    const handleKey = (e) => {
+      if (e.key === "Escape") { onCancel(); return; }
+      if (e.key === "Tab" && focusable.length > 1) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  return (
+    <div className="pg-modal" onClick={onCancel} role="dialog" aria-modal="true">
+      <div className="pg-modal-content pg-confirm" onClick={e => e.stopPropagation()} ref={modalRef}>
+        <p>{msg}</p>
+        <div className="pg-confirm-actions">
+          <button className="btn btn-primary" onClick={onConfirm}>Yes</button>
+          <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
     </div>
   );
 };
