@@ -4,6 +4,7 @@ import { useGeneration } from "../context/GenerationContext";
 import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
+import PuzzlePreview from "./PuzzlePreview";
 import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
 
@@ -210,91 +211,94 @@ const PuzzleCreator = () => {
 
           {/* Step 1: Basic Settings */}
           {step === 1 && (
-            <div className="form-step">
-              <div className="form-group">
-                <label htmlFor="name">Book Title</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="form-control"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-row">
+            <div className="form-step form-with-preview">
+              <div className="form-fields">
                 <div className="form-group">
-                  <label htmlFor="normal">Normal Puzzles</label>
+                  <label htmlFor="name">Book Title</label>
                   <input
-                    type="number"
-                    id="normal"
-                    name="normal"
+                    type="text"
+                    id="name"
+                    name="name"
                     className="form-control"
-                    value={formData.normal}
+                    value={formData.name}
                     onChange={handleChange}
-                    min="0"
-                    max="50"
+                    required
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="hard">Hard Puzzles</label>
-                  <input
-                    type="number"
-                    id="hard"
-                    name="hard"
-                    className="form-control"
-                    value={formData.hard}
-                    onChange={handleChange}
-                    min="0"
-                    max="50"
-                  />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="normal">Normal Puzzles</label>
+                    <input
+                      type="number"
+                      id="normal"
+                      name="normal"
+                      className="form-control"
+                      value={formData.normal}
+                      onChange={handleChange}
+                      min="0"
+                      max="50"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="hard">Hard Puzzles</label>
+                    <input
+                      type="number"
+                      id="hard"
+                      name="hard"
+                      className="form-control"
+                      value={formData.hard}
+                      onChange={handleChange}
+                      min="0"
+                      max="50"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="bonus_normal">Bonus Normal Puzzles</label>
+                    <input
+                      type="number"
+                      id="bonus_normal"
+                      name="bonus_normal"
+                      className="form-control"
+                      value={formData.bonus_normal}
+                      onChange={handleChange}
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="bonus_hard">Bonus Hard Puzzles</label>
+                    <input
+                      type="number"
+                      id="bonus_hard"
+                      name="bonus_hard"
+                      className="form-control"
+                      value={formData.bonus_hard}
+                      onChange={handleChange}
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+                </div>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+
+                <div className="form-navigation">
+                  <button
+                    className="btn btn-primary"
+                    onClick={nextStep}
+                    disabled={!!error}
+                  >
+                    Next: Word Selection
+                  </button>
                 </div>
               </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="bonus_normal">Bonus Normal Puzzles</label>
-                  <input
-                    type="number"
-                    id="bonus_normal"
-                    name="bonus_normal"
-                    className="form-control"
-                    value={formData.bonus_normal}
-                    onChange={handleChange}
-                    min="0"
-                    max="10"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="bonus_hard">Bonus Hard Puzzles</label>
-                  <input
-                    type="number"
-                    id="bonus_hard"
-                    name="bonus_hard"
-                    className="form-control"
-                    value={formData.bonus_hard}
-                    onChange={handleChange}
-                    min="0"
-                    max="10"
-                  />
-                </div>
-              </div>
-
-              {error && <div className="alert alert-danger">{error}</div>}
-
-              <div className="form-navigation">
-                <button
-                  className="btn btn-primary"
-                  onClick={nextStep}
-                  disabled={!!error}
-                >
-                  Next: Word Selection
-                </button>
-              </div>
+              <PuzzlePreview formData={formData} />
             </div>
           )}
 
