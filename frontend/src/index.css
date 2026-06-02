@@ -11,6 +11,29 @@
   --gray: #6c757d;
   --gray-light: #e9ecef;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #343a40;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --card-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+  --primary: #6d94c7;
+  --primary-dark: #4a6fa5;
+  --secondary: #ffb142;
+  --light: #1a1d23;
+  --dark: #e1e1e1;
+  --gray: #adb5bd;
+  --gray-light: #2d323a;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --bg-primary: #1a1d23;
+  --bg-secondary: #22262d;
+  --text-primary: #e1e1e1;
+  --text-secondary: #adb5bd;
+  --border-color: #2d323a;
+  --card-bg: #22262d;
 }
 
 * {
@@ -24,9 +47,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--light);
-  color: var(--dark);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   line-height: 1.6;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 code {
@@ -86,11 +110,12 @@ code {
 }
 
 .card {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--shadow);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  transition: background-color 0.2s;
 }
 
 .form-group {
@@ -103,10 +128,10 @@ code {
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: var(--dark);
-  background-color: #fff;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   background-clip: padding-box;
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out;
 }

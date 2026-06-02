@@ -1,0 +1,23 @@
+.theme-toggle {
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: var(--gray);
+  margin-left: 1rem;
+}
+
+.theme-toggle:hover {
+  color: var(--primary);
+  border-color: var(--gray-light);
+}
+
+.sun-moon {
+  width: 20px;
+  height: 20px;
+}

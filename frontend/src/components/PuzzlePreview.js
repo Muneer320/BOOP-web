@@ -40,8 +40,7 @@ const PuzzlePreview = ({ formData }) => {
               y={ri * 30 + 50}
               width={26}
               height={26}
-              fill={ri % 2 === ci % 2 ? "#f0f4ff" : "#ffffff"}
-              stroke="#cbd5e1"
+              className={ri % 2 === ci % 2 ? "preview-cell-dark" : "preview-cell-light"}
               strokeWidth="1"
               rx="2"
             />
@@ -55,7 +54,7 @@ const PuzzlePreview = ({ formData }) => {
               y={ri * 30 + 68}
               textAnchor="middle"
               fontSize="14"
-              fill="#334155"
+              className="preview-cell-text"
               fontFamily="monospace"
             >
               {cell}

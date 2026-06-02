@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.svg";
+import ThemeToggle from "./ThemeToggle";
 import "./Header.css";
 
 const Header = () => {
@@ -48,6 +49,7 @@ const Header = () => {
                 </Link>
               </li>
             </ul>
+            <ThemeToggle />
           </nav>
         </div>
       </div>

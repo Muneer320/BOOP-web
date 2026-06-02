@@ -1,11 +1,11 @@
 .header {
-  background-color: white;
+  background-color: var(--card-bg);
   box-shadow: var(--shadow);
   padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, background-color 0.2s;
 }
 
 .header.expanded {
@@ -161,10 +161,10 @@
   right: -300px;
   width: 280px;
   height: 100vh;
-  background-color: white;
+  background-color: var(--card-bg);
   box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1001;
-  transition: right 0.3s ease;
+  transition: right 0.3s ease, background-color 0.2s;
   overflow-y: auto;
 }
 

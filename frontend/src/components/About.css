@@ -78,7 +78,7 @@
 }
 
 .cta-container .btn {
-  background-color: white;
+  background-color: var(--card-bg);
   color: var(--primary);
   border: none;
   font-size: 1.1rem;

@@ -38,7 +38,7 @@
 }
 
 .puzzle-preview {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--shadow);
   padding: 2rem;
@@ -112,7 +112,7 @@
 
 .features-section {
   padding: 5rem 0;
-  background-color: white;
+  background-color: var(--card-bg);
 }
 
 .features-section h2 {
@@ -129,7 +129,7 @@
 }
 
 .feature-card {
-  background-color: white;
+  background-color: var(--card-bg);
   box-shadow: var(--shadow);
   border-radius: 8px;
   padding: 2rem 1.5rem;

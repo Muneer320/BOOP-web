@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import GenerationStatus from "./components/GenerationStatus";
 
 import { GenerationProvider } from "./context/GenerationContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const Home = lazy(() => import("./components/Home"));
 const PuzzleCreator = lazy(() => import("./components/PuzzleCreator"));
@@ -23,6 +24,7 @@ function App() {
   }, []);
 
   return (
+    <ThemeProvider>
     <GenerationProvider>
       <Router>
         <div className="app-wrapper">
@@ -47,6 +49,7 @@ function App() {
         </div>
       </Router>
     </GenerationProvider>
+    </ThemeProvider>
   );
 }
 

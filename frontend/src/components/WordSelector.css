@@ -46,7 +46,7 @@
 }
 
 .topic-list li {
-  background-color: white;
+  background-color: var(--bg-primary);
   border: 1px solid var(--gray-light);
   border-radius: 6px;
   padding: 1rem;

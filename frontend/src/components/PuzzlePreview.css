@@ -1,5 +1,5 @@
 .puzzle-preview-card {
-  background: white;
+  background: var(--card-bg);
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
@@ -36,6 +36,20 @@
   height: auto;
   display: block;
   margin: 0 auto;
+}
+
+.preview-cell-light {
+  fill: var(--bg-primary);
+  stroke: var(--border-color);
+}
+
+.preview-cell-dark {
+  fill: var(--bg-secondary);
+  stroke: var(--border-color);
+}
+
+.preview-cell-text {
+  fill: var(--text-primary);
 }
 
 .preview-stats {

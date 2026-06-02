@@ -1,5 +1,5 @@
 .file-uploader {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
