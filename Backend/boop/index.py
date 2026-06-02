@@ -18,7 +18,7 @@ class PDF(FPDF):
     def save_and_append(self):
         if os.path.exists(self.pdf_file):
             new_pdf_path = f"{os.path.splitext(self.pdf_file)[0]}_temp.pdf"
-            self.output(new_pdf_path, "F")
+            self.output("F", new_pdf_path)
 
             reader = PdfReader(self.pdf_file)
             writer = PdfWriter()
@@ -35,7 +35,7 @@ class PDF(FPDF):
 
             os.remove(new_pdf_path)
         else:
-            self.output(self.pdf_file, "F")
+            self.output("F", self.pdf_file)
 
 
 def create_title_page(pdf_file, words_json, background_image=None):
