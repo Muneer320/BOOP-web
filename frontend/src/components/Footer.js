@@ -6,8 +6,8 @@ const Footer = () => {
 
   return (
     <footer className="footer">
-      <div className="container">
-        <p>
+      <div className="container footer-content">
+        <p className="footer-copy">
           &copy; {currentYear} BOOP Word Search Generator. All rights reserved.
         </p>
         <div className="footer-links">
