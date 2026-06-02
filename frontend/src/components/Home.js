@@ -35,7 +35,6 @@ const Home = () => {
                       {Array(10)
                         .fill()
                         .map((_, colIndex) => {
-                          // Randomly display letters
                           const randomChar = String.fromCharCode(
                             65 + Math.floor(Math.random() * 26)
                           );

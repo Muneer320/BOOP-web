@@ -65,7 +65,6 @@ const FileUploader = ({
     setUseDefault((prev) => {
       const newVal = !prev;
       if (!newVal) {
-        // disable default
         onFileUploaded(null);
         setFileName("");
         setIsUploaded(false);

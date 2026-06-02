@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Create axios instance with base URL
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
   headers: {
@@ -8,19 +7,13 @@ const api = axios.create({
   },
 });
 
-// API service methods
-export const apiService = {
-  // Health check
-  checkStatus: () => api.get("/status"),
+const apiService = {
+  checkStatus: () => axios.get(`${API_BASE_URL}/`),
 
-  // Settings
-  getSettings: () => api.get("/settings"),
+  getSettings: () => axios.get(`${API_BASE_URL}/settings`),
 
-  // Templates
-  getTemplates: () => api.get("/templates"),
-  getTemplate: (templateId) => api.get(`/templates/${templateId}`),
+  getTemplates: () => axios.get(`${API_BASE_URL}/templates`),
 
-  // Files/Assets
   uploadFile: (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -34,11 +27,9 @@ export const apiService = {
     }),
   deleteFile: (fileId) => api.delete(`/files/${fileId}`),
 
-  // Word Topics
   getTopics: () => api.get("/topics"),
   getTopicWords: (topic) => api.get(`/topics/${topic}/words`),
 
-  // Generate Puzzle
   generatePuzzle: (data) =>
     api.post("/generate-puzzle", data, {
       responseType: "blob",

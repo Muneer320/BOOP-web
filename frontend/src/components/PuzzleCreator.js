@@ -17,10 +17,8 @@ const PuzzleCreator = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Use global generation state
   const { isGenerating, generatedFile, startGeneration, completeGeneration } = useGeneration();
 
-  // Form state
   const [formData, setFormData] = useState({
     name: "My Word Search",
     normal: 5,
@@ -34,7 +32,6 @@ const PuzzleCreator = () => {
     words_file_id: null,
   });
 
-  // Fetch initial data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -61,7 +58,6 @@ const PuzzleCreator = () => {
     fetchInitialData();
   }, []);
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     if (name === "name") {
@@ -78,7 +74,6 @@ const PuzzleCreator = () => {
     });
   };
 
-  // Update uploaded file IDs
   const handleFileUpload = (fileType, fileId) => {
     setFormData({
       ...formData,
@@ -86,7 +81,6 @@ const PuzzleCreator = () => {
     });
   };
 
-  // Update words payload
   const handleWordsUpdate = (wordsPayload) => {
     setFormData({
       ...formData,
@@ -95,7 +89,6 @@ const PuzzleCreator = () => {
     });
   };
 
-  // Handle text file upload for words
   const handleWordsFileUpload = (fileId) => {
     setFormData({
       ...formData,
@@ -104,25 +97,21 @@ const PuzzleCreator = () => {
     });
   };
 
-  // Navigate to next step
   const nextStep = () => {
     setStep(step + 1);
   };
 
-  // Navigate to previous step
   const prevStep = () => {
     setStep(step - 1);
   };
 
-  // Generate puzzle book
   const generatePuzzle = async () => {
     try {
-      startGeneration(); // Start global generation state
+      startGeneration();
       setError(null);
 
       const response = await apiService.generatePuzzle(formData);
 
-      // Create a download link for the PDF
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -132,16 +121,14 @@ const PuzzleCreator = () => {
 
       completeGeneration(response.data, `${formData.name}.pdf`);
 
-      // Clean up
       window.URL.revokeObjectURL(url);
       link.remove();
 
-      // Reset form or show success
-      setStep(4); // Show success step
+      setStep(4);
     } catch (err) {
       setError("Failed to generate puzzle book. Please try again.");
       console.error("Error generating puzzle:", err);
-      completeGeneration(null); // Reset generation state on error
+      completeGeneration(null);
     }
   };
 
@@ -155,7 +142,6 @@ const PuzzleCreator = () => {
     );
   }
 
-  // Conditionally render error state
   if (error && !settings) {
     return (
       <div className="puzzle-creator error">

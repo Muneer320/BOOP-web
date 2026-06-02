@@ -10,9 +10,8 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   const [customWordInput, setCustomWordInput] = useState("");
   const [isLoadingWords, setIsLoadingWords] = useState(false);
   const [error, setError] = useState(null);
-  const [selectionType, setSelectionType] = useState("preset"); // 'preset', 'custom', 'file'
+  const [selectionType, setSelectionType] = useState("preset");
 
-  // Fetch words for a specific topic
   const fetchTopicWords = async (topic) => {
     try {
       setIsLoadingWords(true);
@@ -29,7 +28,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     }
   };
 
-  // Select or deselect a topic
   const toggleTopic = (topic) => {
     if (selectedTopics.includes(topic)) {
       setSelectedTopics((prev) => prev.filter((t) => t !== topic));
@@ -41,7 +39,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     }
   };
 
-  // Add a custom word to a topic
   const addCustomWord = () => {
     if (!customTopicName.trim()) {
       setError("Please enter a topic name");
@@ -67,7 +64,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     setError(null);
   };
 
-  // Remove a custom word
   const removeCustomWord = (topic, word) => {
     setCustomWords((prev) => {
       const updatedWords = prev[topic].filter((w) => w !== word);
@@ -83,7 +79,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     });
   };
 
-  // Handle file upload for words
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -101,7 +96,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     }
   };
 
-  // Update parent component with selected words
   useEffect(() => {
     if (selectionType === "preset" && selectedTopics.length > 0) {
       const selectedWordsPayload = {};
@@ -120,7 +114,6 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     ) {
       onWordsUpdate(customWords);
     } else if (selectionType === "file") {
-      // File upload is handled separately
     } else {
       onWordsUpdate(null);
     }
