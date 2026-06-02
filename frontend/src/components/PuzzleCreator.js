@@ -5,6 +5,7 @@ import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
 import PuzzlePreview from "./PuzzlePreview";
+import Tooltip from "./Tooltip";
 import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
 
@@ -258,7 +259,9 @@ const PuzzleCreator = () => {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="bonus_normal">Bonus Normal Puzzles</label>
+                    <Tooltip text="Extra puzzles at the end of the book with an answer key">
+                      <label htmlFor="bonus_normal">Bonus Normal Puzzles</label>
+                    </Tooltip>
                     <input
                       type="number"
                       id="bonus_normal"
@@ -272,7 +275,9 @@ const PuzzleCreator = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="bonus_hard">Bonus Hard Puzzles</label>
+                    <Tooltip text="Extra hard puzzles at the end of the book with an answer key">
+                      <label htmlFor="bonus_hard">Bonus Hard Puzzles</label>
+                    </Tooltip>
                     <input
                       type="number"
                       id="bonus_hard"
