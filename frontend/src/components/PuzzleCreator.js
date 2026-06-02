@@ -17,7 +17,7 @@ const PuzzleCreator = () => {
   const [error, setError] = useState(null);
 
   // Use global generation state
-  const { isGenerating, startGeneration, completeGeneration } = useGeneration();
+  const { isGenerating, generatedFile, startGeneration, completeGeneration } = useGeneration();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -380,15 +380,32 @@ const PuzzleCreator = () => {
           {/* Step 4: Success & Download */}
           {step === 4 && (
             <div className="form-step success-step">
-              <div className="success-icon">✓</div>
-              <h3>Your Puzzle Book is Ready!</h3>
-              <p>
-                Your word search puzzle book has been successfully generated.
+              <div className="success-animation">
+                <svg className="checkmark" viewBox="0 0 52 52">
+                  <circle className="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                  <path className="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
+                </svg>
+              </div>
+              <h3 className="success-heading">Puzzle Book Generated!</h3>
+              <p className="success-description">
+                <strong>{formData.name}</strong> with {(formData.normal || 0) + (formData.hard || 0) + (formData.bonus_normal || 0) + (formData.bonus_hard || 0)} puzzles is ready to download.
               </p>
 
-              <div className="action-buttons">
-                <button className="btn btn-primary" onClick={() => setStep(1)}>
-                  Create Another Puzzle
+              <div className="success-actions">
+                <button className="btn btn-primary btn-lg" onClick={() => {
+                  const url = window.URL.createObjectURL(new Blob([generatedFile]));
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.setAttribute("download", `${formData.name}.pdf`);
+                  document.body.appendChild(link);
+                  link.click();
+                  window.URL.revokeObjectURL(url);
+                  link.remove();
+                }}>
+                  Download PDF
+                </button>
+                <button className="btn btn-secondary" onClick={() => setStep(1)}>
+                  Create Another
                 </button>
               </div>
             </div>

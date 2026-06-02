@@ -90,24 +90,63 @@
 
 .success-step {
   text-align: center;
-  padding: 2rem 0;
+  padding: 3rem 1rem;
 }
 
-.success-icon {
+.success-heading {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.success-description {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.success-animation {
+  margin: 0 auto 1.5rem;
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  background-color: var(--success);
-  color: white;
-  font-size: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
 }
 
-.action-buttons {
-  margin-top: 2rem;
+.checkmark {
+  width: 80px;
+  height: 80px;
+}
+
+.checkmark-circle {
+  stroke: var(--success);
+  stroke-width: 2;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: strokeAnim 0.6s ease-in-out forwards;
+}
+
+.checkmark-check {
+  stroke: var(--success);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: strokeAnim 0.3s 0.6s ease-in-out forwards;
+}
+
+@keyframes strokeAnim {
+  100% { stroke-dashoffset: 0; }
+}
+
+.success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1.125rem;
 }
 
 .card {
