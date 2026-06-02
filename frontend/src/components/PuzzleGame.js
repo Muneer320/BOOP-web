@@ -467,21 +467,100 @@ const PuzzleGame = () => {
     timer.stop();
   }, [clearGame, timer]);
 
-  /* ---- Copy share link ---- */
-  const handleCopyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.origin + "/play").catch(() => {});
-  }, []);
+  /* ---- Download solved grid as PNG ---- */
+  const handleDownloadGrid = useCallback(() => {
+    if (!puzzle) return;
+    const gs = puzzle.grid_size;
+    const cellPx = 28;
+    const gap = 1;
+    const padding = 12;
+    const size = gs * cellPx + (gs - 1) * gap + padding * 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fillRect(0, 0, size, size);
+    for (let r = 0; r < gs; r++) {
+      for (let c = 0; c < gs; c++) {
+        const x = padding + c * (cellPx + gap);
+        const y = padding + r * (cellPx + gap);
+        const letter = puzzle.grid[r][c];
+        const found = foundSetRef.current.has(`${r},${c}`);
+        if (found) {
+          const wordKey = Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === r && fc === c));
+          const idx = wordKey ? Object.keys(foundWords).indexOf(wordKey) : -1;
+          ctx.fillStyle = idx >= 0 ? COLORS[idx % COLORS.length] : "#3a6b35";
+        } else {
+          ctx.fillStyle = "#2a2a2a";
+        }
+        ctx.fillRect(x, y, cellPx, cellPx);
+        ctx.fillStyle = "#fdfaf4";
+        ctx.font = `${Math.floor(cellPx * 0.55)}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(letter, x + cellPx / 2, y + cellPx / 2 + 1);
+      }
+    }
+    const link = document.createElement("a");
+    link.download = "boop-solved-grid.png";
+    link.href = canvas.toDataURL();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [puzzle, foundWords]);
 
   /* ---- Share ---- */
-  const handleShare = useCallback((platform) => {
+  const handleShare = useCallback(async (platform) => {
+    if (!puzzle) return;
+    if (platform === "native" && navigator.share) {
+      try {
+        const gs = puzzle.grid_size;
+        const cellPx = 28;
+        const gap = 1;
+        const padding = 12;
+        const size = gs * cellPx + (gs - 1) * gap + padding * 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, size, size);
+        for (let r = 0; r < gs; r++) {
+          for (let c = 0; c < gs; c++) {
+            const x = padding + c * (cellPx + gap);
+            const y = padding + r * (cellPx + gap);
+            const letter = puzzle.grid[r][c];
+            const found = foundSetRef.current.has(`${r},${c}`);
+            if (found) {
+              const wordKey = Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === r && fc === c));
+              const idx = wordKey ? Object.keys(foundWords).indexOf(wordKey) : -1;
+              ctx.fillStyle = idx >= 0 ? COLORS[idx % COLORS.length] : "#3a6b35";
+            } else {
+              ctx.fillStyle = "#2a2a2a";
+            }
+            ctx.fillRect(x, y, cellPx, cellPx);
+            ctx.fillStyle = "#fdfaf4";
+            ctx.font = `${Math.floor(cellPx * 0.55)}px monospace`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(letter, x + cellPx / 2, y + cellPx / 2 + 1);
+          }
+        }
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        const file = new File([blob], "boop-solved-grid.png", { type: "image/png" });
+        await navigator.share({ files: [file], title: "BOOP Word Search", text: "I just solved this word search on BOOP!" });
+        return;
+      } catch { /* fall through to URL share */ }
+    }
     const url = encodeURIComponent(window.location.origin + "/play");
-    const text = encodeURIComponent("I just solved a word search puzzle on BOOP! Can you beat my time?");
+    const text = encodeURIComponent("I just solved this word search on BOOP!");
     const hrefs = {
       x: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
       whatsapp: `https://wa.me/?text=${text}%20${url}`,
     };
     if (hrefs[platform]) window.open(hrefs[platform], "_blank", "noopener");
-  }, []);
+  }, [puzzle, foundWords]);
 
   /* ---- Pause ---- */
   const handlePause = useCallback(() => {
@@ -547,7 +626,10 @@ const PuzzleGame = () => {
         <h2 className="pg-start-title">Play Word Search</h2>
         <p className="pg-start-sub">Choose your mode, pick words, and start solving.</p>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="pg-error">
+          <span>{error}</span>
+          <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
+        </div>}
 
         <div className="pg-modes">
           {MODES.map(m => (
@@ -669,6 +751,10 @@ const PuzzleGame = () => {
               {timerEnabled && !paused && <button className="btn btn-outline btn-sm" onClick={handlePause}>Pause</button>}
               <button className="btn btn-outline btn-sm" onClick={handleNewGame}>New</button>
             </div>
+          {error && <div className="pg-error pg-error-inline">
+            <span>{error}</span>
+            <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
+          </div>}
           </div>
 
           <div className="pg-layout">
@@ -790,9 +876,10 @@ const PuzzleGame = () => {
             ))}
           </div>
           <div className="pg-share-buttons">
-            <button className="btn btn-outline btn-sm" onClick={handleCopyLink}>Copy Link</button>
+            <button className="btn btn-outline btn-sm" onClick={handleDownloadGrid}>Download Solved Grid</button>
             <button className="btn btn-outline btn-sm" onClick={() => handleShare("x")}>Share on X</button>
             <button className="btn btn-outline btn-sm" onClick={() => handleShare("whatsapp")}>WhatsApp</button>
+            {navigator.share && <button className="btn btn-outline btn-sm" onClick={() => handleShare("native")}>Share Image</button>}
           </div>
           <div className="pg-complete-actions">
             <button className="btn btn-primary" onClick={handleNewGame}>New Game</button>
@@ -815,6 +902,7 @@ const PuzzleGame = () => {
             <h2>Generating Puzzle…</h2>
             <div className="spinner" />
             <p className="text-secondary">Fitting words into a {mode.grid}×{mode.grid} grid</p>
+            <button className="btn btn-secondary btn-sm pg-loading-back" onClick={() => setLoading(false)}>Cancel</button>
           </div>
         </div>
       </div>

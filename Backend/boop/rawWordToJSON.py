@@ -10,8 +10,6 @@ def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_n
     with open(file_path, 'r') as file:
         data = file.read()
 
-    normal_w_count = 10
-    hard_w_count = 15
     sections = data.split('====================')
     result = {}
 
@@ -25,16 +23,31 @@ def word_to_json(file_path="Words/words.txt", num_normal=10, num_hard=5, bonus_n
         normal_pool = {w for w in words if 4 <= len(w) <= 11}
         hard_pool = {w for w in words if 6 <= len(w) <= 15}
 
-        if len(normal_pool) < (num_normal + bonus_normal) * normal_w_count:
-            raise ValueError(f"Topic '{topic}' needs {(num_normal + bonus_normal) * normal_w_count} normal words, found {len(normal_pool)}")
-        if len(hard_pool) < (num_hard + bonus_hard) * hard_w_count:
-            raise ValueError(f"Topic '{topic}' needs {(num_hard + bonus_hard) * hard_w_count} hard words, found {len(hard_pool)}")
-
         def _sample(pool, count, result_list):
             sample = random.sample(list(pool), count)
             pool.difference_update(sample)
             result_list.append(sample)
             return pool, result_list
+
+        normal_needed = num_normal + bonus_normal
+        hard_needed = num_hard + bonus_hard
+
+        normal_w_count = 10
+        hard_w_count = 15
+
+        if normal_needed > 0:
+            normal_w_count = min(normal_w_count, len(normal_pool) // normal_needed)
+            if normal_w_count < 3:
+                normal_w_count = min(3, len(normal_pool))
+                if normal_w_count == 0:
+                    raise ValueError(f"Topic '{topic}' has no normal-length words (4-11 letters) for {normal_needed} puzzle(s).")
+
+        if hard_needed > 0:
+            hard_w_count = min(hard_w_count, len(hard_pool) // hard_needed) if hard_needed > 0 else 0
+            if hard_w_count < 3:
+                hard_w_count = min(3, len(hard_pool))
+                if hard_w_count == 0:
+                    hard_w_count = 0
 
         topic_result = {"Normal": [], "Hard": [], "Bonus": {"Normal": [], "Hard": []}}
         for _ in range(num_normal):

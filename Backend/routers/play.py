@@ -51,14 +51,22 @@ async def play_generate(req: PlayGenerateRequest, request: Request):
     if len(wordlist) > max_words:
         raise HTTPException(400, f"Max {max_words} words for {req.mode or 'custom'} mode, got {len(wordlist)}")
 
-    grid, positions = generate_wordsearch(
-        grid_size, grid_size, wordlist,
-        allow_backwards_words=allow_backwards,
-        mask=mask
-    )
+    placed = None
+    for n in range(len(wordlist), min_words - 1, -1):
+        subset = wordlist[:n]
+        grid, positions = generate_wordsearch(
+            grid_size, grid_size, subset,
+            allow_backwards_words=allow_backwards,
+            mask=mask
+        )
+        if grid:
+            placed = (grid, positions, subset)
+            break
 
-    if not grid:
+    if not placed:
         raise HTTPException(500, "Could not fit words into grid")
+
+    grid, positions, wordlist = placed
 
     cells_by_word = {}
     for w, (sx, sy, ex, ey) in positions.items():
