@@ -66,10 +66,12 @@ const LoadingOverlay = () => {
                   {stepIdx < currentIdx || currentStep === "complete" ? "\u2713" :
                    stepIdx === currentIdx ? "\u25B6" : "\u25CB"}
                 </span>
-                <span className="progress-step-label">{ps.label}</span>
-                {stepIdx === currentIdx && stepLabel && (
-                  <span className="progress-step-detail">{stepLabel}</span>
-                )}
+                <div className="progress-step-body">
+                  <span className="progress-step-label">{ps.label}</span>
+                  {stepIdx === currentIdx && stepLabel && (
+                    <span className="progress-step-detail">{stepLabel}</span>
+                  )}
+                </div>
               </div>
             );
           })}
