@@ -107,9 +107,8 @@
 
 .pg-gen-time {
   font-family: var(--font-mono);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  margin: 0 0 0.25rem;
 }
 
 .success-animation {
@@ -151,6 +150,7 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
 }
 

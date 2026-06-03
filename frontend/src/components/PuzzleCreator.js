@@ -392,11 +392,8 @@ const PuzzleCreator = () => {
                 </svg>
               </div>
               <h3 className="success-heading">Book Ready</h3>
-              {generationDuration != null && (
-                <p className="pg-gen-time">Generated in {Math.floor(generationDuration / 60)}:{String(generationDuration % 60).padStart(2, "0")}</p>
-              )}
               <p className="success-description">
-                <strong>{formData.name}</strong> with {(formData.normal || 0) + (formData.hard || 0) + (formData.bonus_normal || 0) + (formData.bonus_hard || 0)} puzzles is ready to download.
+                <strong>{formData.name}</strong> with {(formData.normal || 0) + (formData.hard || 0) + (formData.bonus_normal || 0) + (formData.bonus_hard || 0)} puzzles
               </p>
 
               <div className="success-actions">
@@ -412,6 +409,9 @@ const PuzzleCreator = () => {
                 }}>
                   Download PDF
                 </button>
+                {generationDuration != null && (
+                  <span className="pg-gen-time">{Math.floor(generationDuration / 60)}:{String(generationDuration % 60).padStart(2, "0")}</span>
+                )}
                 <button className="btn btn-secondary" onClick={() => setStep(1)}>
                   Create Another
                 </button>
