@@ -603,15 +603,20 @@ const PuzzleGame = () => {
     const before = url.slice(0, url.indexOf(boldPart));
     const after = url.slice(url.indexOf(boldPart) + boldPart.length);
     const beforeW = ctx.measureText(before).width;
+    ctx.font = "bold 14px sans-serif";
+    const boldW2 = ctx.measureText(boldPart).width;
+    ctx.font = "14px sans-serif";
+    const afterW = ctx.measureText(after).width;
+    const totalW = beforeW + boldW2 + afterW;
+    const startX = pW / 2 - totalW / 2;
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText(before, pW / 2 - beforeW, y);
+    ctx.fillText(before, startX, y);
     ctx.fillStyle = "#fdfaf4";
     ctx.font = "bold 14px sans-serif";
-    const boldW = ctx.measureText(boldPart).width;
-    ctx.fillText(boldPart, pW / 2, y);
+    ctx.fillText(boldPart, startX + beforeW, y);
     ctx.fillStyle = "#94a3b8";
     ctx.font = "14px sans-serif";
-    ctx.fillText(after, pW / 2 + boldW, y);
+    ctx.fillText(after, startX + beforeW + boldW2, y);
 
     return canvas;
   }, [puzzle, foundWords, timer]);
@@ -631,24 +636,27 @@ const PuzzleGame = () => {
   /* ---- Share ---- */
   const handleShare = useCallback(async (platform) => {
     if (!puzzle) return;
-    if (platform === "native" && navigator.share) {
+    const timeStr = timer?.formatTime || "00:00";
+    const shareText = `I just solved this word search on BOOP in ${timeStr}!\nCan you beat my time?\n`;
+    if (navigator.share) {
       try {
         const canvas = renderPosterCanvas();
-        if (!canvas) return;
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        const file = new File([blob], "boop-solved-grid.png", { type: "image/png" });
-        await navigator.share({ files: [file], title: "BOOP Word Search", text: "I just solved this word search on BOOP!" });
-        return;
+        if (canvas) {
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+          const file = new File([blob], "boop-solved-grid.png", { type: "image/png" });
+          await navigator.share({ files: [file], title: "BOOP Word Search", text: shareText });
+          return;
+        }
       } catch { /* fall through to URL share */ }
     }
     const url = encodeURIComponent(window.location.origin + "/play");
-    const text = encodeURIComponent("I just solved this word search on BOOP!");
+    const text = encodeURIComponent(shareText + window.location.origin + "/play");
     const hrefs = {
       x: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+      whatsapp: `https://wa.me/?text=${text}`,
     };
     if (hrefs[platform]) window.open(hrefs[platform], "_blank", "noopener");
-  }, [puzzle, renderPosterCanvas]);
+  }, [puzzle, renderPosterCanvas, timer]);
 
   /* ---- Pause ---- */
   const handlePause = useCallback(() => {
