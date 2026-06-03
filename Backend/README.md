@@ -1,37 +1,36 @@
 # BOOP Backend API
 
-FastAPI backend for the BOOP Word Search Puzzle Generator.
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
+[![HF Space](https://img.shields.io/badge/HuggingFace-Space-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/spaces/muneer320/BOOP-backend)
 
-## API Endpoints
+FastAPI backend powering the BOOP Word Search Puzzle Generator. Handles puzzle generation, file management, and PDF book assembly.
 
-### `GET /` — Health check
-Returns the API status.
+## Endpoints
 
-### `GET /settings` — App settings
-Returns configurable limits (max puzzles, grid sizes, etc.).
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/status` | Health check |
+| GET | `/api/settings` | App configuration (limits, modes) |
+| GET | `/api/templates` | Available cover/background templates |
+| GET | `/api/topics` | Word topic categories |
+| GET | `/api/topics/{topic}/words` | Words for a topic |
+| POST | `/api/upload` | Upload a file (multipart) |
+| GET | `/api/files/{file_id}` | Retrieve an uploaded file |
+| DELETE | `/api/files/{file_id}` | Delete an uploaded file |
+| POST | `/api/generate-puzzle` | Generate a multi-puzzle PDF book |
+| POST | `/api/play/generate` | Generate a single puzzle for interactive play |
 
-### `GET /templates` — Available templates
-List of puzzle templates for cover/background.
+### POST `/api/generate-puzzle`
 
-### `GET /topics` — Word topics
-Returns available word categories.
+Generate a PDF puzzle book with multiple puzzles.
 
-### `GET /topics/{topic}/words` — Words for a topic
-Returns the word list for a given topic.
+**Request body:**
 
-### `POST /upload` — File upload
-Upload images or word files (max 10 MB). Returns a `file_id`.
-- Multipart form with field `file`.
-
-### `GET /files/{file_id}` — Retrieve uploaded file
-
-### `DELETE /files/{file_id}` — Delete uploaded file
-
-### `POST /generate-puzzle` — Generate puzzle book
-Generates a PDF puzzle book. Request body:
 ```json
 {
-  "name": "My Puzzle",
+  "name": "My Puzzle Book",
   "normal": 5,
   "hard": 2,
   "bonus_normal": 1,
@@ -39,43 +38,96 @@ Generates a PDF puzzle book. Request body:
   "cover_id": null,
   "background_id": null,
   "puzzle_bg_id": null,
-  "words_payload": null,
+  "words_payload": {"animals": ["cat", "dog"]},
   "words_file_id": null
 }
 ```
-Returns the PDF as `application/octet-stream`.
+
+**Response:** `application/octet-stream` (PDF file)
+
+### POST `/api/play/generate`
+
+Generate a single puzzle for the interactive play interface. Uses an adaptive fitting loop — tries to fit all words, then iteratively reduces the count until placement succeeds.
+
+**Request body:**
+
+```json
+{
+  "words": ["APPLE", "BANANA", "CHERRY"],
+  "mode": "normal"
+}
+```
+
+**Response:**
+
+```json
+{
+  "grid": [["A", "B", ...], ...],
+  "positions": {"APPLE": {"start": [0, 0], "end": [0, 4]}, ...},
+  "cells_by_word": {"APPLE": [[0, 0], [0, 1], ...], ...},
+  "words": ["APPLE", "BANANA"],
+  "grid_size": 13,
+  "mode": "normal"
+}
+```
 
 ## Configuration
 
-| Env Variable | Default | Description |
-|---|---|---|
-| `CORS_ORIGINS` | `http://localhost:3000` | Comma-separated allowed origins |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CORS_ORIGINS` | `http://localhost:3000` | Comma-separated allowed CORS origins |
 
-## Running
+## Mode Presets
+
+| Mode | Grid | Min Words | Max Words | Backwards | Mask |
+|------|------|-----------|-----------|-----------|------|
+| Easy | 10 | 4 | 7 | No | — |
+| Normal | 13 | 6 | 10 | Yes | — |
+| Hard | 15 | 8 | 13 | Yes | — |
+| Very Hard | 18 | 10 | 16 | Yes | — |
+| Nightmare | 20 | 12 | 20 | Yes | — |
+| Bonus | 15 | 6 | 11 | Yes | Circle |
+
+## Local Development
 
 ```bash
+python -m venv venv
+source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app:app --reload
+uvicorn app:app --reload       # → http://localhost:8000
 ```
 
 ## Project Structure
 
-```
+```text
 Backend/
-├── app.py                 # FastAPI entry point
-├── requirements.txt       # Python dependencies
-├── routers/               # API route modules
-│   ├── files.py
-│   ├── generate.py
-│   ├── settings.py
-│   ├── status.py
-│   ├── templates.py
-│   └── words.py
-├── boop/                  # Core puzzle logic
-│   ├── generatePuzzle.py  # Word search generation
-│   ├── appendImage.py     # PDF assembly
-│   ├── rawWordToJSON.py   # Word data processing
-│   └── main.py            # CLI entry point
-├── uploads/               # Temporary file storage
-└── outputs/               # Generated PDFs
+├── app.py                  # FastAPI application entry point
+├── limiter.py              # Rate limit configuration (slowapi)
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # HF Space Docker build
+├── .dockerignore           # Docker build exclusions
+├── boop/                   # Core puzzle engine
+│   ├── generatePuzzle.py   # Word search grid algorithm
+│   ├── appendImage.py      # PDF assembly & image embedding
+│   ├── rawWordToJSON.py    # Word-list processing & sampling
+│   └── Assets/             # Static cover & background images
+├── routers/                # API route handlers
+│   ├── files.py            # Upload / download / delete files
+│   ├── generate.py         # Puzzle book generation (long-running)
+│   ├── play.py             # Single-puzzle generation (play mode)
+│   ├── settings.py         # App settings endpoint
+│   ├── status.py           # Health check endpoint
+│   ├── templates.py        # Asset template listing
+│   └── words.py            # Word topics & words
+├── uploads/                # Temporary uploaded files (gitignored)
+└── outputs/                # Generated PDFs (gitignored)
+```
+
+## Deployment
+
+The backend is deployed to Hugging Face Spaces using Docker. See the [CI/CD workflow](../.github/workflows/deploy.yml) for details.
+
+```bash
+docker build -t boop-backend .
+docker run -p 7860:7860 boop-backend
 ```
