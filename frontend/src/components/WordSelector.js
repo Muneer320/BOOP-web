@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/api";
 import "./WordSelector.css";
 
+const cleanWord = (w) => w.trim().toUpperCase().replace(/[^A-Z]/g, "");
+
 const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
   const [selectedTopics, setSelectedTopics] = useState([]);
   const [topicWords, setTopicWords] = useState({});
@@ -45,7 +47,7 @@ const WordSelector = ({ topics, onWordsUpdate, onFileUpload }) => {
     }
 
     const inputWords = customWordInput.trim().split(/[,/;]+/);
-    const words = inputWords.filter((word) => !!word.trim());
+    const words = inputWords.map(cleanWord).filter((w) => w.length >= 2);
     if (words.length === 0) {
       setError("Please enter a word");
       return;
