@@ -8,6 +8,7 @@ function parseFileText(text) {
   const errors = [];
   const sections = text.split(/={10,}/);
   const topics = {};
+  let hasTopicHeader = false;
 
   for (const section of sections) {
     if (!section.trim()) continue;
@@ -16,9 +17,9 @@ function parseFileText(text) {
 
     const topicLine = lines[0];
     if (!topicLine.startsWith(">")) {
-      errors.push(`Missing topic header (line should start with >): found "${topicLine.slice(0, 40)}"`);
       continue;
     }
+    hasTopicHeader = true;
     const topic = topicLine.slice(1).trim();
     if (!topic) {
       errors.push("Empty topic name after >");
@@ -35,6 +36,13 @@ function parseFileText(text) {
       topics[topic] = [...new Set([...topics[topic], ...words])];
     } else {
       topics[topic] = words;
+    }
+  }
+
+  if (!hasTopicHeader) {
+    const allLines = text.split(/[\n\r,;]+/).map(cleanWord).filter(w => w.length >= 2);
+    if (allLines.length > 0) {
+      topics["Uploaded Words"] = allLines;
     }
   }
 
@@ -179,6 +187,26 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
       if (next[topic].length === 0) delete next[topic];
       return next;
     });
+  }, []);
+
+  const removeFileTopic = useCallback((topic) => {
+    setFileTopics((prev) => {
+      const next = { ...prev };
+      delete next[topic];
+      return next;
+    });
+    setFileExcluded((prev) => {
+      const next = { ...prev };
+      delete next[topic];
+      return next;
+    });
+  }, []);
+
+  const clearAllFileWords = useCallback(() => {
+    setFileTopics({});
+    setFileExcluded({});
+    setFileErrors([]);
+    setFileUploadedIds([]);
   }, []);
 
   useEffect(() => {
@@ -328,6 +356,9 @@ compiler
 >ASTRONOMY
 asteroid
 comet`}</pre>
+          <p className="upload-instructions" style={{ fontSize: "0.85rem" }}>
+            Or a simple list of words (one per line or comma-separated).
+          </p>
 
           <div className="upload-control">
             <input type="file" id="words-file" accept=".txt" multiple
@@ -337,22 +368,33 @@ comet`}</pre>
 
           {Object.keys(fileTopics).length > 0 && (
             <div className="file-topics-list">
-              <h3>Words from file{fileUploadedIds.length > 1 ? "s" : ""}</h3>
+              <div className="pg-topic-actions">
+                <span className="pg-topic-actions-label">
+                  {Object.values(fileTopics).reduce((s, w) => s + w.length, 0)} words loaded
+                </span>
+                <button className="btn btn-outline btn-sm" onClick={clearAllFileWords}>Clear All</button>
+              </div>
               {Object.entries(fileTopics).map(([topic, words]) => {
                 const excluded = fileExcluded[topic] || [];
                 const included = words.filter((w) => !excluded.includes(w));
                 return (
-                  <div key={topic} className="custom-topic-item">
-                    <h4>{topic} <span className="text-secondary" style={{ fontSize: "0.8rem", fontWeight: 400 }}>({included.length}/{words.length} selected)</span></h4>
-                    <div className="word-chips">
+                  <div key={topic} className="pg-topic-card expanded active">
+                    <div className="pg-topic-header">
+                      <span className="pg-topic-name">{topic}</span>
+                      <span className="pg-topic-meta">{included.length}/{words.length} words</span>
+                      <button className="pg-topic-remove"
+                        onClick={() => removeFileTopic(topic)}
+                        title="Remove this topic">&times;</button>
+                    </div>
+                    <div className="pg-topic-words">
                       {words.map((word, i) => {
-                        const isExcluded = excluded.includes(word);
+                        const excl = excluded.includes(word);
                         return (
                           <span key={i}
-                            className={`word-chip${isExcluded ? " excluded" : ""}`}
+                            className={`pg-word-tag${excl ? " removed" : " added"}`}
                             onClick={() => toggleFileWord(topic, word)}>
                             {word}
-                            {isExcluded ? " ✕" : " ✓"}
+                            <span className="pg-tag-action">{excl ? "+" : "\u2713"}</span>
                           </span>
                         );
                       })}
@@ -360,9 +402,6 @@ comet`}</pre>
                   </div>
                 );
               })}
-              <p className="pg-word-count" style={{ marginTop: "0.75rem" }}>
-                Total: {Object.values(fileTopics).reduce((s, w) => s + w.length, 0)} words
-              </p>
             </div>
           )}
         </div>

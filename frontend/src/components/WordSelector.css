@@ -175,6 +175,112 @@
   opacity: 0.9;
 }
 
+/* Topic card styles for file upload (matching PuzzleGame) */
+.file-topics-list {
+  margin-top: 1.5rem;
+}
+
+.pg-topic-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.pg-topic-actions-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pg-topic-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.pg-topic-card.all-selected {
+  border-color: var(--success);
+}
+
+.pg-topic-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  cursor: default;
+  user-select: none;
+}
+
+.pg-topic-name {
+  font-weight: 600;
+  flex: 1;
+  font-size: 0.88rem;
+}
+
+.pg-topic-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pg-topic-remove {
+  background: none;
+  border: none;
+  color: var(--gray);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.pg-topic-remove:hover {
+  color: var(--danger);
+}
+
+.pg-topic-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0 0.75rem 0.6rem;
+}
+
+.pg-word-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  user-select: none;
+}
+
+.pg-word-tag.added {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.pg-word-tag.removed {
+  background: #fbe9e7;
+  color: #c62828;
+  opacity: 0.7;
+}
+
+.pg-word-tag.removed:hover {
+  opacity: 1;
+}
+
+.pg-tag-action {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
 @media (max-width: 768px) {
   .selection-type-buttons {
     flex-direction: column;
