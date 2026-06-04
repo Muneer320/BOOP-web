@@ -14,12 +14,16 @@ export const GenerationProvider = ({ children }) => {
   const abortRef = useRef(null);
   const pollRef = useRef(null);
   const sessionIdRef = useRef(null);
+  const genStartRef = useRef(null);
+
+  const PROGRESS_ORDER = ["parsing","cover","toc","puzzles","render_puzzles","render_solutions","merge_pdfs","finalizing"];
 
   const startGeneration = useCallback(() => {
     setIsGenerating(true);
     setGeneratedFile(null);
     setGeneratedFileName("");
     setGenerationStarted(new Date());
+    genStartRef.current = Date.now();
     setGenerationDuration(null);
     setGenerationError(null);
     setProgress({ step: "starting", detail: "Initializing…" });
@@ -30,13 +34,13 @@ export const GenerationProvider = ({ children }) => {
     setIsGenerating(false);
     setGeneratedFile(fileData);
     setGeneratedFileName(fileName || "puzzle-book.pdf");
-    setGenerationDuration(generationStarted ? Math.floor((new Date() - new Date(generationStarted)) / 1000) : null);
+    setGenerationDuration(genStartRef.current ? Math.floor((Date.now() - genStartRef.current) / 1000) : null);
     setGenerationError(null);
     setProgress({ step: "complete", detail: "PDF ready", done: true });
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
     sessionIdRef.current = null;
-  }, [generationStarted]);
+  }, []);
 
   const failGeneration = useCallback((error) => {
     setIsGenerating(false);
@@ -68,7 +72,15 @@ export const GenerationProvider = ({ children }) => {
     pollRef.current = setInterval(async () => {
       try {
         const r = await apiService.getGenerationProgress(sid);
-        if (r.data) setProgress(r.data);
+        if (r.data) {
+          setProgress(prev => {
+            if (!prev || r.data.done) return r.data;
+            const newIdx = PROGRESS_ORDER.indexOf(r.data.step);
+            const oldIdx = PROGRESS_ORDER.indexOf(prev.step);
+            if (newIdx < oldIdx) return prev;
+            return r.data;
+          });
+        }
       } catch { /* poll quietly */ }
     }, 600);
 

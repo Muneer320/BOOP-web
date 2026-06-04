@@ -5,12 +5,12 @@ import useTimer from "../hooks/useTimer";
 import "./PuzzleGame.css";
 
 const MODES = [
-  { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 7, back: false, mask: null },
-  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 10, back: true, mask: null },
-  { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 13, back: true, mask: null },
-  { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 16, back: true, mask: null },
-  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 20, back: true, mask: null },
-  { id: "bonus", label: "Bonus", grid: 15, minW: 6, maxW: 11, back: true, mask: "circle" },
+  { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 10, back: false, mask: null },
+  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 14, back: true, mask: null },
+  { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 18, back: true, mask: null },
+  { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 26, back: true, mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 34, back: true, mask: null },
+  { id: "bonus", label: "Bonus", grid: 15, minW: 6, maxW: 15, back: true, mask: "circle" },
 ];
 
 const COLORS = ["#3a6b35", "#8b3a3a", "#b8860b", "#4a6fa5", "#6b4a8b", "#c4956a", "#2d6b5e", "#8b5e3a", "#4a7c5e", "#7a5e3a"];
@@ -763,14 +763,11 @@ const PuzzleGame = () => {
 
     setFileErrors(newErrors);
     if (allWords.length > 0) {
-      const unique = [...new Set(allWords)].slice(0, mode.maxW);
-      setWordChips(prev => {
-        const combined = [...new Set([...prev, ...unique])];
-        return combined.slice(0, mode.maxW);
-      });
+      const words = [...new Set(allWords)];
+      setWordChips(prev => [...new Set([...prev, ...words])]);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [mode.maxW]);
+  }, []);
 
   /* ---- Topic card helper ---- */
   const renderTopicCard = useCallback((topic) => {
