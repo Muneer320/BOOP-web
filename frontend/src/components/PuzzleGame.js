@@ -685,7 +685,7 @@ const PuzzleGame = () => {
     ctx.fillText(after, startX + beforeW + boldW2, y);
 
     return canvas;
-  }, [puzzle, foundWords, timer]);
+  }, [puzzle, foundWords, timer, getBlendedColor]);
 
   /* ---- Download poster as PNG ---- */
   const handleDownloadGrid = useCallback(() => {
