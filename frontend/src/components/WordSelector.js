@@ -63,7 +63,6 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
   const [fileTopics, setFileTopics] = useState({});
   const [fileExcluded, setFileExcluded] = useState({});
   const [fileErrors, setFileErrors] = useState([]);
-  const [fileUploadedIds, setFileUploadedIds] = useState([]);
   const fileInputRef = useRef(null);
 
   const fetchTopicWords = useCallback(async (topic) => {
@@ -142,8 +141,7 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
 
     for (const file of files) {
       try {
-        const resp = await apiService.uploadFile(file);
-        setFileUploadedIds((prev) => [...prev, resp.data.file_id]);
+        await apiService.uploadFile(file);
       } catch {
         newErrors.push(`Failed to upload "${file.name}" to server.`);
         continue;
@@ -206,7 +204,6 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
     setFileTopics({});
     setFileExcluded({});
     setFileErrors([]);
-    setFileUploadedIds([]);
   }, []);
 
   useEffect(() => {
