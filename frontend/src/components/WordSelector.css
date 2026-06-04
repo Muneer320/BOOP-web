@@ -160,10 +160,6 @@
   cursor: pointer;
 }
 
-.file-topics-list {
-  margin-top: 1.5rem;
-}
-
 .word-chip.excluded {
   background-color: var(--danger-light, #f8d7da);
   opacity: 0.6;
