@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useCallback, useRef, useEff
 import { apiService } from "../services/api";
 
 const GenerationContext = createContext();
+const PROGRESS_ORDER = ["parsing","cover","toc","puzzles","render_puzzles","render_solutions","merge_pdfs","finalizing"];
 
 export const GenerationProvider = ({ children }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -15,8 +16,6 @@ export const GenerationProvider = ({ children }) => {
   const pollRef = useRef(null);
   const sessionIdRef = useRef(null);
   const genStartRef = useRef(null);
-
-  const PROGRESS_ORDER = ["parsing","cover","toc","puzzles","render_puzzles","render_solutions","merge_pdfs","finalizing"];
 
   const startGeneration = useCallback(() => {
     setIsGenerating(true);
