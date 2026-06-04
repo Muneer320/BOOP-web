@@ -420,6 +420,8 @@
 }
 
 .pg-hint-btn {
+  position: relative;
+  overflow: hidden;
   background: none;
   border: 1px solid var(--border-color);
   cursor: pointer;
@@ -429,14 +431,48 @@
   border-radius: 2px;
   transition: border-color 0.15s, opacity 0.15s;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
 }
 
 .pg-hint-btn:hover:not(:disabled) { border-color: var(--primary); }
-.pg-hint-btn:disabled { opacity: 0.3; cursor: default; }
+.pg-hint-btn:disabled { cursor: default; }
+
+.pg-hint-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: rgba(122, 168, 224, 0.15);
+  pointer-events: none;
+}
+
+.pg-hint-icon,
+.pg-hint-label {
+  position: relative;
+  z-index: 1;
+}
+
+.pg-hint-btn:disabled .pg-hint-icon,
+.pg-hint-btn:disabled .pg-hint-label {
+  opacity: 0.4;
+}
 
 .pg-full-soln-btn {
+  position: relative;
+  overflow: hidden;
   margin-top: 0.75rem;
   width: 100%;
+}
+
+.pg-full-soln-btn .pg-hint-bar {
+  background: rgba(122, 168, 224, 0.12);
+}
+
+.pg-full-soln-btn .pg-hint-label {
+  position: relative;
+  z-index: 1;
 }
 
 .pg-word.found {

@@ -169,9 +169,10 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
     if (Object.keys(accumulated).length > 0) {
       setFileTopics(accumulated);
       setSelectionType("file");
+      onWordsUpdate(accumulated);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [fileTopics]);
+  }, [fileTopics, onWordsUpdate]);
 
   const toggleFileWord = useCallback((topic, word) => {
     setFileExcluded((prev) => {
@@ -204,7 +205,8 @@ const WordSelector = ({ topics, onWordsUpdate }) => {
     setFileTopics({});
     setFileExcluded({});
     setFileErrors([]);
-  }, []);
+    onWordsUpdate(null);
+  }, [onWordsUpdate]);
 
   useEffect(() => {
     if (selectionType === "preset" && selectedTopics.length > 0) {

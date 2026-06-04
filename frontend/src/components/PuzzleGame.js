@@ -6,7 +6,7 @@ import "./PuzzleGame.css";
 
 const MODES = [
   { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 10, back: false, mask: null },
-  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 14, back: true, mask: null },
+  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 10, back: true, mask: null },
   { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 18, back: true, mask: null },
   { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 26, back: true, mask: null },
   { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 34, back: true, mask: null },
@@ -74,6 +74,7 @@ const PuzzleGame = () => {
   const [focusedCell, setFocusedCell] = useState(null);
   const [hintWord, setHintWord] = useState(null);
   const [fullSolutionMode, setFullSolutionMode] = useState(null); // null | "confirm" | "done"
+  const [, forceTick] = useState(0);
   const lastGlobalHintRef = useRef(0);
   const gameStartTime = useRef(null);
 
@@ -497,21 +498,17 @@ const PuzzleGame = () => {
     setScreen("complete");
   }, [puzzle, foundWords, timer]);
 
-  const canHintWord = useCallback((word) => {
-    if (foundWords[word]) return false;
-    const now = Date.now();
-    const elapsed = (now - (gameStartTime.current || now)) / 1000;
-    if (elapsed < 60) return false;
-    if (now - lastGlobalHintRef.current < 30000) return false;
-    return true;
-  }, [foundWords]);
-
   const canFullSolution = useCallback(() => {
     if (!puzzle || fullSolutionMode === "done") return false;
-    const now = Date.now();
-    const elapsed = (now - (gameStartTime.current || now)) / 1000;
-    return elapsed >= 120;
+    return true;
   }, [puzzle, fullSolutionMode]);
+
+  /* ---- Cooldown ticker ---- */
+  useEffect(() => {
+    if (screen !== "play") return;
+    const id = setInterval(() => forceTick(t => t + 1), 200);
+    return () => clearInterval(id);
+  }, [screen]);
 
   /* ---- Reset to new game ---- */
   const handleNewGame = useCallback(() => {
@@ -1004,21 +1001,48 @@ asteroid, comet`}</pre>
                     style={foundWords[word] ? { color: getWordColor(word) } : {}}>
                     <span className="pg-word-bullet">{foundWords[word] ? "\u2713" : "\u25CB"}</span>
                     <span className="pg-word-text">{word}</span>
-                    {!foundWords[word] && (
-                      <button className="pg-hint-btn" onClick={() => handleRequestHint(word)}
-                        disabled={!canHintWord(word)}
-                        title={canHintWord(word) ? "Show hint" : "Hint available after 1 min (30s cooldown between hints)"}>
-                        &#128161;
-                      </button>
-                    )}
+                    {!foundWords[word] && (() => {
+                      const now = Date.now();
+                      const gameTime = (now - (gameStartTime.current || now)) / 1000;
+                      const sinceLast = (now - lastGlobalHintRef.current) / 1000;
+                      const hintReady = gameTime >= 60 && sinceLast >= 30;
+                      let hintPct = 100;
+                      let hintLabel = "Show hint";
+                      if (!hintReady) {
+                        if (gameTime < 60) {
+                          hintPct = Math.min(99, (gameTime / 60) * 100);
+                          hintLabel = `Hint in ${60 - Math.ceil(gameTime)}s`;
+                        } else {
+                          hintPct = Math.min(99, (sinceLast / 30) * 100);
+                          hintLabel = `Hint in ${30 - Math.ceil(sinceLast)}s`;
+                        }
+                      }
+                      return (
+                        <button className="pg-hint-btn" onClick={() => handleRequestHint(word)}
+                          disabled={!hintReady}>
+                          <span className="pg-hint-bar" style={{ width: `${hintPct}%`, transition: "width 0.2s linear" }} />
+                          <span className="pg-hint-icon">&#128161;</span>
+                          <span className="pg-hint-label">{hintLabel}</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
-              {canFullSolution() && fullSolutionMode !== "done" && (
-                <button className="btn btn-outline btn-sm pg-full-soln-btn" onClick={handleFullSolution}>
-                  Show Full Solution
-                </button>
-              )}
+              {(() => {
+                const now = Date.now();
+                const gameTime = (now - (gameStartTime.current || now)) / 1000;
+                const fullReady = gameTime >= 120;
+                const fullPct = Math.min(99, (gameTime / 120) * 100);
+                const fullLabel = fullReady ? "Show Full Solution" : `Full solution in ${120 - Math.ceil(gameTime)}s`;
+                return canFullSolution() && fullSolutionMode !== "done" ? (
+                  <button className="btn btn-outline btn-sm pg-full-soln-btn"
+                    disabled={!fullReady} onClick={handleFullSolution}>
+                    <span className="pg-hint-bar" style={{ width: `${fullPct}%`, transition: "width 0.2s linear" }} />
+                    <span className="pg-hint-label">{fullLabel}</span>
+                  </button>
+                ) : null;
+              })()}
             </div>
           </div>
         </div>
