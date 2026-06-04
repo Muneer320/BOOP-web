@@ -20,7 +20,7 @@ const Footer = () => {
             <h4 className="footer-heading">Create</h4>
             <Link to="/create" className="footer-link">Puzzle Book</Link>
             <Link to="/play" className="footer-link">Play Online</Link>
-            <Link to="/templates" className="footer-link">Templates</Link>
+            <Link to="/about" className="footer-link">About BOOP</Link>
           </div>
           <div className="footer-nav">
             <h4 className="footer-heading">About</h4>

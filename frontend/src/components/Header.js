@@ -66,8 +66,8 @@ const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/templates" className={isActive("/templates")} onClick={() => setMenuOpen(false)} aria-current={isActive("/templates") === "active" ? "page" : undefined}>
-                  Templates
+                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)} aria-current={isActive("/play") === "active" ? "page" : undefined}>
+                  Play
                 </Link>
               </li>
               <li>

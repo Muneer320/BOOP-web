@@ -77,14 +77,6 @@ const PuzzleCreator = () => {
 
   const handleChange = useCallback((e) => {
     const { name, value, type } = e.target;
-    if (name === "name") {
-      const valid = /^[A-Za-z0-9\s\-']+$/.test(value);
-      setError(
-        valid
-          ? null
-          : "Title can only contain letters, numbers, spaces, hyphens, and apostrophes."
-      );
-    }
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
@@ -92,6 +84,16 @@ const PuzzleCreator = () => {
     setShowSuccess(false);
     resetGeneration();
   }, [resetGeneration]);
+
+  const handleTitleBlur = useCallback((e) => {
+    const value = e.target.value;
+    const valid = /^[A-Za-z0-9\s\-']+$/.test(value);
+    setError(
+      valid
+        ? null
+        : "Title can only contain letters, numbers, spaces, hyphens, and apostrophes."
+    );
+  }, []);
 
   const handleFileUpload = useCallback((fileType, fileId) => {
     setFormData((prev) => ({
@@ -218,6 +220,7 @@ const PuzzleCreator = () => {
                   className="form-control"
                   value={formData.name}
                   onChange={handleChange}
+                  onBlur={handleTitleBlur}
                   required
                 />
               </div>
@@ -337,7 +340,7 @@ const PuzzleCreator = () => {
             <button
               className="btn btn-primary btn-lg btn-generate"
               onClick={generatePuzzle}
-              disabled={isGenerating}
+              disabled={isGenerating || (generatedFile && !showSuccess)}
               aria-label={isGenerating ? "Generating puzzle book" : "Generate puzzle book"}
             >
               {isGenerating ? "Generating..." : "Generate Puzzle Book"}

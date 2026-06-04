@@ -1,20 +1,36 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import "./PuzzlePreview.css";
 
 const GRID_SIZE = 8;
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-const genGrid = () =>
-  Array.from({ length: GRID_SIZE }, () =>
-    Array.from({ length: GRID_SIZE }, () =>
-      String.fromCharCode(65 + Math.floor(Math.random() * 26))
-    )
-  );
+const genGrid = (seed = 0) => {
+  const grids = [
+    () => Array.from({ length: GRID_SIZE }, () =>
+      Array.from({ length: GRID_SIZE }, () =>
+        LETTERS[Math.floor(Math.random() * 26)]
+      )
+    ),
+    () => Array.from({ length: GRID_SIZE }, () =>
+      Array.from({ length: GRID_SIZE }, () =>
+        LETTERS[Math.floor(Math.random() * 26)]
+      )
+    ),
+    () => Array.from({ length: GRID_SIZE }, () =>
+      Array.from({ length: GRID_SIZE }, () =>
+        LETTERS[Math.floor(Math.random() * 26)]
+      )
+    ),
+  ];
+  return grids[seed % grids.length]();
+};
 
 const PuzzlePreview = ({ formData, wordsPayload }) => {
   const [page, setPage] = useState(0);
   const totalNormal = (formData.normal || 0) + (formData.bonus_normal || 0);
   const totalHard = (formData.hard || 0) + (formData.bonus_hard || 0);
   const totalPuzzles = totalNormal + totalHard;
+  const seedRef = useRef(Math.floor(Math.random() * 1000));
 
   const hasWords = wordsPayload
     ? Object.keys(wordsPayload).length > 0 && Object.values(wordsPayload).some(w => w.length > 0)
@@ -26,21 +42,18 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
     return all.slice(0, 8);
   }, [wordsPayload, hasWords]);
 
-  const grid = useMemo(() => genGrid(), [page, totalPuzzles]);
-
   const pages = useMemo(() => {
     const p = [];
-    // Cover page
+    const seed = seedRef.current;
     p.push({
       type: "cover",
       title: formData.name || "My Puzzle Book",
     });
-    // Sample puzzle pages (max 3)
     const numSample = Math.min(totalPuzzles, 3);
     for (let i = 0; i < numSample; i++) {
       p.push({
         type: "puzzle",
-        grid: genGrid(),
+        grid: genGrid(seed + i),
         pageNum: i + 1,
         words: sampleWords,
       });

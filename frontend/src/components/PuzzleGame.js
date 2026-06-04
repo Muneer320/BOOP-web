@@ -559,24 +559,24 @@ const PuzzleGame = () => {
     canvas.height = pH;
     const ctx = canvas.getContext("2d");
 
-    /* Background gradient */
+    /* Background gradient — warm paper tones matching BOOP brand */
     const grad = ctx.createLinearGradient(0, 0, 0, pH);
-    grad.addColorStop(0, "#16213e");
-    grad.addColorStop(1, "#0f172a");
+    grad.addColorStop(0, "#1C1915");
+    grad.addColorStop(1, "#201C17");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, pW, pH);
 
     let y = margin;
 
     /* Title */
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "bold 28px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `bold 28px "Playfair Display", Georgia, serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText("BOOP - Word Search", pW / 2, y);
+    ctx.fillText("BOOP — Word Search", pW / 2, y);
     y += 36;
-    ctx.fillStyle = "#a0aec0";
-    ctx.font = "16px sans-serif";
+    ctx.fillStyle = "#A09080";
+    ctx.font = `16px "Inter", sans-serif`;
     ctx.fillText(`Mode: ${(puzzle.mode || "custom").charAt(0).toUpperCase() + (puzzle.mode || "custom").slice(1)}`, pW / 2, y);
     y += 28;
 
@@ -595,11 +595,11 @@ const PuzzleGame = () => {
       ctx.arc(cx, cy2, r, 0, Math.PI * 2);
       ctx.clip();
     }
-    ctx.fillStyle = "#1e293b";
+    ctx.fillStyle = "#28231D";
     ctx.fillRect(bgX, bgY, bgW, bgH);
     ctx.restore();
     if (!isCircle) {
-      ctx.strokeStyle = "#334155";
+      ctx.strokeStyle = "#3E352B";
       ctx.lineWidth = 1;
       ctx.strokeRect(bgX, bgY, bgW, bgH);
     }
@@ -618,13 +618,13 @@ const PuzzleGame = () => {
         const found = foundSetRef.current.has(`${r},${c}`);
         if (found) {
           const blended = getBlendedColor(r, c);
-          ctx.fillStyle = blended || "#3a6b35";
+          ctx.fillStyle = blended || "#5A8E50";
         } else {
-          ctx.fillStyle = "#2a2a2a";
+          ctx.fillStyle = "#2D261F";
         }
         ctx.fillRect(x, cy, cellPx, cellPx);
-        ctx.fillStyle = found ? "#ffffff" : "#94a3b8";
-        ctx.font = `bold ${Math.floor(cellPx * 0.52)}px sans-serif`;
+        ctx.fillStyle = found ? "#FDFAF5" : "#BFB09C";
+        ctx.font = `bold ${Math.floor(cellPx * 0.52)}px "JetBrains Mono", monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(letter, x + cellPx / 2, cy + cellPx / 2 + 1);
@@ -643,19 +643,19 @@ const PuzzleGame = () => {
       const wy = y + row * rowH;
       const isFound = foundWordNames.includes(wordList[i]);
       const idx = foundWordNames.indexOf(wordList[i]);
-      ctx.fillStyle = isFound ? COLORS[idx % COLORS.length] : "#475569";
+      ctx.fillStyle = isFound ? COLORS[idx % COLORS.length] : "#8A7A68";
       ctx.beginPath();
       ctx.arc(wx + 6, wy + 8, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = isFound ? "#e2e8f0" : "#64748b";
-      ctx.font = `${isFound ? "bold " : ""}14px sans-serif`;
+      ctx.fillStyle = isFound ? "#E2D8C8" : "#BFB09C";
+      ctx.font = `${isFound ? "bold " : ""}14px "Inter", sans-serif`;
       ctx.fillText(wordList[i], wx + 16, wy + 1);
     }
     y += wordRows * rowH + 20;
 
     /* Footer */
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "20px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `20px "Playfair Display", Georgia, serif`;
     ctx.textAlign = "center";
     const timeStr = timer?.formatTime || "00:00";
     ctx.fillText(`Time: ${timeStr}`, pW / 2, y);
@@ -673,13 +673,13 @@ const PuzzleGame = () => {
     const afterW = ctx.measureText(after).width;
     const totalW = beforeW + boldW2 + afterW;
     const startX = pW / 2 - totalW / 2;
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "#8A7A68";
     ctx.fillText(before, startX, y);
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "bold 14px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `bold 14px "Inter", sans-serif`;
     ctx.fillText(boldPart, startX + beforeW, y);
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "#8A7A68";
+    ctx.font = `14px "Inter", sans-serif`;
     ctx.fillText(after, startX + beforeW + boldW2, y);
 
     return canvas;
@@ -1123,12 +1123,16 @@ asteroid, comet`}</pre>
   if (loading) {
     return (
       <div className="puzzle-game">
-        <div className="card">
+        <div className="pg-start-card">
           <div className="pg-loading">
-            <h2>Generating Puzzle…</h2>
-            <div className="spinner" />
-            <p className="text-secondary">Fitting words into a {mode.grid}×{mode.grid} grid</p>
-            <button className="btn btn-secondary btn-sm pg-loading-back" onClick={() => setLoading(false)}>Cancel</button>
+            <h2>Generating Puzzle</h2>
+            <div className="loading-progress-bar" style={{ margin: "1.5rem auto", maxWidth: "300px" }}>
+              <div className="loading-progress-fill" style={{ width: "60%", animation: "shimmer 1.5s ease infinite" }} />
+            </div>
+            <p style={{ fontFamily: "var(--font-body)", fontStyle: "italic", color: "var(--ink-light)" }}>
+              Placing words in a {mode.grid}&times;{mode.grid} grid&hellip;
+            </p>
+            <button className="btn btn-outline btn-sm pg-loading-back" onClick={() => setLoading(false)}>Cancel</button>
           </div>
         </div>
       </div>
