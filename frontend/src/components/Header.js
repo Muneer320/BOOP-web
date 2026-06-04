@@ -41,35 +41,33 @@ const Header = () => {
             <Link to="/" className="logo-link">
               <img src={logo} alt="BOOP logo" className="logo-image" />
               <div className="logo-text-block">
-                <h1 className="logo-text">BOOP Web</h1>
-                <span className="tagline">Word Search Generator</span>
+                <h1 className="logo-text">BOOP</h1>
+                <span className="tagline">Puzzle Book Maker</span>
               </div>
             </Link>
           </div>
 
-          {/* Hamburger menu button - visible only on mobile */}
           <button className="menu-toggle" onClick={toggleMenu}
             aria-label="Toggle navigation menu"
             aria-expanded={menuOpen}>
             <span className={`menu-icon ${menuOpen ? "open" : ""}`}></span>
           </button>
 
-          {/* Navigation - always visible on desktop, toggled on mobile */}
           <nav className={`nav ${menuOpen ? "visible" : ""}`} aria-label="Main navigation">
             <ul className="main-nav-list">
               <li>
-                <Link to="/" className={isActive("/")} onClick={() => setMenuOpen(false)}>
-                  Home
-                </Link>
-              </li>
-              <li>
                 <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)}>
-                  Create Puzzle
+                  Create
                 </Link>
               </li>
               <li>
                 <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)}>
                   Play
+                </Link>
+              </li>
+              <li>
+                <Link to="/templates" className={isActive("/templates")} onClick={() => setMenuOpen(false)}>
+                  Templates
                 </Link>
               </li>
               <li>
