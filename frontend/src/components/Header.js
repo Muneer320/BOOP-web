@@ -56,22 +56,22 @@ const Header = () => {
           <nav className={`nav ${menuOpen ? "visible" : ""}`} aria-label="Main navigation">
             <ul className="main-nav-list">
               <li>
-                <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)}>
+                <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)} aria-current={isActive("/create") === "active" ? "page" : undefined}>
                   Create
                 </Link>
               </li>
               <li>
-                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)}>
+                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)} aria-current={isActive("/play") === "active" ? "page" : undefined}>
                   Play
                 </Link>
               </li>
               <li>
-                <Link to="/templates" className={isActive("/templates")} onClick={() => setMenuOpen(false)}>
+                <Link to="/templates" className={isActive("/templates")} onClick={() => setMenuOpen(false)} aria-current={isActive("/templates") === "active" ? "page" : undefined}>
                   Templates
                 </Link>
               </li>
               <li>
-                <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)}>
+                <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)} aria-current={isActive("/about") === "active" ? "page" : undefined}>
                   About
                 </Link>
               </li>

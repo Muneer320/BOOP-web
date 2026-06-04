@@ -338,6 +338,7 @@ const PuzzleCreator = () => {
               className="btn btn-primary btn-lg btn-generate"
               onClick={generatePuzzle}
               disabled={isGenerating}
+              aria-label={isGenerating ? "Generating puzzle book" : "Generate puzzle book"}
             >
               {isGenerating ? "Generating..." : "Generate Puzzle Book"}
             </button>

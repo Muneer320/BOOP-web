@@ -33,14 +33,8 @@ const GenerationStatus = () => {
     <div className="generation-status-container">
       {isGenerating ? (
         <div className="generation-status generating">
-          <div className="status-icon">
-            <div className="mini-grid">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="mini-cell">
-                  {String.fromCharCode(65 + Math.floor(Math.random() * 26))}
-                </div>
-              ))}
-            </div>
+          <div className="status-icon spinning">
+            <span className="status-dot" />
           </div>
           <div className="status-info">
             <p className="status-title">Generating Puzzle Book</p>

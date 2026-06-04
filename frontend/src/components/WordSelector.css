@@ -1,42 +1,54 @@
 .word-selector {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .selection-type-buttons {
   display: flex;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.selection-type-buttons .btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.9rem;
 }
 
 .topics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .topic-item {
-  background-color: var(--gray-light);
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   text-align: center;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
   font-weight: 600;
+  color: var(--ink-light);
 }
 
 .topic-item:hover {
-  background-color: rgba(122, 168, 224, 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--paper-dark);
 }
 
 .topic-item.selected {
-  background-color: var(--primary);
-  color: white;
+  background: var(--primary);
+  color: var(--paper-light);
+  border-color: var(--primary-dark);
 }
 
 .selected-topics {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .topic-list {
@@ -46,11 +58,11 @@
 }
 
 .topic-list li {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .topic-header {
@@ -60,39 +72,51 @@
   margin-bottom: 0.5rem;
 }
 
+.topic-header strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .remove-btn {
   background: none;
   border: none;
-  color: var(--gray);
+  color: var(--ink-faded);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.5rem;
+  line-height: 1;
 }
 
 .remove-btn:hover {
-  color: var(--danger);
+  color: var(--error);
 }
 
 .word-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .word-chip {
-  background-color: var(--gray-light);
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  background: var(--paper-dark);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink);
   display: inline-flex;
   align-items: center;
 }
 
 .loading-text {
   font-style: italic;
-  color: var(--gray);
+  color: var(--ink-faded);
   margin-top: 1rem;
+  font-family: var(--font-body);
 }
 
 .custom-words {
@@ -104,46 +128,56 @@
 }
 
 .custom-topic-item {
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--paper);
 }
 
 .custom-topic-item h4 {
-  margin-top: 0;
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--primary);
 }
 
 .remove-word-btn {
   background: none;
   border: none;
-  color: var(--gray);
+  color: var(--ink-faded);
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0 0 0 0.35rem;
+  line-height: 1;
 }
 
 .remove-word-btn:hover {
-  color: var(--danger);
+  color: var(--error);
 }
 
 .upload-instructions {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-light);
 }
 
 .format-example {
-  background-color: var(--gray-light);
-  padding: 1rem;
-  border-radius: 4px;
-  font-family: monospace;
-  margin-bottom: 1.5rem;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  margin-bottom: 1rem;
   white-space: pre-wrap;
-  font-size: 0.9rem;
 }
 
 .upload-control {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .file-input {
@@ -160,20 +194,9 @@
   cursor: pointer;
 }
 
-.word-chip.excluded {
-  background-color: var(--danger-light, #f8d7da);
-  opacity: 0.6;
-  text-decoration: line-through;
-  cursor: pointer;
-}
-
-.word-chip.excluded:hover {
-  opacity: 0.9;
-}
-
-/* Topic card styles for file upload (matching PuzzleGame) */
+/* File upload topic cards */
 .file-topics-list {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .pg-topic-actions {
@@ -184,17 +207,18 @@
 }
 
 .pg-topic-actions-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--ink-light);
 }
 
 .pg-topic-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
   margin-bottom: 0.5rem;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s ease;
 }
 
 .pg-topic-card.all-selected {
@@ -211,61 +235,64 @@
 }
 
 .pg-topic-name {
+  font-family: var(--font-ui);
   font-weight: 600;
   flex: 1;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
+  color: var(--ink);
 }
 
 .pg-topic-meta {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-faded);
   white-space: nowrap;
 }
 
 .pg-topic-remove {
   background: none;
   border: none;
-  color: var(--gray);
-  font-size: 1.2rem;
+  color: var(--ink-faded);
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   padding: 0 0.25rem;
-  border-radius: 4px;
-  transition: color 0.15s;
 }
 
 .pg-topic-remove:hover {
-  color: var(--danger);
+  color: var(--error);
 }
 
 .pg-topic-words {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.3rem;
   padding: 0 0.75rem 0.6rem;
 }
 
 .pg-word-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.55rem;
-  border-radius: 20px;
-  font-size: 0.82rem;
+  gap: 0.2rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition: background 0.15s ease, opacity 0.15s ease;
   user-select: none;
 }
 
 .pg-word-tag.added {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .pg-word-tag.removed {
-  background: #fbe9e7;
-  color: #c62828;
+  background: var(--error-bg);
+  color: var(--error);
   opacity: 0.7;
+  text-decoration: line-through;
 }
 
 .pg-word-tag.removed:hover {
@@ -273,7 +300,7 @@
 }
 
 .pg-tag-action {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
@@ -282,7 +309,7 @@
     flex-direction: column;
   }
 
-  .selection-type-buttons button {
+  .selection-type-buttons .btn {
     width: 100%;
   }
 
@@ -294,13 +321,8 @@
     gap: 0.3rem;
   }
 
-  .word-chip {
-    font-size: 0.8rem;
-    padding: 0.25rem 0.5rem;
-  }
-
   .format-example {
-    font-size: 0.8rem;
-    padding: 0.75rem;
+    font-size: 0.75rem;
+    padding: 0.65rem;
   }
 }
