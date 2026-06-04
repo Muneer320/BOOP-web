@@ -4,7 +4,9 @@
 
 /* Hero */
 .hero {
-  padding: 3rem 0 2rem;
+  padding: 4rem 0 3rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero .container {
@@ -12,55 +14,63 @@
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-letter-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
 }
 
 .hero-badge {
   display: inline-block;
   font-family: var(--font-ui);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--paper);
+  border: 1px solid var(--border);
   padding: 0.3rem 0.9rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .hero-content h1 {
-  margin: 0 0 1rem;
-  line-height: 1.15;
+  margin: 0 0 1.25rem;
+  line-height: 1.1;
 }
 
-.masthead-main {
+.hero-headline {
   display: block;
-  font-family: var(--font-heading);
-  font-size: clamp(3rem, 7vw, 4.5rem);
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
-.masthead-sub {
+.hero-headline-accent {
   display: block;
-  font-family: var(--font-ui);
-  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: var(--secondary);
-  border-top: 2px solid var(--border-color);
-  padding-top: 0.5rem;
-  margin-top: 0.25rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.01em;
 }
 
 .hero-description {
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.7;
   margin-bottom: 2rem;
-  color: var(--text-secondary);
+  color: var(--ink-light);
   max-width: 480px;
 }
 
@@ -73,87 +83,152 @@
 .hero-visual {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
-/* Puzzle Preview */
-.puzzle-preview {
-  background: var(--card-bg);
-  border: 2px solid var(--border-color);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-lg);
-  max-width: 380px;
-  transform: rotate(1deg);
+/* Book Mockup */
+.book-mockup {
+  display: flex;
+  align-items: stretch;
+  perspective: 1200px;
+  height: 360px;
+}
+
+.book-spine {
+  width: 18px;
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-dark));
+  border-radius: 2px 0 0 2px;
   position: relative;
+  z-index: 3;
 }
 
-.puzzle-preview::before {
+.book-spine::after {
   content: "";
   position: absolute;
-  top: -6px; left: -6px; right: -6px; bottom: -6px;
-  border: 1px solid var(--border-color);
-  opacity: 0.4;
-  pointer-events: none;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 80%;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.puzzle-grid {
+.book-cover {
+  width: 200px;
+  background: var(--primary);
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--text-primary);
-  margin-bottom: 1rem;
-  background: var(--bg-primary);
+  position: relative;
+  z-index: 2;
+  box-shadow: 3px 3px 12px rgba(44, 24, 16, 0.15);
 }
 
-.puzzle-row {
+.book-cover-content {
   display: flex;
-}
-
-.puzzle-cell {
-  width: 32px;
-  height: 32px;
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-  border: 1px solid var(--text-primary);
-  background: var(--bg-primary);
-  transition: background 0.15s, color 0.15s;
+  height: 100%;
+  gap: 0.5rem;
+  text-align: center;
 }
 
-.puzzle-cell:nth-child(even) {
-  background: rgba(58, 107, 53, 0.04);
-}
-
-.puzzle-cell:hover {
-  background: var(--primary);
-  color: #fdfaf4;
-}
-
-.puzzle-word-list h3 {
+.book-cover-label {
   font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
-  margin: 0 0 0.5rem;
 }
 
-.puzzle-word-list ul {
-  padding-left: 1rem;
-  margin: 0;
-  columns: 2;
+.book-cover-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--paper-light);
+  line-height: 1.2;
 }
 
-.puzzle-word-list li {
+.book-cover-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.book-cover-subtitle {
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.book-cover-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-top: 0.5rem;
+  opacity: 0.3;
+}
+
+.cover-cell {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.3rem;
-  list-style: square;
+  font-size: 0.5rem;
+  color: var(--paper-light);
+  text-align: center;
+}
+
+.book-page {
+  width: 180px;
+  background: var(--paper-light);
+  padding: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-shadow: 2px 2px 8px rgba(44, 24, 16, 0.08);
+}
+
+.book-page.page-1 {
+  z-index: 1;
+  margin-left: -8px;
+  transform: rotateY(-3deg);
+  transform-origin: left center;
+}
+
+.book-page.page-2 {
+  z-index: 0;
+  margin-left: -6px;
+  transform: rotateY(-5deg);
+  transform-origin: left center;
+}
+
+.book-page-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  width: 100%;
+}
+
+.page-cell {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--ink-faded);
+  text-align: center;
+}
+
+/* Social Proof */
+.social-proof {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.social-proof-text {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink-light);
+  font-style: italic;
+  margin: 0;
 }
 
 /* Features */
@@ -163,19 +238,20 @@
 
 .section-heading {
   text-align: center;
-  font-family: var(--font-heading);
-  font-size: 2rem;
-  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--ink);
   margin: 0 0 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
+  font-weight: 700;
 }
 
 .heading-ornament {
   color: var(--secondary);
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .features-grid {
@@ -186,55 +262,56 @@
 
 .feature-card {
   background: var(--card-bg);
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 1.75rem 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
 }
 
 .feature-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
 }
 
 .feature-card::before {
   content: "";
   position: absolute;
-  top: 4px; left: 4px; right: -4px; bottom: -4px;
-  border: 1px solid var(--border-color);
+  inset: -6px;
+  border: 1px solid var(--border);
   opacity: 0.2;
   pointer-events: none;
 }
 
-.feature-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border: 2px solid var(--border-color);
+.feature-icon {
   display: flex;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  background: var(--bg-primary);
   color: var(--primary);
 }
 
-.feature-icon-wrap svg {
-  width: 20px;
-  height: 20px;
+.feature-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .feature-card h3 {
   margin: 0 0 0.5rem;
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 1.1rem;
-  color: var(--text-primary);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .feature-card p {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.6;
-  color: var(--text-secondary);
+  color: var(--ink-light);
 }
 
 /* How it works */
@@ -260,97 +337,104 @@
   width: 48px;
   height: 48px;
   border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 1rem;
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary);
-  background: var(--bg-primary);
+  background: var(--paper);
 }
 
 .step h3 {
   margin: 0 0 0.5rem;
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 1rem;
-  color: var(--text-primary);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .step p {
   margin: 0;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: var(--ink-light);
 }
 
 .step-connector {
   flex: 0 0 60px;
   height: 2px;
-  background: repeating-linear-gradient(90deg, var(--border-color) 0, var(--border-color) 6px, transparent 6px, transparent 10px);
+  background: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 6px, transparent 6px, transparent 10px);
   align-self: center;
   margin-top: -24px;
-}
-
-.step-connector::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: -3px;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--border-color);
-  border-top: 2px solid var(--border-color);
-  transform: rotate(45deg);
 }
 
 .cta-container {
   text-align: center;
 }
 
-/* Responsive */
 @media (max-width: 992px) {
+  .hero {
+    padding: 2.5rem 0 2rem;
+  }
+
   .hero .container {
     grid-template-columns: 1fr;
     text-align: center;
     gap: 2rem;
   }
+
   .hero-description {
     max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
+
   .hero-buttons {
     justify-content: center;
   }
+
   .hero-visual {
-    order: 1;
+    order: -1;
   }
-  .puzzle-preview {
-    max-width: 340px;
-    margin: 0 auto;
+
+  .book-mockup {
+    height: 280px;
+    transform: scale(0.85);
   }
+
   .steps {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
   }
+
   .step {
     max-width: 300px;
   }
+
   .step-connector {
     flex: 0 0 12px;
     width: 2px;
     height: 12px;
     margin-top: 0;
   }
-  .step-connector::after { content: none; }
 }
 
 @media (max-width: 768px) {
-  .hero { padding: 2rem 0 1rem; }
+  .hero { padding: 2rem 0 1.5rem; }
   .hero-content h1 { margin-bottom: 0.75rem; }
   .features-section { padding: 2rem 0; }
   .how-section { padding: 1rem 0 3rem; }
   .features-grid { grid-template-columns: 1fr; }
-  .section-heading { font-size: 1.5rem; }
+  .section-heading { font-size: 1.35rem; }
+
+  .book-mockup {
+    height: 220px;
+    transform: scale(0.7);
+    transform-origin: center center;
+  }
 }
