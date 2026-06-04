@@ -14,7 +14,7 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](frontend/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 
-[Demo](https://boop-web.vercel.app/) · [Report Bug](https://github.com/muneer320/BOOP-web/issues) · [Request Feature](https://github.com/muneer320/BOOP-web/issues)
+[Live Link](https://boop-web.vercel.app/) · [Report Bug](https://github.com/muneer320/BOOP-web/issues) · [Request Feature](https://github.com/muneer320/BOOP-web/issues)
 
 ---
 
