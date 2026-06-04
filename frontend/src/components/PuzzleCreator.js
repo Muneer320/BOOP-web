@@ -4,22 +4,40 @@ import { useGeneration } from "../context/GenerationContext";
 import WordSelector from "./WordSelector";
 import FileUploader from "./FileUploader";
 import LoadingOverlay from "./LoadingOverlay";
-import PuzzleDetails from "./PuzzleDetails";
+import PuzzlePreview from "./PuzzlePreview";
 import Tooltip from "./Tooltip";
 import { SkeletonForm } from "./Skeleton";
 import "./PuzzleCreator.css";
 
+const Section = ({ title, id, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className={`config-section ${open ? "open" : ""}`}>
+      <button
+        className="config-section-header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="config-section-title">{title}</span>
+        <span className="config-section-chevron">{open ? "–" : "+"}</span>
+      </button>
+      <div className={`config-section-body ${open ? "visible" : ""}`}>
+        {children}
+      </div>
+    </section>
+  );
+};
+
 const PuzzleCreator = () => {
-  const [step, setStep] = useState(1);
   const [settings, setSettings] = useState(null);
   const [topics, setTopics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { isGenerating, generatedFile, generationDuration, generatePuzzle: contextGenerate, completeGeneration } = useGeneration();
+  const { isGenerating, generatedFile, generatedFileName, generationDuration, generatePuzzle: contextGenerate, completeGeneration, resetGeneration } = useGeneration();
 
   const [formData, setFormData] = useState({
-    name: "My Word Search",
+    name: "My Puzzle Book",
     normal: 5,
     hard: 2,
     bonus_normal: 1,
@@ -30,6 +48,8 @@ const PuzzleCreator = () => {
     words_payload: null,
     words_file_id: null,
   });
+
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -69,14 +89,18 @@ const PuzzleCreator = () => {
       ...prev,
       [name]: type === "number" ? Number(value) : value,
     }));
-  }, []);
+    setShowSuccess(false);
+    resetGeneration();
+  }, [resetGeneration]);
 
   const handleFileUpload = useCallback((fileType, fileId) => {
     setFormData((prev) => ({
       ...prev,
       [fileType]: fileId,
     }));
-  }, []);
+    setShowSuccess(false);
+    resetGeneration();
+  }, [resetGeneration]);
 
   const handleWordsUpdate = useCallback((wordsPayload) => {
     setFormData((prev) => ({
@@ -84,7 +108,9 @@ const PuzzleCreator = () => {
       words_payload: wordsPayload,
       words_file_id: null,
     }));
-  }, []);
+    setShowSuccess(false);
+    resetGeneration();
+  }, [resetGeneration]);
 
   const handleWordsFileUpload = useCallback((fileId) => {
     setFormData((prev) => ({
@@ -92,28 +118,20 @@ const PuzzleCreator = () => {
       words_file_id: fileId,
       words_payload: null,
     }));
-  }, []);
+    setShowSuccess(false);
+    resetGeneration();
+  }, [resetGeneration]);
 
   const hasWords = formData.words_payload
     ? Object.keys(formData.words_payload).length > 0
     : !!formData.words_file_id;
 
-  const nextStep = useCallback(() => {
-    if (step === 2 && !hasWords) {
+  const generatePuzzle = useCallback(async () => {
+    if (!hasWords) {
       setError("Please select topics, add custom words, or upload a word file before proceeding.");
       return;
     }
-    setError(null);
-    setStep((prev) => prev + 1);
-  }, [step, hasWords]);
 
-  const prevStep = useCallback(() => {
-    setStep((prev) => prev - 1);
-  }, []);
-
-
-
-  const generatePuzzle = useCallback(async () => {
     try {
       setError(null);
       const fileData = await contextGenerate(formData);
@@ -131,14 +149,26 @@ const PuzzleCreator = () => {
       window.URL.revokeObjectURL(url);
       link.remove();
 
-      setStep(4);
+      setShowSuccess(true);
     } catch (err) {
       if (err?.name !== "CanceledError") {
         setError("Failed to generate puzzle book. Please try again.");
         console.error("Error generating puzzle:", err);
       }
     }
-  }, [formData, contextGenerate, completeGeneration]);
+  }, [formData, hasWords, contextGenerate, completeGeneration]);
+
+  const handleDownloadAgain = useCallback(() => {
+    if (!generatedFile) return;
+    const url = window.URL.createObjectURL(new Blob([generatedFile]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", generatedFileName);
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
+    link.remove();
+  }, [generatedFile, generatedFileName]);
 
   if (isLoading) {
     return (
@@ -169,255 +199,178 @@ const PuzzleCreator = () => {
     );
   }
 
+  const totalPuzzles = (formData.normal || 0) + (formData.hard || 0) +
+    (formData.bonus_normal || 0) + (formData.bonus_hard || 0);
+
   return (
     <div className="puzzle-creator">
       <div className="container">
-        <div className="card">
-          <LoadingOverlay />
-          {/* Progress indicator */}
-          <div className="progress-bar">
-            <div className={`progress-step ${step >= 1 ? "active" : ""}`}>
-              1
-            </div>
-            <div className="progress-line"></div>
-            <div className={`progress-step ${step >= 2 ? "active" : ""}`}>
-              2
-            </div>
-            <div className="progress-line"></div>
-            <div className={`progress-step ${step >= 3 ? "active" : ""}`}>
-              3
-            </div>
-            {step === 4 && (
-              <>
-                <div className="progress-line"></div>
-                <div className="progress-step active">✓</div>
-              </>
-            )}
-          </div>
+        <LoadingOverlay />
+        <div className="creator-layout">
+          <div className="creator-config">
+            <Section title="Settings" id="settings" defaultOpen={true}>
+              <div className="form-group">
+                <label htmlFor="name">Book Title</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  className="form-control"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-          <h2 className="form-title">
-            {step === 1 && "Basic Settings"}
-            {step === 2 && "Word Selection"}
-            {step === 3 && "Customize Appearance"}
-            {step === 4 && "Puzzle Generated!"}
-          </h2>
-
-          {/* Step 1: Basic Settings */}
-          {step === 1 && (
-            <div className="form-step form-with-preview">
-              <div className="form-fields">
+              <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="name">Book Title</label>
+                  <label htmlFor="normal">Normal Puzzles</label>
                   <input
-                    type="text"
-                    id="name"
-                    name="name"
+                    type="number"
+                    id="normal"
+                    name="normal"
                     className="form-control"
-                    value={formData.name}
+                    value={formData.normal}
                     onChange={handleChange}
-                    required
+                    min="0"
+                    max="50"
                   />
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="normal">Normal Puzzles</label>
-                    <input
-                      type="number"
-                      id="normal"
-                      name="normal"
-                      className="form-control"
-                      value={formData.normal}
-                      onChange={handleChange}
-                      min="0"
-                      max="50"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="hard">Hard Puzzles</label>
-                    <input
-                      type="number"
-                      id="hard"
-                      name="hard"
-                      className="form-control"
-                      value={formData.hard}
-                      onChange={handleChange}
-                      min="0"
-                      max="50"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <Tooltip text="Extra puzzles at the end of the book with an answer key">
-                      <label htmlFor="bonus_normal">Bonus Normal Puzzles</label>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      id="bonus_normal"
-                      name="bonus_normal"
-                      className="form-control"
-                      value={formData.bonus_normal}
-                      onChange={handleChange}
-                      min="0"
-                      max="10"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <Tooltip text="Extra hard puzzles at the end of the book with an answer key">
-                      <label htmlFor="bonus_hard">Bonus Hard Puzzles</label>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      id="bonus_hard"
-                      name="bonus_hard"
-                      className="form-control"
-                      value={formData.bonus_hard}
-                      onChange={handleChange}
-                      min="0"
-                      max="10"
-                    />
-                  </div>
-                </div>
-
-                {error && <div className="alert alert-danger">{error}</div>}
-
-                <div className="form-navigation">
-                  <button
-                    className="btn btn-primary"
-                    onClick={nextStep}
-                    disabled={!!error}
-                  >
-                    Next: Word Selection
-                  </button>
+                <div className="form-group">
+                  <label htmlFor="hard">Hard Puzzles</label>
+                  <input
+                    type="number"
+                    id="hard"
+                    name="hard"
+                    className="form-control"
+                    value={formData.hard}
+                    onChange={handleChange}
+                    min="0"
+                    max="50"
+                  />
                 </div>
               </div>
-                <PuzzleDetails formData={formData} />
-            </div>
-          )}
 
-          {/* Step 2: Word Selection */}
-          {step === 2 && (
-            <div className="form-step form-with-preview">
-              <div className="form-fields">
-                <WordSelector
-                  topics={topics}
-                  onWordsUpdate={handleWordsUpdate}
-                  onFileUpload={handleWordsFileUpload}
+              <div className="form-row">
+                <div className="form-group">
+                  <Tooltip text="Extra puzzles at the end of the book with an answer key">
+                    <label htmlFor="bonus_normal">Bonus Normal</label>
+                  </Tooltip>
+                  <input
+                    type="number"
+                    id="bonus_normal"
+                    name="bonus_normal"
+                    className="form-control"
+                    value={formData.bonus_normal}
+                    onChange={handleChange}
+                    min="0"
+                    max="10"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Tooltip text="Extra hard puzzles at the end of the book with an answer key">
+                    <label htmlFor="bonus_hard">Bonus Hard</label>
+                  </Tooltip>
+                  <input
+                    type="number"
+                    id="bonus_hard"
+                    name="bonus_hard"
+                    className="form-control"
+                    value={formData.bonus_hard}
+                    onChange={handleChange}
+                    min="0"
+                    max="10"
+                  />
+                </div>
+              </div>
+            </Section>
+
+            <Section title="Words" id="words" defaultOpen={false}>
+              <WordSelector
+                topics={topics}
+                onWordsUpdate={handleWordsUpdate}
+                onFileUpload={handleWordsFileUpload}
+              />
+            </Section>
+
+            <Section title="Appearance" id="appearance" defaultOpen={false}>
+              <div className="image-uploads">
+                <FileUploader
+                  label="Cover Image"
+                  accept="image/*"
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("cover_id", fileId)
+                  }
+                  description="Upload a custom cover image"
+                  hasDefaultOption={true}
+                  defaultFile=""
                 />
 
-                {error && <div className="alert alert-danger">{error}</div>}
+                <FileUploader
+                  label="Background Image"
+                  accept="image/*"
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("background_id", fileId)
+                  }
+                  description="Upload a background for title pages"
+                  hasDefaultOption={true}
+                  defaultFile=""
+                />
 
-                <div className="form-navigation">
-                  <button className="btn btn-secondary" onClick={prevStep}>
-                    Back
-                  </button>
-                  <button className="btn btn-primary" onClick={nextStep}>
-                    Next: Customize Appearance
-                  </button>
-                </div>
+                <FileUploader
+                  label="Puzzle Background"
+                  accept="image/*"
+                  onFileUploaded={(fileId) =>
+                    handleFileUpload("puzzle_bg_id", fileId)
+                  }
+                  description="Upload a background for puzzle pages"
+                  hasDefaultOption={true}
+                  defaultFile=""
+                />
               </div>
-              <PuzzleDetails formData={formData} wordsPayload={formData.words_payload} />
-            </div>
-          )}
+            </Section>
 
-          {/* Step 3: File Uploads & Generation */}
-          {step === 3 && (
-            <div className="form-step form-with-preview">
-              <div className="form-fields">
-                <div className="image-uploads">
-                  <FileUploader
-                    label="Cover Image"
-                    accept="image/*"
-                    onFileUploaded={(fileId) =>
-                      handleFileUpload("cover_id", fileId)
-                    }
-                    description="Upload a custom cover image for your puzzle book"
-                    hasDefaultOption={true}
-                    defaultFile=""
-                  />
+            {error && <div className="alert alert-danger">{error}</div>}
 
-                  <FileUploader
-                    label="Background Image"
-                    accept="image/*"
-                    onFileUploaded={(fileId) =>
-                      handleFileUpload("background_id", fileId)
-                    }
-                    description="Upload a background for title and transition pages"
-                    hasDefaultOption={true}
-                    defaultFile=""
-                  />
+            <button
+              className="btn btn-primary btn-lg btn-generate"
+              onClick={generatePuzzle}
+              disabled={isGenerating}
+            >
+              {isGenerating ? "Generating..." : "Generate Puzzle Book"}
+            </button>
+          </div>
 
-                  <FileUploader
-                    label="Puzzle Background"
-                    accept="image/*"
-                    onFileUploaded={(fileId) =>
-                      handleFileUpload("puzzle_bg_id", fileId)
-                    }
-                    description="Upload a background for puzzle pages"
-                    hasDefaultOption={true}
-                    defaultFile=""
-                  />
-                </div>
-
-                {error && <div className="alert alert-danger">{error}</div>}
-
-                <div className="form-navigation">
-                  <button className="btn btn-secondary" onClick={prevStep}>
-                    Back
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={generatePuzzle}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? "Generating..." : "Generate Puzzle Book"}
-                  </button>
-                </div>
-              </div>
-              <PuzzleDetails formData={formData} wordsPayload={formData.words_payload} />
-            </div>
-          )}
-
-          {/* Step 4: Success & Download */}
-          {step === 4 && (
-            <div className="form-step success-step">
-              <div className="success-animation">
-                <svg className="checkmark" viewBox="0 0 52 52">
-                  <circle className="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
-                  <path className="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
-                </svg>
-              </div>
-              <h3 className="success-heading">Book Ready</h3>
-              <p className="success-description">
-                <strong>{formData.name}</strong> with {(formData.normal || 0) + (formData.hard || 0) + (formData.bonus_normal || 0) + (formData.bonus_hard || 0)} puzzles
-              </p>
-
-              <div className="success-actions">
-                <button className="btn btn-primary btn-lg" onClick={() => {
-                  const url = window.URL.createObjectURL(new Blob([generatedFile]));
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.setAttribute("download", `${formData.name}.pdf`);
-                  document.body.appendChild(link);
-                  link.click();
-                  window.URL.revokeObjectURL(url);
-                  link.remove();
-                }}>
-                  Download PDF
-                </button>
+          <div className="creator-preview">
+            {showSuccess && generatedFile ? (
+              <div className="success-panel">
+                <div className="success-stamp">APPROVED<br />FOR PRINT</div>
+                <h3 className="success-heading">Your Book is Ready!</h3>
+                <p className="success-description">
+                  <strong>{formData.name}</strong> &mdash; {totalPuzzles} puzzles
+                </p>
                 {generationDuration != null && (
-                  <span className="pg-gen-time">{Math.floor(generationDuration / 60)}:{String(generationDuration % 60).padStart(2, "0")}</span>
+                  <p className="success-time">
+                    Generated in {generationDuration < 60
+                      ? `${generationDuration}s`
+                      : `${Math.floor(generationDuration / 60)}m ${generationDuration % 60}s`}
+                  </p>
                 )}
-                <button className="btn btn-secondary" onClick={() => setStep(1)}>
-                  Create Another
-                </button>
+                <div className="success-actions">
+                  <button className="btn btn-primary btn-lg" onClick={handleDownloadAgain}>
+                    Download PDF
+                  </button>
+                  <button className="btn btn-outline" onClick={() => { setShowSuccess(false); resetGeneration(); }}>
+                    Edit Settings
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <PuzzlePreview formData={formData} wordsPayload={formData.words_payload} />
+            )}
+          </div>
         </div>
       </div>
     </div>
