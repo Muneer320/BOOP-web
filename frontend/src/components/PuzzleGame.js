@@ -5,17 +5,19 @@ import useTimer from "../hooks/useTimer";
 import "./PuzzleGame.css";
 
 const MODES = [
-  { id: "easy",      label: "Easy",     grid: 10, minW: 4,  maxW: 7,  back: false, mask: null },
-  { id: "normal",    label: "Normal",   grid: 13, minW: 6,  maxW: 10, back: true,  mask: null },
-  { id: "hard",      label: "Hard",     grid: 15, minW: 8,  maxW: 13, back: true,  mask: null },
-  { id: "veryhard",  label: "Very Hard", grid: 18, minW: 10, maxW: 16, back: true,  mask: null },
-  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 20, back: true,  mask: null },
-  { id: "bonus",     label: "Bonus",    grid: 15, minW: 6,  maxW: 11, back: true,  mask: "circle" },
+  { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 7, back: false, mask: null },
+  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 10, back: true, mask: null },
+  { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 13, back: true, mask: null },
+  { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 16, back: true, mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 20, back: true, mask: null },
+  { id: "bonus", label: "Bonus", grid: 15, minW: 6, maxW: 11, back: true, mask: "circle" },
 ];
 
-const COLORS = ["#3a6b35","#8b3a3a","#b8860b","#4a6fa5","#6b4a8b","#c4956a","#2d6b5e","#8b5e3a","#4a7c5e","#7a5e3a"];
+const COLORS = ["#3a6b35", "#8b3a3a", "#b8860b", "#4a6fa5", "#6b4a8b", "#c4956a", "#2d6b5e", "#8b5e3a", "#4a7c5e", "#7a5e3a"];
 
-const DIRECTIONS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
+const DIRECTIONS = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1]];
+
+const cleanWord = (w) => w.trim().toUpperCase().replace(/[^A-Z]/g, "");
 
 const PuzzleGame = () => {
   const { saveGame, loadGame, clearGame } = useGamePersistence();
@@ -163,7 +165,7 @@ const PuzzleGame = () => {
         setScreen("play");
       }
     }
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
 
   /* ---- Persist progress ---- */
@@ -187,6 +189,34 @@ const PuzzleGame = () => {
     const idx = Object.keys(foundWords).indexOf(word);
     return idx >= 0 ? COLORS[idx % COLORS.length] : null;
   }, [foundWords]);
+
+  const getBlendedColor = useCallback((r, c) => {
+    const wordsAtCell = Object.keys(foundWords).filter(word =>
+      foundWords[word].some(([fr, fc]) => fr === r && fc === c)
+    );
+
+    if (wordsAtCell.length === 0) return null;
+    if (wordsAtCell.length === 1) return getWordColor(wordsAtCell[0]);
+
+    // Blend multiple colors by averaging RGB values
+    const colors = wordsAtCell.map(word => getWordColor(word) || COLORS[0]);
+    const rgbs = colors.map(hex => {
+      const h = hex.replace('#', '');
+      return [
+        parseInt(h.substr(0, 2), 16),
+        parseInt(h.substr(2, 2), 16),
+        parseInt(h.substr(4, 2), 16)
+      ];
+    });
+
+    const avgRGB = [
+      Math.round(rgbs.reduce((sum, rgb) => sum + rgb[0], 0) / rgbs.length),
+      Math.round(rgbs.reduce((sum, rgb) => sum + rgb[1], 0) / rgbs.length),
+      Math.round(rgbs.reduce((sum, rgb) => sum + rgb[2], 0) / rgbs.length)
+    ];
+
+    return '#' + avgRGB.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+  }, [foundWords, getWordColor]);
 
   const getDirection = useCallback((start, end) => {
     const dr = end[0] - start[0];
@@ -213,7 +243,7 @@ const PuzzleGame = () => {
       if (r === end[0] && c === end[1]) break;
       r += dir[0]; c += dir[1];
     }
-    if (!cells.length || cells[cells.length-1][0] !== end[0] || cells[cells.length-1][1] !== end[1]) return;
+    if (!cells.length || cells[cells.length - 1][0] !== end[0] || cells[cells.length - 1][1] !== end[1]) return;
 
     const word = cells.map(([rr, cc]) => puzzle.grid[rr][cc]).join("");
     const matched = puzzle.words.find(w => w === word && !foundWords.hasOwnProperty(w));
@@ -246,10 +276,10 @@ const PuzzleGame = () => {
     if (!puzzle || paused || screen !== "play") return;
     const s = puzzle.grid_size;
     switch (e.key) {
-      case "ArrowUp":    e.preventDefault(); setFocusedCell([Math.max(0, r-1), c]); break;
-      case "ArrowDown":  e.preventDefault(); setFocusedCell([Math.min(s-1, r+1), c]); break;
-      case "ArrowLeft":  e.preventDefault(); setFocusedCell([r, Math.max(0, c-1)]); break;
-      case "ArrowRight": e.preventDefault(); setFocusedCell([r, Math.min(s-1, c+1)]); break;
+      case "ArrowUp": e.preventDefault(); setFocusedCell([Math.max(0, r - 1), c]); break;
+      case "ArrowDown": e.preventDefault(); setFocusedCell([Math.min(s - 1, r + 1), c]); break;
+      case "ArrowLeft": e.preventDefault(); setFocusedCell([r, Math.max(0, c - 1)]); break;
+      case "ArrowRight": e.preventDefault(); setFocusedCell([r, Math.min(s - 1, c + 1)]); break;
       case "Enter":
       case " ":
         e.preventDefault();
@@ -353,7 +383,7 @@ const PuzzleGame = () => {
   const handleManualInput = useCallback((e) => {
     const val = e.target.value;
     setManualInput(val);
-    const parts = val.split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+    const parts = val.split(",").map(cleanWord).filter(w => w.length >= 2);
     if (parts.length > 1) {
       setWordChips(prev => {
         const combined = [...prev, ...parts.slice(0, -1)];
@@ -370,8 +400,8 @@ const PuzzleGame = () => {
 
   const handleManualKeyDown = useCallback((e) => {
     if (e.key === "Enter" && manualInput.trim()) {
-      const word = manualInput.trim().toUpperCase();
-      if (word && !wordChips.includes(word) && wordChips.length < mode.maxW) {
+      const word = cleanWord(manualInput);
+      if (word.length >= 2 && !wordChips.includes(word) && wordChips.length < mode.maxW) {
         setWordChips(prev => [...prev, word]);
       }
       setManualInput("");
@@ -552,9 +582,8 @@ const PuzzleGame = () => {
         const cy = gridY + r * (cellPx + gap);
         const found = foundSetRef.current.has(`${r},${c}`);
         if (found) {
-          const wordKey = Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === r && fc === c));
-          const idx = wordKey ? Object.keys(foundWords).indexOf(wordKey) : -1;
-          ctx.fillStyle = idx >= 0 ? COLORS[idx % COLORS.length] : "#3a6b35";
+          const blended = getBlendedColor(r, c);
+          ctx.fillStyle = blended || "#3a6b35";
         } else {
           ctx.fillStyle = "#2a2a2a";
         }
@@ -676,7 +705,7 @@ const PuzzleGame = () => {
     try {
       const resp = await apiService.uploadFile(file);
       const text = await apiService.getFile(resp.data.file_id).then(r => r.data.text());
-      const lines = text.split(/[\n\r,]+/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 2);
+      const lines = text.split(/[\n\r,]+/).map(cleanWord).filter(w => w.length >= 2);
       setWordChips(prev => { const combined = [...new Set([...prev, ...lines])]; return combined.slice(0, mode.maxW); });
     } catch { setError("Failed to parse uploaded file."); }
   }, [mode.maxW]);
@@ -847,10 +876,10 @@ const PuzzleGame = () => {
               {timerEnabled && !paused && <button className="btn btn-outline btn-sm" onClick={handlePause}>Pause</button>}
               <button className="btn btn-outline btn-sm" onClick={handleNewGame}>New</button>
             </div>
-          {error && <div className="pg-error pg-error-inline">
-            <span>{error}</span>
-            <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
-          </div>}
+            {error && <div className="pg-error pg-error-inline">
+              <span>{error}</span>
+              <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
+            </div>}
           </div>
 
           <div className="pg-layout">
@@ -868,7 +897,7 @@ const PuzzleGame = () => {
                   const sel = isSelected(ri, ci);
                   const hl = isHighlighted(ri, ci);
                   const isFocused = focusedCell && focusedCell[0] === ri && focusedCell[1] === ci;
-                  const color = found ? getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))) : null;
+                  const color = found ? getBlendedColor(ri, ci) : null;
                   return (
                     <div key={`${ri}-${ci}`}
                       className={`pg-cell${found ? " found" : ""}${sel ? " selecting" : ""}${hl ? " hilite" : ""}`}
@@ -961,9 +990,10 @@ const PuzzleGame = () => {
                 {row.map((cell, ci) => {
                   const found = inFound(ri, ci);
                   const cellPx = Math.min(24, Math.floor((Math.min(500, window.innerWidth - 64)) / puzzle.grid_size));
+                  const blendedColor = found ? getBlendedColor(ri, ci) : null;
                   return (
                     <span key={ci} className={`pg-complete-cell${found ? " found" : ""}`}
-                      style={{ width: cellPx, height: cellPx, fontSize: Math.max(6, cellPx * 0.5), ...(found ? { color: getWordColor(Object.keys(foundWords).find(k => foundWords[k].some(([fr, fc]) => fr === ri && fc === ci))), fontWeight: 700 } : {}) }}>
+                      style={{ width: cellPx, height: cellPx, fontSize: Math.max(6, cellPx * 0.5), ...(blendedColor ? { background: blendedColor, color: "#fff", fontWeight: 700 } : {}) }}>
                       {cell}
                     </span>
                   );
