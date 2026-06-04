@@ -19,6 +19,32 @@ const DIRECTIONS = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1],
 
 const cleanWord = (w) => w.trim().toUpperCase().replace(/[^A-Z]/g, "");
 
+function parseFileText(text) {
+  const errors = [];
+  const sections = text.split(/={10,}/);
+  const topics = {};
+  for (const section of sections) {
+    if (!section.trim()) continue;
+    const lines = section.trim().split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length === 0) continue;
+    const topicLine = lines[0];
+    if (!topicLine.startsWith(">")) {
+      errors.push(`Missing topic header (line should start with >): found "${topicLine.slice(0, 40)}"`);
+      continue;
+    }
+    const topic = topicLine.slice(1).trim();
+    if (!topic) { errors.push("Empty topic name after >"); continue; }
+    const words = lines.slice(1).map(cleanWord).filter((w) => w.length >= 2);
+    if (words.length === 0) { errors.push(`Topic "${topic}" has no valid words`); continue; }
+    if (topics[topic]) {
+      topics[topic] = [...new Set([...topics[topic], ...words])];
+    } else {
+      topics[topic] = words;
+    }
+  }
+  return { topics, errors };
+}
+
 const PuzzleGame = () => {
   const { saveGame, loadGame, clearGame } = useGamePersistence();
 
@@ -54,6 +80,12 @@ const PuzzleGame = () => {
   const [topicWordMap, setTopicWordMap] = useState({});
   const [manualInput, setManualInput] = useState("");
   const [topicError, setTopicError] = useState(null);
+
+  /* ---- File upload state ---- */
+  const [fileTopics, setFileTopics] = useState({});
+  const [fileExcluded, setFileExcluded] = useState({});
+  const [fileErrors, setFileErrors] = useState([]);
+  const fileInputRef = useRef(null);
 
   const mode = useMemo(() => MODES.find(m => m.id === modeId) || MODES[1], [modeId]);
   const timer = useTimer();
@@ -104,8 +136,13 @@ const PuzzleGame = () => {
   const computeWords = useCallback(() => {
     if (wordSource === "preset") return topicSelectedWords;
     if (wordSource === "manual") return wordChips;
+    if (wordSource === "file") {
+      const excluded = new Set(Object.values(fileExcluded).flat());
+      const all = Object.values(fileTopics).flat();
+      return all.filter(w => !excluded.has(w));
+    }
     return [];
-  }, [wordSource, topicSelectedWords, wordChips]);
+  }, [wordSource, topicSelectedWords, wordChips, fileTopics, fileExcluded]);
 
   /* ---- Generate puzzle ---- */
   const generatePuzzle = useCallback(async (words, timerOn) => {
@@ -700,15 +737,58 @@ const PuzzleGame = () => {
 
   /* ---- File upload ---- */
   const handleFileUpload = useCallback(async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const resp = await apiService.uploadFile(file);
-      const text = await apiService.getFile(resp.data.file_id).then(r => r.data.text());
-      const lines = text.split(/[\n\r,]+/).map(cleanWord).filter(w => w.length >= 2);
-      setWordChips(prev => { const combined = [...new Set([...prev, ...lines])]; return combined.slice(0, mode.maxW); });
-    } catch { setError("Failed to parse uploaded file."); }
-  }, [mode.maxW]);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setError(null);
+    const newErrors = [];
+    let accumulated = { ...fileTopics };
+
+    for (const file of files) {
+      try {
+        await apiService.uploadFile(file);
+      } catch {
+        newErrors.push(`Failed to upload "${file.name}" to server.`);
+        continue;
+      }
+
+      const text = await file.text();
+      const { topics: parsed, errors: parseErrs } = parseFileText(text);
+      newErrors.push(...parseErrs.map((e) => `"${file.name}": ${e}`));
+
+      if (Object.keys(parsed).length === 0) {
+        newErrors.push(`"${file.name}" — no valid topics found. Use >TOPIC_NAME header and === separators.`);
+        continue;
+      }
+
+      for (const [topic, words] of Object.entries(parsed)) {
+        if (accumulated[topic]) {
+          accumulated[topic] = [...new Set([...accumulated[topic], ...words])];
+        } else {
+          accumulated[topic] = words;
+        }
+      }
+    }
+
+    setFileErrors(newErrors);
+    if (Object.keys(accumulated).length > 0) {
+      setFileTopics(accumulated);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [fileTopics]);
+
+  const toggleFileWord = useCallback((topic, word) => {
+    setFileExcluded((prev) => {
+      const excluded = prev[topic] ? new Set(prev[topic]) : new Set();
+      if (excluded.has(word)) {
+        excluded.delete(word);
+      } else {
+        excluded.add(word);
+      }
+      const next = { ...prev, [topic]: [...excluded] };
+      if (next[topic].length === 0) delete next[topic];
+      return next;
+    });
+  }, []);
 
   /* ---- Topic card helper ---- */
   const renderTopicCard = useCallback((topic) => {
@@ -817,18 +897,67 @@ const PuzzleGame = () => {
 
           {wordSource === "file" && (
             <div className="pg-file-panel">
-              <p className="pg-file-hint">Upload a .txt file with one word per line, or comma separated.</p>
+              <p className="pg-file-hint">Upload a <code>.txt</code> file with topics and words:</p>
+              <pre className="format-example" style={{ fontSize: "0.75rem", padding: "0.5rem" }}>{`>TECHNOLOGY
+algorithm
+binary
+====================
+>ASTRONOMY
+asteroid`}</pre>
               <label className="btn btn-outline" style={{ cursor: "pointer" }}>
-                Choose .txt File
-                <input type="file" accept=".txt" onChange={handleFileUpload} style={{ display: "none" }} />
+                Choose .txt File(s)
+                <input type="file" accept=".txt" multiple ref={fileInputRef}
+                  onChange={handleFileUpload} style={{ display: "none" }} />
               </label>
-              {wordChips.length > 0 && (
-                <div className="pg-chips">
-                  {wordChips.map(w => (
-                    <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
-                      {w} <span className="pg-chip-remove">&times;</span>
-                    </span>
-                  ))}
+              {fileErrors.length > 0 && (
+                <div className="pg-error" style={{ marginTop: "0.5rem" }}>
+                  <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                    {fileErrors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                </div>
+              )}
+              {Object.keys(fileTopics).length > 0 && (
+                <div className="pg-preset-panel" style={{ marginTop: "0.75rem" }}>
+                  {Object.entries(fileTopics).map(([topic, words]) => {
+                    const excluded = fileExcluded[topic] || [];
+                    const included = words.filter(w => !excluded.includes(w));
+                    return (
+                      <div key={topic}
+                        className={`pg-topic-card${activeTopic === topic ? " expanded active" : ""}${included.length === words.length && included.length > 0 ? " all-selected" : ""}`}>
+                        <div className="pg-topic-header" onClick={() => setActiveTopic(activeTopic === topic ? null : topic)}>
+                          <span className="pg-topic-name">{topic}</span>
+                          <span className="pg-topic-meta">{included.length}/{words.length} words</span>
+                          <span className="pg-topic-arrow">{activeTopic === topic ? "\u25BC" : "\u25B6"}</span>
+                        </div>
+                        {activeTopic === topic && (
+                          <div className="pg-topic-words">
+                            {words.map(w => {
+                              const excl = excluded.includes(w);
+                              return (
+                                <span key={w}
+                                  className={`pg-word-tag${excl ? " removed" : " added"}`}
+                                  onClick={() => toggleFileWord(topic, w)}>
+                                  {w}
+                                  <span className="pg-tag-action">{excl ? "+" : "\u2713"}</span>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {(() => {
+                    const excludedSet = new Set(Object.values(fileExcluded).flat());
+                    const all = Object.values(fileTopics).flat();
+                    const selected = all.filter(w => !excludedSet.has(w));
+                    return (
+                      <p className="pg-word-count-total">
+                        {selected.length} word{selected.length !== 1 ? "s" : ""} selected
+                        {selected.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
             </div>
