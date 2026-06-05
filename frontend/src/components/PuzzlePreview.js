@@ -66,13 +66,13 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
       mode: "Normal",
       topic: wordsPayload ? Object.keys(wordsPayload)[0] || "" : "",
     });
-    // 4. Sample puzzle pages (up to 3)
+    // 4. Sample puzzle pages (up to 3) — pageNum is actual book page number
     const numSample = Math.min(totalPuzzles, 3);
     for (let i = 0; i < numSample; i++) {
       p.push({
         type: "puzzle",
         grid: genGrid(seed + i),
-        pageNum: i + 1,
+        pageNum: p.length + 1,
         words: sampleWords,
       });
     }
@@ -100,10 +100,6 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
     );
   }
 
-  const totalUniqueWords = wordsPayload
-    ? [...new Set(Object.values(wordsPayload).flat())].length
-    : 0;
-  // Word requirement per puzzle type
   const wordsPerNormal = 10;
   const wordsPerHard = 15;
   const totalWordsNeeded = totalNormal * wordsPerNormal + totalHard * wordsPerHard;
@@ -244,23 +240,27 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
       <div className="preview-stats">
         <div className="preview-stat">
           <span className="stat-value">{totalNormal}</span>
-          <span className="stat-label">Normal</span>
+          <span className="stat-label" title="(Normal + Bonus Normal) × Topics">Normal Puzzles</span>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{totalHard}</span>
-          <span className="stat-label">Hard</span>
+          <span className="stat-label" title="(Hard + Bonus Hard) × Topics">Hard Puzzles</span>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{topicCount}</span>
-          <span className="stat-label">Topics</span>
+          <span className="stat-label" title="Number of word categories selected">Topics</span>
         </div>
         <div className="preview-stat">
-          <span className="stat-value">{totalUniqueWords > 0 ? totalUniqueWords : totalWordsNeeded}</span>
-          <span className="stat-label">Words Needed</span>
+          <span className="stat-value">{totalNormal + totalHard}</span>
+          <span className="stat-label" title="Normal + Hard puzzles across all topics">Total Puzzles</span>
+        </div>
+        <div className="preview-stat">
+          <span className="stat-value">{totalWordsNeeded}</span>
+          <span className="stat-label" title="(Normal × 10) + (Hard × 15) words needed">Words Needed</span>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{estPages}</span>
-          <span className="stat-label">Est. Pages</span>
+          <span className="stat-label" title="Cover + TOC/Transition + Puzzles + Solutions">Est. Pages</span>
         </div>
       </div>
     </div>

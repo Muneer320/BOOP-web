@@ -1,5 +1,9 @@
 .puzzle-creator {
-  padding: 2rem 0;
+  padding: 2rem 0 0;
+}
+
+.puzzle-creator > .container {
+  min-height: calc(100vh - 220px);
 }
 
 .creator-layout {

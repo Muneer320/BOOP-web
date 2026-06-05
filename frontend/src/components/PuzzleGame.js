@@ -24,12 +24,12 @@ const Section = ({ title, id, defaultOpen = false, children }) => {
 };
 
 const MODES = [
-  { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 10, back: false, mask: null },
-  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 10, back: true, mask: null },
-  { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 18, back: true, mask: null },
-  { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 26, back: true, mask: null },
-  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 34, back: true, mask: null },
-  { id: "bonus", label: "Bonus", grid: 15, minW: 6, maxW: 15, back: true, mask: "circle" },
+  { id: "easy", label: "Easy", grid: 10, minW: 7, maxW: 12, back: false, mask: null },
+  { id: "normal", label: "Normal", grid: 13, minW: 10, maxW: 15, back: true, mask: null },
+  { id: "hard", label: "Hard", grid: 15, minW: 13, maxW: 20, back: true, mask: null },
+  { id: "veryhard", label: "Very Hard", grid: 18, minW: 15, maxW: 25, back: true, mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 18, maxW: 30, back: true, mask: null },
+  { id: "bonus", label: "Bonus", grid: 15, minW: 7, maxW: 15, back: true, mask: "circle" },
 ];
 
 const COLORS = ["#3a6b35", "#8b3a3a", "#b8860b", "#4a6fa5", "#6b4a8b", "#c4956a", "#2d6b5e", "#8b5e3a", "#4a7c5e", "#7a5e3a"];
@@ -89,6 +89,9 @@ const PuzzleGame = () => {
   const [showConfirmNew, setShowConfirmNew] = useState(false);
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
+  const [hintsEnabled, setHintsEnabled] = useState(true);
+  const [hintCooldown, setHintCooldown] = useState(30);
+  const [wordCountTarget, setWordCountTarget] = useState(0);
   const [gameId, setGameId] = useState(null);
   const [focusedCell, setFocusedCell] = useState(null);
   const [hintWord, setHintWord] = useState(null);
@@ -195,16 +198,18 @@ const PuzzleGame = () => {
   /* ---- Start game ---- */
   const handleStart = useCallback(async () => {
     let words = computeWords();
-    if (words.length < mode.minW) {
-      setError(`Need at least ${mode.minW} words. Selected ${words.length}. Try a different topic or add words.`);
+    const target = wordCountTarget > 0 ? wordCountTarget : mode.maxW;
+    const minLimit = wordCountTarget > 0 ? Math.min(wordCountTarget, mode.minW) : mode.minW;
+    if (words.length < minLimit) {
+      setError(`Need at least ${minLimit} words. Selected ${words.length}. Try a different topic or add words.`);
       return;
     }
-    if (words.length > mode.maxW) {
+    if (words.length > target) {
       const shuffled = [...words].sort(() => Math.random() - 0.5);
-      words = shuffled.slice(0, mode.maxW);
+      words = shuffled.slice(0, target);
     }
     await generatePuzzle(words, timerEnabled);
-  }, [computeWords, mode, generatePuzzle, timerEnabled]);
+  }, [computeWords, mode, generatePuzzle, timerEnabled, wordCountTarget]);
 
   /* ---- Restore game from localStorage ---- */
   useEffect(() => {
@@ -490,9 +495,9 @@ const PuzzleGame = () => {
     const now = Date.now();
     const elapsed = (now - (gameStartTime.current || now)) / 1000;
     if (elapsed < 60) return;
-    if (now - lastGlobalHintRef.current < 30000) return;
+    if (!hintsEnabled || now - lastGlobalHintRef.current < hintCooldown * 1000) return;
     setHintWord(word);
-  }, []);
+  }, [hintsEnabled, hintCooldown]);
 
   const handleFullSolution = useCallback(() => {
     if (!puzzle) return;
@@ -932,11 +937,31 @@ asteroid, comet`}</pre>
         </Section>
 
         <Section title="Settings" id="pg-settings-section" defaultOpen={false}>
-          <div className="pg-timer-option">
+          <div className="pg-settings">
             <label className="pg-toggle">
               <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
               <span>Show timer</span>
             </label>
+            <label className="pg-toggle">
+              <input type="checkbox" checked={hintsEnabled} onChange={e => setHintsEnabled(e.target.checked)} />
+              <span>Enable hints</span>
+            </label>
+            {hintsEnabled && (
+              <div className="pg-setting-row">
+                <label className="pg-setting-label">Hint cooldown: {hintCooldown}s</label>
+                <input type="range" min="10" max="120" step="5" value={hintCooldown}
+                  onChange={e => setHintCooldown(Number(e.target.value))}
+                  className="pg-range" />
+              </div>
+            )}
+            <div className="pg-setting-row">
+              <label className="pg-setting-label">
+                Words per game: {wordCountTarget > 0 ? wordCountTarget : "Auto (mode default)"}
+              </label>
+              <input type="range" min="0" max="50" step="1" value={wordCountTarget}
+                onChange={e => setWordCountTarget(Number(e.target.value))}
+                className="pg-range" />
+            </div>
           </div>
         </Section>
 
@@ -1026,20 +1051,21 @@ asteroid, comet`}</pre>
                     style={foundWords[word] ? { color: getWordColor(word) } : {}}>
                     <span className="pg-word-bullet">{foundWords[word] ? "\u2713" : "\u25CB"}</span>
                     <span className="pg-word-text">{word}</span>
-                    {!foundWords[word] && (() => {
+                    {!foundWords[word] && hintsEnabled && (() => {
                       const now = Date.now();
                       const gameTime = (now - (gameStartTime.current || now)) / 1000;
                       const sinceLast = (now - lastGlobalHintRef.current) / 1000;
-                      const hintReady = gameTime >= 60 && sinceLast >= 30;
+                      const hintDelay = Math.max(30, hintCooldown);
+                      const hintReady = gameTime >= hintDelay && sinceLast >= hintCooldown;
                       let hintPct = 100;
                       let hintLabel = "Show hint";
                       if (!hintReady) {
-                        if (gameTime < 60) {
-                          hintPct = Math.min(99, (gameTime / 60) * 100);
-                          hintLabel = `Hint in ${60 - Math.ceil(gameTime)}s`;
+                        if (gameTime < hintDelay) {
+                          hintPct = Math.min(99, (gameTime / hintDelay) * 100);
+                          hintLabel = `Hint in ${hintDelay - Math.ceil(gameTime)}s`;
                         } else {
-                          hintPct = Math.min(99, (sinceLast / 30) * 100);
-                          hintLabel = `Hint in ${30 - Math.ceil(sinceLast)}s`;
+                          hintPct = Math.min(99, (sinceLast / hintCooldown) * 100);
+                          hintLabel = `Hint in ${hintCooldown - Math.ceil(sinceLast)}s`;
                         }
                       }
                       return (

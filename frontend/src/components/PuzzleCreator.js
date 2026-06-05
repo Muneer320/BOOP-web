@@ -134,6 +134,8 @@ const PuzzleCreator = () => {
       return;
     }
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     try {
       setError(null);
       const fileData = await contextGenerate(formData);
@@ -227,7 +229,7 @@ const PuzzleCreator = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <Tooltip text="13×13 grid · words can go backwards · 6–10 words per puzzle">
+                  <Tooltip text="13×13 grid · words can go backwards · 10–15 words per puzzle">
                     <label htmlFor="normal">Normal Puzzles</label>
                   </Tooltip>
                   <input
@@ -243,7 +245,7 @@ const PuzzleCreator = () => {
                 </div>
 
                 <div className="form-group">
-                  <Tooltip text="17×17 grid · harder word placements · 8–18 words per puzzle">
+                  <Tooltip text="17×17 grid · harder word placements · 13–20 words per puzzle">
                     <label htmlFor="hard">Hard Puzzles</label>
                   </Tooltip>
                   <input

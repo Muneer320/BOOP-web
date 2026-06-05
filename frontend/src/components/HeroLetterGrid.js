@@ -34,7 +34,7 @@ const HeroLetterGrid = () => {
     const grid = Array.from({ length: ROWS }, () =>
       Array.from({ length: COLS }, () => ({
         char: letters[Math.floor(Math.random() * 26)],
-        opacity: Math.random() * 0.06 + 0.015,
+        opacity: Math.random() * 0.12 + 0.04,
         speed: Math.random() * 0.004 + 0.001,
         phase: Math.random() * Math.PI * 2,
       }))
@@ -56,7 +56,7 @@ const HeroLetterGrid = () => {
 
       grid.forEach((row, ri) => {
         row.forEach((cell, ci) => {
-          const flicker = reduced ? 0.025 : (Math.sin(time * cell.speed + cell.phase) * 0.02 + 0.025);
+          const flicker = reduced ? 0.08 : (Math.sin(time * cell.speed + cell.phase) * 0.04 + 0.08);
           ctx.fillStyle = `rgba(${rgb}, ${flicker})`;
           ctx.font = `${Math.min(cellW, cellH) * 0.65}px "JetBrains Mono", monospace`;
           ctx.textAlign = "center";
