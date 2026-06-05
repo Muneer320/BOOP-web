@@ -1,0 +1,557 @@
+.examples-page {
+  padding: 2rem 0 4rem;
+}
+
+.examples-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.examples-header h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+}
+
+.examples-subtitle {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--ink-light);
+  max-width: 560px;
+  margin: 0 auto;
+  font-style: italic;
+}
+
+/* Selector tabs */
+.examples-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.example-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+.example-tab:hover {
+  border-color: var(--primary);
+  background: var(--paper-dark);
+}
+
+.example-tab.active {
+  border-color: var(--primary);
+  background: var(--success-bg);
+}
+
+.example-tab-color {
+  width: 8px;
+  height: 28px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.example-tab-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.example-tab-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.example-tab-diff {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+}
+
+/* Layout */
+.examples-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+/* Flip Viewer */
+.flip-viewer {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.flip-viewer::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--border);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.flip-book-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 380px;
+  background: var(--paper-dark);
+  background-image: radial-gradient(ellipse at center, rgba(196, 149, 106, 0.03) 0%, transparent 70%);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.flip-book {
+  display: flex;
+  align-items: stretch;
+  perspective: 1600px;
+  height: 340px;
+  transform: rotateY(var(--flip-rotation, 0deg));
+  transition: transform 0.4s ease;
+}
+
+.flip-spine {
+  width: 14px;
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-dark));
+  border-radius: 2px 0 0 2px;
+  position: relative;
+  z-index: 20;
+}
+
+.flip-spine::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 84%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.flip-page {
+  position: absolute;
+  width: 200px;
+  height: 100%;
+  left: 14px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+  backface-visibility: hidden;
+}
+
+.flip-page.flipped {
+  transform: rotateY(-180deg);
+}
+
+.flip-page.visible {
+  position: relative;
+}
+
+.flip-cover {
+  width: 100%;
+  height: 100%;
+  background: var(--primary);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 12px rgba(44, 24, 16, 0.12);
+}
+
+.flip-cover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+  height: 100%;
+}
+
+.flip-cover-label {
+  font-family: var(--font-ui);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+.flip-cover-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--paper-light);
+  line-height: 1.2;
+}
+
+.flip-cover-divider {
+  width: 30px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.flip-cover-subtitle {
+  font-family: var(--font-ui);
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.flip-cover-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-top: 0.5rem;
+  opacity: 0.25;
+}
+
+.flip-cover-cell {
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  color: var(--paper-light);
+  text-align: center;
+}
+
+.flip-puzzle-page {
+  width: 100%;
+  height: 100%;
+  background: var(--paper-light);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 2px 2px 8px rgba(44, 24, 16, 0.08);
+}
+
+[data-theme="dark"] .flip-puzzle-page {
+  background: var(--paper);
+}
+
+.flip-page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+}
+
+.flip-page-num {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-faded);
+  font-weight: 600;
+}
+
+.flip-page-label {
+  font-family: var(--font-ui);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faded);
+}
+
+.flip-svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+}
+
+.flip-words {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--ink-light);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.flip-words-label {
+  color: var(--primary);
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
+.flip-words-more {
+  color: var(--ink-faded);
+  margin-left: 0.2rem;
+}
+
+/* Flip nav */
+.flip-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0 0;
+}
+
+.flip-nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-light);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.flip-nav-btn:hover:not(:disabled) {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.flip-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.flip-nav-text {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.flip-nav-total {
+  color: var(--ink-faded);
+  font-weight: 400;
+}
+
+/* Info panel */
+.examples-info {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.examples-info::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--border);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.examples-book-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+}
+
+.examples-diff-badge {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--paper-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.examples-book-desc {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.examples-specs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.examples-spec {
+  text-align: center;
+}
+
+.spec-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.spec-label {
+  font-family: var(--font-ui);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faded);
+}
+
+.examples-cta {
+  text-align: center;
+}
+
+.examples-cta p {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  font-style: italic;
+  margin: 0 0 1rem;
+}
+
+/* Types section */
+.examples-types {
+  margin-bottom: 3rem;
+}
+
+.types-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.type-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.type-card::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--border);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.type-icon {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 0.75rem;
+  color: var(--primary);
+}
+
+.type-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.type-card h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.type-card p {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-light);
+  margin: 0;
+}
+
+/* Bottom CTA */
+.examples-bottom-cta {
+  text-align: center;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2.5rem 2rem;
+  position: relative;
+}
+
+.examples-bottom-cta::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--border);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.examples-bottom-cta h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--ink);
+  margin: 0 0 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .types-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .examples-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .examples-info {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .examples-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .examples-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .types-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .flip-book {
+    height: 260px;
+  }
+
+  .flip-page {
+    width: 160px;
+  }
+
+  .flip-svg {
+    max-width: 150px;
+  }
+}
