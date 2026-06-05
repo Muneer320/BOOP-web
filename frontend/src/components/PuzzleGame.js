@@ -2,7 +2,27 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { apiService } from "../services/api";
 import { useGamePersistence } from "../hooks/useGamePersistence";
 import useTimer from "../hooks/useTimer";
+import Tooltip from "./Tooltip";
 import "./PuzzleGame.css";
+
+const Section = ({ title, id, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className={`pg-section ${open ? "open" : ""}`}>
+      <button
+        className="pg-section-header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="pg-section-title">{title}</span>
+        <span className="pg-section-chevron">{open ? "–" : "+"}</span>
+      </button>
+      <div className={`pg-section-body ${open ? "visible" : ""}`}>
+        {children}
+      </div>
+    </section>
+  );
+};
 
 const MODES = [
   { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 10, back: false, mask: null },
@@ -805,115 +825,123 @@ const PuzzleGame = () => {
     <div className="pg-start">
       <div className="pg-start-card">
         <h2 className="pg-start-title">Play Word Search</h2>
-        <p className="pg-start-sub">Choose your mode, pick words, and start solving.</p>
+        <p className="pg-start-sub">Configure your puzzle, pick words, and start solving.</p>
 
         {error && <div className="pg-error">
           <span>{error}</span>
           <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
         </div>}
 
-        <div className="pg-modes">
-          {MODES.map(m => (
-            <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
-              onClick={() => { setModeId(m.id); setError(null); }}>
-              <span className="pg-mode-label">{m.label}</span>
-              <span className="pg-mode-size">{m.grid}×{m.grid}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="pg-word-source">
-          <div className="pg-source-tabs">
-            {[
-              { id: "preset", label: "Themes" },
-              { id: "manual", label: "Type Words" },
-              { id: "file", label: "Upload" },
-            ].map(tab => (
-              <button key={tab.id}
-                className={`pg-source-tab${wordSource === tab.id ? " active" : ""}`}
-                onClick={() => setWordSource(tab.id)}>{tab.label}</button>
+        <Section title="Modes" id="pg-modes-section" defaultOpen={true}>
+          <div className="pg-modes">
+            {MODES.map(m => (
+              <Tooltip key={m.id} text={`${m.grid}×${m.grid} grid · ${m.minW}–${m.maxW} words${m.back ? " · words can go backwards" : ""}${m.mask === "circle" ? " · circular layout" : ""}`}>
+                <button className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
+                  onClick={() => { setModeId(m.id); setError(null); }}>
+                  <span className="pg-mode-label">{m.label}</span>
+                  <span className="pg-mode-size">{m.grid}×{m.grid}</span>
+                </button>
+              </Tooltip>
             ))}
           </div>
+        </Section>
 
-          {wordSource === "preset" && (
-            <div className="pg-preset-panel">
-              {topicError && <p className="alert alert-danger">{topicError}</p>}
-              {loadingTopics && <p className="pg-loading-hint">Loading words\u2026</p>}
-              {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
-                renderTopicCard(topic)
-              )}
-              {activeTopic && (
-                <p className="pg-word-count-total">
-                  {topicSelectedWords.length} word{topicSelectedWords.length !== 1 ? "s" : ""} selected
-                  {topicSelectedWords.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
-                </p>
-              )}
+        <Section title="Words" id="pg-words-section" defaultOpen={false}>
+          <div className="pg-word-source">
+            <div className="pg-source-tabs">
+              {[
+                { id: "preset", label: "Themes" },
+                { id: "manual", label: "Type Words" },
+                { id: "file", label: "Upload" },
+              ].map(tab => (
+                <button key={tab.id}
+                  className={`pg-source-tab${wordSource === tab.id ? " active" : ""}`}
+                  onClick={() => setWordSource(tab.id)}>{tab.label}</button>
+              ))}
             </div>
-          )}
 
-          {wordSource === "manual" && (
-            <div className="pg-manual-panel">
-              <div className="form-group">
-                <label>Type words (comma or Enter to add)</label>
-                <input className="form-control" value={manualInput} onChange={handleManualInput}
-                  onKeyDown={handleManualKeyDown} placeholder="e.g. APPLE,BANANA,ORANGE" />
+            {wordSource === "preset" && (
+              <div className="pg-preset-panel">
+                {topicError && <p className="alert alert-danger">{topicError}</p>}
+                {loadingTopics && <p className="pg-loading-hint">Loading words\u2026</p>}
+                {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
+                  renderTopicCard(topic)
+                )}
+                {activeTopic && (
+                  <p className="pg-word-count-total">
+                    {topicSelectedWords.length} word{topicSelectedWords.length !== 1 ? "s" : ""} selected
+                    {topicSelectedWords.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
+                  </p>
+                )}
               </div>
-              <div className="pg-chips">
-                {wordChips.map(w => (
-                  <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
-                    {w} <span className="pg-chip-remove">&times;</span>
-                  </span>
-                ))}
-              </div>
-              {wordChips.length > 0 && (
-                <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
-              )}
-            </div>
-          )}
+            )}
 
-          {wordSource === "file" && (
-            <div className="pg-file-panel">
-              <p className="pg-file-hint">Upload a <code>.txt</code> file with topics and words, or a simple word list:</p>
-              <pre className="format-example" style={{ fontSize: "0.75rem", padding: "0.5rem" }}>{`>TECHNOLOGY
+            {wordSource === "manual" && (
+              <div className="pg-manual-panel">
+                <div className="form-group">
+                  <label>Type words (comma or Enter to add)</label>
+                  <input className="form-control" value={manualInput} onChange={handleManualInput}
+                    onKeyDown={handleManualKeyDown} placeholder="e.g. APPLE,BANANA,ORANGE" />
+                </div>
+                <div className="pg-chips">
+                  {wordChips.map(w => (
+                    <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                      {w} <span className="pg-chip-remove">&times;</span>
+                    </span>
+                  ))}
+                </div>
+                {wordChips.length > 0 && (
+                  <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
+                )}
+              </div>
+            )}
+
+            {wordSource === "file" && (
+              <div className="pg-file-panel">
+                <p className="pg-file-hint">Upload a <code>.txt</code> file with topics and words, or a simple word list:</p>
+                <pre className="format-example" style={{ fontSize: "0.75rem", padding: "0.5rem" }}>{`>TECHNOLOGY
 algorithm
 binary
 ====================
 >ASTRONOMY
 asteroid, comet`}</pre>
-              <label className="btn btn-outline" style={{ cursor: "pointer" }}>
-                Choose .txt File(s)
-                <input type="file" accept=".txt" multiple ref={fileInputRef}
-                  onChange={handleFileUpload} style={{ display: "none" }} />
-              </label>
-              {fileErrors.length > 0 && (
-                <div className="pg-error" style={{ marginTop: "0.5rem" }}>
-                  <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                    {fileErrors.map((e, i) => <li key={i}>{e}</li>)}
-                  </ul>
-                </div>
-              )}
-              {wordChips.length > 0 && (
-                <>
-                  <div className="pg-chips">
-                    {wordChips.map(w => (
-                      <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
-                        {w} <span className="pg-chip-remove">&times;</span>
-                      </span>
-                    ))}
+                <label className="btn btn-outline" style={{ cursor: "pointer" }}>
+                  Choose .txt File(s)
+                  <input type="file" accept=".txt" multiple ref={fileInputRef}
+                    onChange={handleFileUpload} style={{ display: "none" }} />
+                </label>
+                {fileErrors.length > 0 && (
+                  <div className="pg-error" style={{ marginTop: "0.5rem" }}>
+                    <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                      {fileErrors.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
                   </div>
-                  <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+                {wordChips.length > 0 && (
+                  <>
+                    <div className="pg-chips">
+                      {wordChips.map(w => (
+                        <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                          {w} <span className="pg-chip-remove">&times;</span>
+                        </span>
+                      ))}
+                    </div>
+                    <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Section>
 
-        <div className="pg-timer-option">
-          <label className="pg-toggle">
-            <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
-            <span>Show timer</span>
-          </label>
-        </div>
+        <Section title="Settings" id="pg-settings-section" defaultOpen={false}>
+          <div className="pg-timer-option">
+            <label className="pg-toggle">
+              <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
+              <span>Show timer</span>
+            </label>
+          </div>
+        </Section>
 
         <button className="btn btn-primary btn-lg pg-start-btn" onClick={handleStart} disabled={loading}>
           {loading ? "Generating…" : "Start Game"}

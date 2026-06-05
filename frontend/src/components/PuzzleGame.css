@@ -21,6 +21,74 @@
   pointer-events: none;
 }
 
+/* Play page sections — matching Create page style */
+.pg-section {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.pg-section::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--border);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.pg-section-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease;
+}
+
+.pg-section-header:hover {
+  background: var(--paper-dark);
+}
+
+.pg-section-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+
+.pg-section-chevron {
+  font-size: 1.2rem;
+  color: var(--ink-light);
+  line-height: 1;
+}
+
+.pg-section-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+  padding: 0 1.25rem;
+}
+
+.pg-section-body.visible {
+  max-height: 2000px;
+  padding: 0 1.25rem 1.25rem;
+}
+
 .pg-start-title {
   font-family: var(--font-display);
   font-size: 1.75rem;
@@ -45,7 +113,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
 }
 
 .pg-mode-btn {
