@@ -1,7 +1,44 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import HeroLetterGrid from "./HeroLetterGrid";
 import "./Home.css";
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+const PuzzlePreviewGrid = () => {
+  const grid = useMemo(() =>
+    Array.from({ length: 10 }, () =>
+      Array.from({ length: 10 }, () =>
+        LETTERS[Math.floor(Math.random() * 26)]
+      )
+    ), []);
+
+  return (
+    <div className="hero-visual">
+      <div className="puzzle-preview">
+        <div className="puzzle-grid">
+          {grid.map((row, ri) => (
+            <div className="puzzle-row" key={ri}>
+              {row.map((cell, ci) => (
+                <div className="puzzle-cell" key={ci}>{cell}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="puzzle-word-list">
+          <h3>Find these words:</h3>
+          <ul>
+            <li>PUZZLE</li>
+            <li>SEARCH</li>
+            <li>WORDS</li>
+            <li>BOOP</li>
+            <li>FIND</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const features = [
   {
@@ -66,7 +103,7 @@ const FeatureIcon = ({ name }) => {
       </svg>
     ),
   };
-  return <span className="feature-icon">{icons[name] || icons.book}</span>;
+  return <span className="feature-icon-wrap">{icons[name] || icons.book}</span>;
 };
 
 const Home = () => {
@@ -76,25 +113,27 @@ const Home = () => {
         <HeroLetterGrid />
         <div className="container">
           <div className="hero-content">
-            <div className="hero-badge">Puzzle Book Maker</div>
+            <div className="hero-badge">Word Search Generator</div>
             <h1>
-              <span className="hero-headline">From Word Lists</span>
-              <span className="hero-headline-accent">to Beautiful Books.</span>
+              <span className="masthead-main">BOOP</span>
+              <span className="masthead-sub">Puzzle Book Maker</span>
             </h1>
             <p className="hero-description">
-              Turn any word list into a professionally printed puzzle book —
-              in minutes, not hours. Choose from preset topics, add your own words,
-              and download a print-ready PDF.
+              Create custom word search puzzle books for education, events, or
+              just for fun &mdash; or jump straight in and play online right now.
+              Choose from preset topics, add your own words, and either generate a
+              print-ready PDF, or solve it on the go.
             </p>
             <div className="hero-buttons">
               <Link to="/create" className="btn btn-primary btn-lg">
-                Create Your First Book
+                Create Puzzle Book
               </Link>
               <Link to="/play" className="btn btn-outline btn-lg">
                 Play Online
               </Link>
             </div>
           </div>
+          <PuzzlePreviewGrid />
         </div>
       </section>
 
@@ -124,8 +163,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <hr className="newspaper-divider" />
 
       <section className="how-section">
         <div className="container">

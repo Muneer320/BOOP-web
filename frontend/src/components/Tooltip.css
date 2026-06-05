@@ -17,13 +17,14 @@
   color: var(--primary);
 }
 
-.tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+.tooltip-portal {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.tooltip-portal .tooltip-text {
   background: var(--ink);
   color: var(--paper-light);
   padding: 0.5rem 0.75rem;
@@ -32,13 +33,11 @@
   font-size: 0.75rem;
   font-weight: 400;
   white-space: nowrap;
-  z-index: 10;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  position: relative;
 }
 
-.tooltip-text::after {
+.tooltip-portal .tooltip-text::after {
   content: "";
   position: absolute;
   top: 100%;
@@ -46,10 +45,4 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--ink);
-}
-
-.tooltip-icon:hover .tooltip-text,
-.tooltip-icon:focus .tooltip-text {
-  visibility: visible;
-  opacity: 1;
 }

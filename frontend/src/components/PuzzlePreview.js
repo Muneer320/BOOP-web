@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef } from "react";
+import Tooltip from "./Tooltip";
 import "./PuzzlePreview.css";
 
 const GRID_SIZE = 8;
@@ -240,27 +241,39 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
       <div className="preview-stats">
         <div className="preview-stat">
           <span className="stat-value">{totalNormal}</span>
-          <span className="stat-label" title="(Normal + Bonus Normal) × Topics">Normal Puzzles</span>
+          <Tooltip text="(Normal + Bonus Normal) × Topics">
+            <span className="stat-label">Normal Puzzles</span>
+          </Tooltip>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{totalHard}</span>
-          <span className="stat-label" title="(Hard + Bonus Hard) × Topics">Hard Puzzles</span>
+          <Tooltip text="(Hard + Bonus Hard) × Topics">
+            <span className="stat-label">Hard Puzzles</span>
+          </Tooltip>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{topicCount}</span>
-          <span className="stat-label" title="Number of word categories selected">Topics</span>
+          <Tooltip text="Number of word categories selected">
+            <span className="stat-label">Topics</span>
+          </Tooltip>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{totalNormal + totalHard}</span>
-          <span className="stat-label" title="Normal + Hard puzzles across all topics">Total Puzzles</span>
+          <Tooltip text="Normal + Hard puzzles across all topics">
+            <span className="stat-label">Total Puzzles</span>
+          </Tooltip>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{totalWordsNeeded}</span>
-          <span className="stat-label" title="(Normal × 10) + (Hard × 15) words needed">Words Needed</span>
+          <Tooltip text="(Normal × 10) + (Hard × 15) words needed">
+            <span className="stat-label">Words Needed</span>
+          </Tooltip>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{estPages}</span>
-          <span className="stat-label" title="Cover + TOC/Transition + Puzzles + Solutions">Est. Pages</span>
+          <Tooltip text="Cover + TOC/Transition + Puzzles + Solutions">
+            <span className="stat-label">Est. Pages</span>
+          </Tooltip>
         </div>
       </div>
     </div>

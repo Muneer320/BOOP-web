@@ -16,7 +16,7 @@
 
 .topics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
@@ -304,6 +304,12 @@
   font-weight: 700;
 }
 
+@media (max-width: 992px) {
+  .topics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .selection-type-buttons {
     flex-direction: column;
@@ -314,7 +320,7 @@
   }
 
   .topics-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .word-chips {
@@ -324,5 +330,11 @@
   .format-example {
     font-size: 0.75rem;
     padding: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .topics-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

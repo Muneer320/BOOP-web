@@ -14,33 +14,27 @@
   pointer-events: none;
   z-index: 0;
   background:
-    /* stain 1 — top-left */
     radial-gradient(ellipse 60px 40px at 8% 15%, rgba(139, 90, 43, 0.06) 0%, transparent 70%),
     radial-gradient(ellipse 30px 25px at 8% 15%, rgba(139, 90, 43, 0.04) 0%, transparent 60%),
-    /* stain 2 — top-right */
     radial-gradient(ellipse 50px 35px at 92% 22%, rgba(139, 90, 43, 0.05) 0%, transparent 70%),
     radial-gradient(ellipse 20px 15px at 90% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 60%),
-    /* stain 3 — middle-left */
     radial-gradient(ellipse 40px 55px at 12% 55%, rgba(139, 90, 43, 0.04) 0%, transparent 70%),
-    /* stain 4 — bottom-right */
     radial-gradient(ellipse 70px 45px at 85% 80%, rgba(139, 90, 43, 0.05) 0%, transparent 70%),
     radial-gradient(ellipse 25px 20px at 83% 78%, rgba(139, 90, 43, 0.03) 0%, transparent 60%),
-    /* stain 5 — bottom-left */
     radial-gradient(ellipse 35px 30px at 5% 90%, rgba(139, 90, 43, 0.04) 0%, transparent 70%),
-    /* stain 6 — center-right */
     radial-gradient(ellipse 45px 35px at 75% 45%, rgba(139, 90, 43, 0.03) 0%, transparent 70%);
 }
 
 /* Hero */
 .hero {
-  padding: 4rem 0 3rem;
+  padding: 3rem 0 2rem;
   position: relative;
   overflow: hidden;
 }
 
 .hero .container {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: center;
   position: relative;
@@ -61,52 +55,143 @@
 .hero-badge {
   display: inline-block;
   font-family: var(--font-ui);
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--primary);
-  background: var(--paper);
-  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   padding: 0.3rem 0.9rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .hero-content h1 {
-  margin: 0 0 1.25rem;
-  line-height: 1.1;
+  margin: 0 0 1rem;
+  line-height: 1.15;
 }
 
-.hero-headline {
+.masthead-main {
   display: block;
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 7vw, 4.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.hero-headline-accent {
+.masthead-sub {
   display: block;
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: -0.01em;
+  font-family: var(--font-ui);
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--secondary);
+  border-top: 2px solid var(--border-color);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .hero-description {
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.7;
   margin-bottom: 2rem;
-  color: var(--ink-light);
-  max-width: 600px;
+  color: var(--text-secondary);
+  max-width: 480px;
 }
 
 .hero-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+/* Hero Puzzle Preview */
+.hero-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.puzzle-preview {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 380px;
+  transform: rotate(1deg);
+  position: relative;
+}
+
+.puzzle-preview::before {
+  content: "";
+  position: absolute;
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border: 1px solid var(--border-color);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.puzzle-grid {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--text-primary);
+  margin-bottom: 1rem;
+  background: var(--bg-primary);
+}
+
+.puzzle-row {
+  display: flex;
+}
+
+.puzzle-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  background: var(--bg-primary);
+  transition: background 0.15s, color 0.15s;
+}
+
+.puzzle-cell:nth-child(even) {
+  background: rgba(58, 107, 53, 0.04);
+}
+
+.puzzle-cell:hover {
+  background: var(--primary);
+  color: #fdfaf4;
+}
+
+.puzzle-word-list h3 {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem;
+}
+
+.puzzle-word-list ul {
+  padding-left: 1rem;
+  margin: 0;
+  columns: 2;
+}
+
+.puzzle-word-list li {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.3rem;
+  list-style: square;
 }
 
 /* Social Proof */
@@ -180,19 +265,21 @@
   pointer-events: none;
 }
 
-.feature-icon {
-  display: flex;
+.feature-icon-wrap {
   width: 40px;
   height: 40px;
+  display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
   color: var(--primary);
+  border: 2px solid var(--border-color);
+  background: var(--bg-primary);
 }
 
-.feature-icon svg {
-  width: 22px;
-  height: 22px;
+.feature-icon-wrap svg {
+  width: 20px;
+  height: 20px;
 }
 
 .feature-card h3 {
@@ -235,7 +322,6 @@
   width: 48px;
   height: 48px;
   border: 2px solid var(--primary);
-  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,6 +385,15 @@
 
   .hero-buttons {
     justify-content: center;
+  }
+
+  .hero-visual {
+    order: 1;
+  }
+
+  .puzzle-preview {
+    max-width: 340px;
+    margin: 0 auto;
   }
 
   .features-grid {
