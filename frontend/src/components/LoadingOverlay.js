@@ -23,12 +23,18 @@ const LoadingOverlay = () => {
   const { isGenerating, progress, generationError } = useGeneration();
   const [grid, setGrid] = useState([]);
 
+  const overlayVisible = isGenerating || generationError;
+
   useEffect(() => {
-    if (!isGenerating) return;
+    if (!overlayVisible) return;
     setGrid(genGrid());
+    document.body.style.overflow = "hidden";
     const interval = setInterval(() => setGrid(genGrid()), 3000);
-    return () => clearInterval(interval);
-  }, [isGenerating]);
+    return () => {
+      clearInterval(interval);
+      document.body.style.overflow = "";
+    };
+  }, [overlayVisible]);
 
   if (!isGenerating && !generationError) return null;
 
