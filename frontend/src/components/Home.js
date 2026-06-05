@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import HeroLetterGrid from "./HeroLetterGrid";
 import "./Home.css";
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const features = [
   {
@@ -30,6 +32,8 @@ const features = [
     desc: "Solve puzzles directly in your browser with timer, hints, touch support, and shareable results.",
   },
 ];
+
+const sampleWords = ["CAT", "DOG", "FISH", "BIRD", "FROG", "BEAR", "WOLF", "DEER"];
 
 const FeatureIcon = ({ name }) => {
   const icons = {
@@ -69,6 +73,38 @@ const FeatureIcon = ({ name }) => {
   return <span className="feature-icon">{icons[name] || icons.book}</span>;
 };
 
+const SampleGrid = ({ words }) => {
+  const grid = useMemo(() => {
+    const size = 6;
+    const g = [];
+    for (let r = 0; r < size; r++) {
+      const row = [];
+      for (let c = 0; c < size; c++) {
+        row.push(LETTERS[Math.floor(Math.random() * 26)]);
+      }
+      g.push(row);
+    }
+    return g;
+  }, []);
+
+  return (
+    <>
+      <div className="book-page-grid">
+        {grid.map((row, ri) =>
+          row.map((cell, ci) => (
+            <span key={`${ri}-${ci}`} className="page-cell">{cell}</span>
+          ))
+        )}
+      </div>
+      <div className="book-page-words">
+        <span className="book-page-words-label">Words:</span>
+        {words.slice(0, 4).join(", ")}
+        {words.length > 4 && <span>+{words.length - 4}</span>}
+      </div>
+    </>
+  );
+};
+
 const Home = () => {
   return (
     <div className="home-page">
@@ -101,35 +137,23 @@ const Home = () => {
               <div className="book-cover">
                 <div className="book-cover-content">
                   <span className="book-cover-label">PUZZLE BOOK</span>
-                  <span className="book-cover-title">Sample Puzzle Book</span>
+                  <span className="book-cover-title">Animal Word Search</span>
                   <span className="book-cover-divider"></span>
                   <span className="book-cover-subtitle">Word Search</span>
                   <div className="book-cover-grid">
                     {Array.from({ length: 16 }, (_, i) => (
                       <span key={i} className="cover-cell">
-                        {String.fromCharCode(65 + Math.floor(Math.random() * 26))}
+                        {LETTERS[Math.floor(Math.random() * 26)]}
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
               <div className="book-page page-1">
-                <div className="book-page-grid">
-                  {Array.from({ length: 36 }, (_, i) => (
-                    <span key={i} className="page-cell">
-                      {String.fromCharCode(65 + Math.floor(Math.random() * 26))}
-                    </span>
-                  ))}
-                </div>
+                <SampleGrid words={sampleWords} />
               </div>
               <div className="book-page page-2">
-                <div className="book-page-grid">
-                  {Array.from({ length: 36 }, (_, i) => (
-                    <span key={i} className="page-cell">
-                      {String.fromCharCode(65 + Math.floor(Math.random() * 26))}
-                    </span>
-                  ))}
-                </div>
+                <SampleGrid words={sampleWords} />
               </div>
             </div>
           </div>
