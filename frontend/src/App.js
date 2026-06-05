@@ -18,6 +18,7 @@ const About = lazy(() => import("./components/About"));
 const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
 const PlayArea = lazy(() => import("./components/pages/PlayArea"));
+const Examples = lazy(() => import("./components/Examples"));
 
 function App() {
   useEffect(() => {
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/play" element={<PlayArea />} />
+                <Route path="/examples" element={<Examples />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
