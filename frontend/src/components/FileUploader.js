@@ -126,7 +126,7 @@ const FileUploader = ({
 
       {previewUrl && (
         <div className="upload-preview">
-          <img src={previewUrl} alt="" role="presentation" className="upload-thumbnail" />
+          <img src={previewUrl} alt="" role="presentation" className="upload-thumbnail" loading="lazy" />
         </div>
       )}
 

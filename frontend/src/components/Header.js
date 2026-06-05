@@ -39,7 +39,7 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             <Link to="/" className="logo-link">
-              <img src={logo} alt="BOOP logo" className="logo-image" />
+              <img src={logo} alt="BOOP logo" className="logo-image" loading="lazy" />
               <div className="logo-text-block">
                 <h1 className="logo-text">BOOP</h1>
                 <span className="tagline">Puzzle Book Maker</span>

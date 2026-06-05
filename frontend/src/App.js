@@ -22,6 +22,8 @@ const Examples = lazy(() => import("./components/Examples"));
 
 function App() {
   useEffect(() => {
+    if (sessionStorage.getItem("api-woken")) return;
+    sessionStorage.setItem("api-woken", "1");
     apiService
       .checkStatus()
       .catch((err) => console.error("Wake-up API failed:", err));

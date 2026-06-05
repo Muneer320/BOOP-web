@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <h3 className="footer-logo">BOOP</h3>
+            <div className="footer-logo">BOOP</div>
             <p className="footer-tagline">Puzzle Book Maker</p>
             <p className="footer-desc">
               Turn any word list into a beautifully printed puzzle book.

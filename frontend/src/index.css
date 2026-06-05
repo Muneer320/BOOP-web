@@ -420,6 +420,10 @@ textarea.form-control {
   transform: translateY(0);
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .container {

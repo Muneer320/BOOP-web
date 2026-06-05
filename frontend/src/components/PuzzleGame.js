@@ -902,7 +902,7 @@ binary
 ====================
 >ASTRONOMY
 asteroid, comet`}</pre>
-                <label className="btn btn-outline" style={{ cursor: "pointer" }}>
+                <label className="btn btn-outline cursor-pointer">
                   Choose .txt File(s)
                   <input type="file" accept=".txt" multiple ref={fileInputRef}
                     onChange={handleFileUpload} style={{ display: "none" }} />
