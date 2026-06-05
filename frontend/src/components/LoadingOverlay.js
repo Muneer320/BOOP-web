@@ -25,7 +25,7 @@ const LoadingOverlay = () => {
   const progressPct = currentIdx >= 0 ? ((currentIdx + 1) / PROGRESS_ORDER.length) * 100 : 10;
 
   return (
-    <div className="loading-overlay">
+    <div className="loading-overlay" role="alert" aria-live="polite" aria-busy={isGenerating}>
       <div className="loading-box">
         {/* Book assembly visual */}
         <div className="loading-book" aria-hidden="true">

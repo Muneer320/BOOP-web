@@ -30,7 +30,7 @@ const GenerationStatus = () => {
   if (!isGenerating && !generatedFile && !generationError) return null;
 
   return (
-    <div className="generation-status-container">
+    <div className="generation-status-container" role="status" aria-live="polite">
       {isGenerating ? (
         <div className="generation-status generating">
           <div className="status-icon spinning">

@@ -3,6 +3,18 @@ import React, { useEffect, useRef } from "react";
 const COLS = 36;
 const ROWS = 14;
 
+const getInkColor = () => {
+  if (typeof document === "undefined") return "44, 24, 16";
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme") === "dark";
+  return isDark ? "226, 216, 200" : "44, 24, 16";
+};
+
+const prefersReducedMotion = () => {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
 const HeroLetterGrid = () => {
   const canvasRef = useRef(null);
 
@@ -10,6 +22,13 @@ const HeroLetterGrid = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let animId;
+    let rgb = getInkColor();
+    const reduced = prefersReducedMotion();
+
+    const observer = new MutationObserver(() => {
+      rgb = getInkColor();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const grid = Array.from({ length: ROWS }, () =>
@@ -37,8 +56,8 @@ const HeroLetterGrid = () => {
 
       grid.forEach((row, ri) => {
         row.forEach((cell, ci) => {
-          const flicker = Math.sin(time * cell.speed + cell.phase) * 0.035 + 0.04;
-          ctx.fillStyle = `rgba(44, 24, 16, ${flicker})`;
+          const flicker = reduced ? 0.04 : (Math.sin(time * cell.speed + cell.phase) * 0.035 + 0.04);
+          ctx.fillStyle = `rgba(${rgb}, ${flicker})`;
           ctx.font = `${Math.min(cellW, cellH) * 0.65}px "JetBrains Mono", monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -46,7 +65,9 @@ const HeroLetterGrid = () => {
         });
       });
 
-      animId = requestAnimationFrame(draw);
+      if (!reduced) {
+        animId = requestAnimationFrame(draw);
+      }
     };
 
     animId = requestAnimationFrame(draw);
@@ -54,6 +75,7 @@ const HeroLetterGrid = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", resize);
+      observer.disconnect();
     };
   }, []);
 

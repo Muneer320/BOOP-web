@@ -17,7 +17,7 @@ const About = () => {
           <div className="about-section">
             <h2>What is BOOP?</h2>
             <p>
-              BOOP (Book Of Puzzles) is a word search puzzle generator
+              BOOP (Book Of Organized Puzzles) is a word search puzzle generator
               and online puzzle platform. You can create custom word search
               puzzle books for print, or jump straight in and solve puzzles
               directly in your browser. With a range of difficulty levels,
