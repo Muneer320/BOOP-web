@@ -42,6 +42,8 @@ const PuzzleCreator = () => {
     hard: 2,
     bonus_normal: 1,
     bonus_hard: 1,
+    words_per_normal: 12,
+    words_per_hard: 20,
     cover_id: null,
     background_id: null,
     puzzle_bg_id: null,
@@ -263,7 +265,7 @@ const PuzzleCreator = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <Tooltip text="Extra puzzles at the end of the book with an answer key">
+                  <Tooltip text="Bonus normal puzzles at the end · 13×13 · 10–15 words each">
                     <label htmlFor="bonus_normal">Bonus Normal</label>
                   </Tooltip>
                   <input
@@ -279,7 +281,7 @@ const PuzzleCreator = () => {
                 </div>
 
                 <div className="form-group">
-                  <Tooltip text="Extra hard puzzles at the end of the book with an answer key">
+                  <Tooltip text="Bonus hard puzzles at the end · 17×17 · 13–20 words each">
                     <label htmlFor="bonus_hard">Bonus Hard</label>
                   </Tooltip>
                   <input
