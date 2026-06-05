@@ -227,7 +227,9 @@ const PuzzleCreator = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="normal">Normal Puzzles</label>
+                  <Tooltip text="13×13 grid · words can go backwards · 6–10 words per puzzle">
+                    <label htmlFor="normal">Normal Puzzles</label>
+                  </Tooltip>
                   <input
                     type="number"
                     id="normal"
@@ -241,7 +243,9 @@ const PuzzleCreator = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="hard">Hard Puzzles</label>
+                  <Tooltip text="17×17 grid · harder word placements · 8–18 words per puzzle">
+                    <label htmlFor="hard">Hard Puzzles</label>
+                  </Tooltip>
                   <input
                     type="number"
                     id="hard"

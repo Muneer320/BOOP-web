@@ -205,3 +205,14 @@
     padding: 0 1rem 1rem;
   }
 }
+
+@media (max-width: 768px) {
+  .creator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-preview {
+    position: static;
+    order: 1;
+  }
+}

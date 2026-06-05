@@ -82,6 +82,19 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
     );
   }
 
+  const totalUniqueWords = wordsPayload
+    ? [...new Set(Object.values(wordsPayload).flat())].length
+    : 0;
+  const topicCount = wordsPayload ? Object.keys(wordsPayload).length : 0;
+
+  // Estimate page count:
+  // 1 title page + ceil(topics/3) TOC pages + puzzles * 1 page each +
+  // puzzles/6 solutions pages + 1 solutions title page
+  const puzzleCount = totalNormal + totalHard;
+  const tocPages = Math.max(1, Math.ceil(topicCount / 3));
+  const solPages = Math.max(1, Math.ceil(puzzleCount / 6));
+  const estPages = 1 + tocPages + puzzleCount + 1 + solPages;
+
   if (!hasWords) {
     return (
       <div className="puzzle-preview-card preview-empty-state">
@@ -197,8 +210,16 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
           <span className="stat-label">Hard</span>
         </div>
         <div className="preview-stat">
-          <span className="stat-value">{GRID_SIZE}x{GRID_SIZE}</span>
-          <span className="stat-label">Grid</span>
+          <span className="stat-value">{topicCount}</span>
+          <span className="stat-label">Topics</span>
+        </div>
+        <div className="preview-stat">
+          <span className="stat-value">{totalUniqueWords}</span>
+          <span className="stat-label">Words</span>
+        </div>
+        <div className="preview-stat">
+          <span className="stat-value">{estPages}</span>
+          <span className="stat-label">Est. Pages</span>
         </div>
       </div>
     </div>
