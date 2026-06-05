@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { apiService } from "../services/api";
 import { useGamePersistence } from "../hooks/useGamePersistence";
 import useTimer from "../hooks/useTimer";
-import Tooltip from "./Tooltip";
 import "./PuzzleGame.css";
 
 const Section = ({ title, id, defaultOpen = false, children }) => {
@@ -835,13 +834,11 @@ const PuzzleGame = () => {
         <Section title="Modes" id="pg-modes-section" defaultOpen={true}>
           <div className="pg-modes">
             {MODES.map(m => (
-              <Tooltip key={m.id} text={`${m.grid}×${m.grid} grid · ${m.minW}–${m.maxW} words${m.back ? " · words can go backwards" : ""}${m.mask === "circle" ? " · circular layout" : ""}`}>
-                <button className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
-                  onClick={() => { setModeId(m.id); setError(null); }}>
-                  <span className="pg-mode-label">{m.label}</span>
-                  <span className="pg-mode-size">{m.grid}×{m.grid}</span>
-                </button>
-              </Tooltip>
+              <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
+                onClick={() => { setModeId(m.id); setError(null); }}>
+                <span className="pg-mode-label">{m.label}</span>
+                <span className="pg-mode-size">{m.grid}×{m.grid}</span>
+              </button>
             ))}
           </div>
         </Section>

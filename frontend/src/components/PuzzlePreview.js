@@ -27,8 +27,11 @@ const genGrid = (seed = 0) => {
 
 const PuzzlePreview = ({ formData, wordsPayload }) => {
   const [page, setPage] = useState(0);
-  const totalNormal = (formData.normal || 0) + (formData.bonus_normal || 0);
-  const totalHard = (formData.hard || 0) + (formData.bonus_hard || 0);
+  const topicCount = wordsPayload ? Object.keys(wordsPayload).length : 0;
+  const normalPerTopic = (formData.normal || 0) + (formData.bonus_normal || 0);
+  const hardPerTopic = (formData.hard || 0) + (formData.bonus_hard || 0);
+  const totalNormal = normalPerTopic * Math.max(1, topicCount);
+  const totalHard = hardPerTopic * Math.max(1, topicCount);
   const totalPuzzles = totalNormal + totalHard;
   const seedRef = useRef(Math.floor(Math.random() * 1000));
 
@@ -45,10 +48,25 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
   const pages = useMemo(() => {
     const p = [];
     const seed = seedRef.current;
+    // 1. Cover
     p.push({
       type: "cover",
       title: formData.name || "My Puzzle Book",
     });
+    // 2. Table of Contents
+    p.push({
+      type: "toc",
+      topics: wordsPayload ? Object.keys(wordsPayload) : [],
+      normal: normalPerTopic,
+      hard: hardPerTopic,
+    });
+    // 3. Transition page
+    p.push({
+      type: "transition",
+      mode: "Normal",
+      topic: wordsPayload ? Object.keys(wordsPayload)[0] || "" : "",
+    });
+    // 4. Sample puzzle pages (up to 3)
     const numSample = Math.min(totalPuzzles, 3);
     for (let i = 0; i < numSample; i++) {
       p.push({
@@ -60,7 +78,7 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
     }
     return p;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.name, totalPuzzles, sampleWords.length]);
+  }, [formData.name, totalPuzzles, sampleWords.length, wordsPayload]);
 
   if (totalPuzzles === 0) {
     return (
@@ -85,15 +103,17 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
   const totalUniqueWords = wordsPayload
     ? [...new Set(Object.values(wordsPayload).flat())].length
     : 0;
-  const topicCount = wordsPayload ? Object.keys(wordsPayload).length : 0;
+  // Word requirement per puzzle type
+  const wordsPerNormal = 10;
+  const wordsPerHard = 15;
+  const totalWordsNeeded = totalNormal * wordsPerNormal + totalHard * wordsPerHard;
 
   // Estimate page count:
-  // 1 title page + ceil(topics/3) TOC pages + puzzles * 1 page each +
-  // puzzles/6 solutions pages + 1 solutions title page
-  const puzzleCount = totalNormal + totalHard;
-  const tocPages = Math.max(1, Math.ceil(topicCount / 3));
-  const solPages = Math.max(1, Math.ceil(puzzleCount / 6));
-  const estPages = 1 + tocPages + puzzleCount + 1 + solPages;
+  // 1 title page + ceil(topicCount/3)*2 TOC/transition pages
+  // + puzzles * 1 page each + 1 solution title + ceil(puzzles/6) solution pages
+  const tocTransitionPages = Math.ceil(topicCount / 3) * 2;
+  const solPages = Math.max(1, Math.ceil(totalPuzzles / 6));
+  const estPages = 1 + tocTransitionPages + totalPuzzles + 1 + solPages;
 
   if (!hasWords) {
     return (
@@ -130,6 +150,27 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
               <span className="preview-cover-divider"></span>
               <span className="preview-cover-subtitle">Word Search</span>
             </div>
+          </div>
+        ) : currentPage.type === "toc" ? (
+          <div className="preview-toc">
+            <h4 className="preview-toc-title">Contents</h4>
+            <ul className="preview-toc-list">
+              {currentPage.topics.map((topic, i) => (
+                <li key={i}>
+                  <span className="toc-topic">{topic}</span>
+                  <span className="toc-count">{currentPage.normal + currentPage.hard} puzzles</span>
+                </li>
+              ))}
+            </ul>
+            <div className="preview-toc-total">
+              {currentPage.normal} Normal + {currentPage.hard} Hard per topic
+            </div>
+          </div>
+        ) : currentPage.type === "transition" ? (
+          <div className="preview-transition">
+            <div className="preview-trans-badge">{currentPage.mode}</div>
+            <h4 className="preview-trans-title">{currentPage.topic}</h4>
+            <p className="preview-trans-sub">Word Search Puzzles</p>
           </div>
         ) : (
           <div className="preview-page">
@@ -188,7 +229,7 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
           &larr; Prev
         </button>
         <span className="preview-nav-text">
-          {currentPage.type === "cover" ? "Cover" : `Page ${currentPage.pageNum}`}
+          {currentPage.type === "cover" ? "Cover" : currentPage.type === "toc" ? "Contents" : currentPage.type === "transition" ? "Transition" : `Page ${currentPage.pageNum}`}
           <span className="preview-nav-total"> / {pages.length}</span>
         </span>
         <button
@@ -214,8 +255,8 @@ const PuzzlePreview = ({ formData, wordsPayload }) => {
           <span className="stat-label">Topics</span>
         </div>
         <div className="preview-stat">
-          <span className="stat-value">{totalUniqueWords}</span>
-          <span className="stat-label">Words</span>
+          <span className="stat-value">{totalUniqueWords > 0 ? totalUniqueWords : totalWordsNeeded}</span>
+          <span className="stat-label">Words Needed</span>
         </div>
         <div className="preview-stat">
           <span className="stat-value">{estPages}</span>
