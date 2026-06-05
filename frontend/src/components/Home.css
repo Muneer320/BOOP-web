@@ -1,38 +1,23 @@
-.home-page {
-  min-height: calc(100vh - 200px);
-}
-
-/* Scattered letter background */
-.home-page::before {
-  content: "ABCCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
+/* Full-page letter canvas (replaces ::before hack) */
+.page-letter-canvas {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  font-family: var(--font-mono);
-  font-size: clamp(0.6rem, 1.2vw, 1rem);
-  letter-spacing: clamp(1.5rem, 3vw, 3.5rem);
-  line-height: clamp(1.8rem, 3.5vw, 4rem);
-  color: var(--ink);
-  opacity: 0.035;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: 0;
-  overflow: hidden;
-  word-break: break-all;
-  text-transform: uppercase;
-  transform: rotate(-3deg) scale(1.2);
 }
 
-[data-theme="dark"] .home-page::before {
-  opacity: 0.04;
+.home-page {
+  min-height: calc(100vh - 200px);
 }
 
 /* Hero */
 .hero {
   padding: 4rem 0 3rem;
   position: relative;
-  overflow: hidden;
+  z-index: inherit;
 }
 
 .hero .container {
@@ -42,17 +27,6 @@
   align-items: center;
   position: relative;
   z-index: 1;
-}
-
-.hero-letter-grid {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
 }
 
 .hero-badge {
@@ -208,12 +182,12 @@
 .book-page {
   width: 180px;
   background: var(--paper-light);
-  padding: 1rem 0.6rem;
+  padding: 0.75rem 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 [data-theme="dark"] .book-page {
@@ -244,7 +218,6 @@
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Make pages visually distinct in dark mode */
 [data-theme="dark"] .book-page.page-1::after {
   content: "";
   position: absolute;
@@ -259,13 +232,13 @@
 .book-page-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 1px;
+  gap: 0.5px;
   width: 100%;
 }
 
 .page-cell {
   font-family: var(--font-mono);
-  font-size: 0.48rem;
+  font-size: 0.45rem;
   color: var(--ink-faded);
   text-align: center;
   padding: 1px 0;
@@ -277,23 +250,27 @@
   opacity: 0.8;
 }
 
-/* Words to find below the grid */
+/* Word list below grid — bulleted, compact */
 .book-page-words {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem;
+  gap: 0.15rem 0.3rem;
   justify-content: center;
-  padding: 0 0.2rem;
+  padding: 0 0.1rem;
   width: 100%;
 }
 
 .book-page-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
   font-family: var(--font-mono);
-  font-size: 0.38rem;
+  font-size: 0.35rem;
   color: var(--ink-light);
   background: var(--paper-dark);
-  padding: 0.05rem 0.3rem;
+  padding: 0.04rem 0.25rem;
   border: 0.5px solid var(--border-light);
+  border-radius: 1px;
 }
 
 [data-theme="dark"] .book-page-word {
@@ -301,14 +278,13 @@
   border-color: var(--border);
 }
 
-/* Word label */
-.book-page-words-label {
-  font-family: var(--font-ui);
-  font-size: 0.4rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--primary);
-  font-weight: 600;
+.bpw-bullet {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
 }
 
 /* Social Proof */
@@ -503,10 +479,7 @@
     justify-content: center;
   }
 
-  .hero-visual {
-    order: -1;
-  }
-
+  /* No order:-1 — book naturally goes below text on single-column grid */
   .book-mockup {
     height: 280px;
     transform: scale(0.85);
