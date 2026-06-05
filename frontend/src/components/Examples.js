@@ -83,18 +83,6 @@ const EXAMPLE_BOOKS = [
     hasCustomCover: true,
   },
   {
-    id: "nature-explorer",
-    title: "Nature Explorer",
-    file: "Nature_Explorer.pdf",
-    desc: "Wildlife-themed book with a nature cover and custom background on title pages. Shows background image support.",
-    difficulty: "Normal",
-    pages: 3,
-    topics: 1,
-    puzzles: { normal: 2, hard: 1, bonus: 0 },
-    cover: "nature_cover.jpg",
-    hasCustomCover: true,
-  },
-  {
     id: "mixed-collection",
     title: "Mixed Collection",
     file: "Mixed_Collection.pdf",
@@ -221,7 +209,7 @@ const Examples = () => {
         <section className="examples-all">
           <h2 className="section-heading">
             <span className="heading-ornament">&#10022;</span>
-            All Example Files
+            Some Example Files
             <span className="heading-ornament">&#10022;</span>
           </h2>
           <div className="all-examples-grid">
