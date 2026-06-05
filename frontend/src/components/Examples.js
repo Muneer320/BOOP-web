@@ -2,171 +2,113 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Examples.css";
 
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-const genGrid = () =>
-  Array.from({ length: 8 }, () =>
-    Array.from({ length: 8 }, () => LETTERS[Math.floor(Math.random() * 26)])
-  );
-
-const SAMPLE_BOOKS = [
+const EXAMPLE_BOOKS = [
   {
-    id: "animals",
-    title: "Animal Word Search",
-    desc: "Easy 10×10 puzzles featuring animal names. Perfect for children and beginners.",
-    difficulty: "Easy",
-    pages: 16,
-    words: ["CAT", "DOG", "FISH", "BIRD", "FROG", "BEAR", "WOLF", "DEER"],
-    color: "#3D6B3D",
-  },
-  {
-    id: "geography",
-    title: "Geography Challenge",
-    desc: "Medium 13×13 puzzles with country and capital names. For puzzle enthusiasts.",
-    difficulty: "Medium",
-    pages: 24,
-    words: ["FRANCE", "JAPAN", "BRAZIL", "INDIA", "EGYPT", "CHILE", "KENYA", "TONGA"],
-    color: "#C49464",
-  },
-  {
-    id: "science",
-    title: "Science & Nature",
-    desc: "Hard 15×15 puzzles with scientific terms. For experienced solvers.",
-    difficulty: "Hard",
-    pages: 20,
-    words: ["ATOM", "CELL", "GENE", "PROTON", "NEUTRON", "MOLECULE", "ORBIT", "PLASMA"],
-    color: "#8B3A3A",
-  },
-  {
-    id: "mixed",
-    title: "Mixed Difficulty Book",
-    desc: "A curated collection combining easy, medium, and hard puzzles with bonus rounds.",
+    id: "sports-games",
+    title: "Sports & Games",
+    file: "Sports_and_Games.pdf",
+    desc: "A single-theme book with mixed difficulty levels. Features football, basketball, tennis, swimming and more — with normal, hard, and bonus puzzles.",
     difficulty: "Mixed",
-    pages: 40,
-    words: ["CLOUD", "STORM", "RIVER", "OCEAN", "FOREST", "DESERT", "VALLEY", "PEAK"],
-    color: "#4A6FA5",
+    pages: 4,
+    topics: 1,
+    puzzles: { normal: 3, hard: 2, bonus: 2 },
+    cover: "sports.jpg",
+  },
+  {
+    id: "science-wildlife",
+    title: "Science & Wildlife",
+    file: "Science_and_Wildlife.pdf",
+    desc: "Two topics combined in one book. Explore science (atoms, cells, genes) and wildlife (elephants, tigers, bears) across normal and hard puzzles.",
+    difficulty: "Normal",
+    pages: 3,
+    topics: 2,
+    puzzles: { normal: 2, hard: 1, bonus: 0 },
+    cover: "nature_cover.jpg",
+  },
+  {
+    id: "cultural-journey",
+    title: "Cultural Journey",
+    file: "Cultural_Journey.pdf",
+    desc: "A hard-mode-only book exploring music, dance, literature, and world heritage. Includes bonus puzzles for extra challenge.",
+    difficulty: "Hard",
+    pages: 4,
+    topics: 1,
+    puzzles: { normal: 0, hard: 3, bonus: 1 },
+    cover: "culture.jpg",
+  },
+  {
+    id: "astronomy",
+    title: "Astronomy Explorer",
+    file: "Astronomy_Explorer.pdf",
+    desc: "Focus on bonus circular puzzles alongside normal grids. Stars, planets, galaxies, and cosmic vocabulary await.",
+    difficulty: "Bonus",
+    pages: 4,
+    topics: 1,
+    puzzles: { normal: 2, hard: 0, bonus: 2 },
+    cover: "space_cover.jpg",
+  },
+  {
+    id: "mega-book",
+    title: "Mega Puzzle Book",
+    file: "Mega_Puzzle_Book.pdf",
+    desc: "Our biggest example — all five topics across every difficulty level. 20 puzzles total including bonus rounds.",
+    difficulty: "Mixed",
+    pages: 6,
+    topics: 5,
+    puzzles: { normal: 10, hard: 5, bonus: 5 },
+    cover: "cover1.jpg",
+  },
+  {
+    id: "sports-deluxe",
+    title: "Sports Deluxe",
+    file: "Sports_Deluxe.pdf",
+    desc: "Sports puzzles with a custom cover image and themed backgrounds. Shows how uploaded images enhance your book.",
+    difficulty: "Mixed",
+    pages: 4,
+    topics: 1,
+    puzzles: { normal: 2, hard: 1, bonus: 1 },
+    cover: "sports.jpg",
+    hasCustomCover: true,
+  },
+  {
+    id: "nature-explorer",
+    title: "Nature Explorer",
+    file: "Nature_Explorer.pdf",
+    desc: "Wildlife-themed book with a nature cover and custom background on title pages. Shows background image support.",
+    difficulty: "Normal",
+    pages: 3,
+    topics: 1,
+    puzzles: { normal: 2, hard: 1, bonus: 0 },
+    cover: "nature_cover.jpg",
+    hasCustomCover: true,
+  },
+  {
+    id: "mixed-collection",
+    title: "Mixed Collection",
+    file: "Mixed_Collection.pdf",
+    desc: "Three topics (science, culture, astronomy) with custom cover. Demonstrates multi-topic single-puzzle books.",
+    difficulty: "Mixed",
+    pages: 3,
+    topics: 3,
+    puzzles: { normal: 3, hard: 3, bonus: 0 },
+    cover: "cover2.jpg",
+    hasCustomCover: true,
   },
 ];
 
-const BookFlipViewer = ({ book }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = 6;
-
-  const pages = [
-    { type: "cover" },
-    ...Array.from({ length: 5 }, (_, i) => ({
-      type: "puzzle",
-      grid: genGrid(),
-      num: i + 1,
-    })),
-  ];
-
-  const goNext = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
-  const goPrev = () => setCurrentPage((p) => Math.max(0, p - 1));
-
-  return (
-    <div className="flip-viewer">
-      <div className="flip-book-wrapper">
-        <div className="flip-book" style={{ "--flip-rotation": `${currentPage > 0 ? "-5" : "0"}deg` }}>
-          <div className="flip-spine" />
-          {pages.map((page, i) => {
-            const isVisible = i === currentPage;
-            const isLeft = i < currentPage;
-            if (!isVisible && !isLeft) return null;
-            return (
-              <div
-                key={i}
-                className={`flip-page ${isLeft ? "flipped" : ""} ${isVisible ? "visible" : ""}`}
-                style={{
-                  zIndex: totalPages - i,
-                  transform: isLeft
-                    ? "rotateY(-180deg)"
-                    : i === currentPage
-                    ? "rotateY(0deg)"
-                    : "rotateY(0deg)",
-                }}
-              >
-                {page.type === "cover" ? (
-                  <div className="flip-cover" style={{ background: book.color }}>
-                    <div className="flip-cover-content">
-                      <span className="flip-cover-label">PUZZLE BOOK</span>
-                      <span className="flip-cover-title">{book.title}</span>
-                      <span className="flip-cover-divider" />
-                      <span className="flip-cover-subtitle">Word Search</span>
-                      <div className="flip-cover-grid">
-                        {Array.from({ length: 16 }, (_, i) => (
-                          <span key={i} className="flip-cover-cell">
-                            {LETTERS[Math.floor(Math.random() * 26)]}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flip-puzzle-page">
-                    <div className="flip-page-header">
-                      <span className="flip-page-num">#{page.num}</span>
-                      <span className="flip-page-label">Word Search</span>
-                    </div>
-                    <svg viewBox="0 0 236 236" className="flip-svg">
-                      {page.grid.map((row, ri) =>
-                        row.map((cell, ci) => (
-                          <g key={`${ri}-${ci}`}>
-                            <rect
-                              x={ci * 28 + 10}
-                              y={ri * 28 + 10}
-                              width={24}
-                              height={24}
-                              fill={(ri + ci) % 2 === 0 ? "#FAF6EF" : "#FDFAF5"}
-                              stroke="#D4C9B8"
-                              strokeWidth="0.5"
-                              rx="1"
-                            />
-                            <text
-                              x={ci * 28 + 22}
-                              y={ri * 28 + 27}
-                              textAnchor="middle"
-                              fontSize="10"
-                              fill="#2C1810"
-                              fontFamily="JetBrains Mono, monospace"
-                              dominantBaseline="central"
-                            >
-                              {cell}
-                            </text>
-                          </g>
-                        ))
-                      )}
-                    </svg>
-                    <div className="flip-words">
-                      <span className="flip-words-label">Find:</span>
-                      {book.words.slice(0, 4).join(", ")}
-                      <span className="flip-words-more">+{book.words.length - 4} more</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="flip-nav">
-        <button className="flip-nav-btn" onClick={goPrev} disabled={currentPage === 0}>
-          &larr; Previous
-        </button>
-        <span className="flip-nav-text">
-          {pages[currentPage]?.type === "cover" ? "Cover" : `Page ${pages[currentPage]?.num}`}
-          <span className="flip-nav-total"> / {totalPages}</span>
-        </span>
-        <button className="flip-nav-btn" onClick={goNext} disabled={currentPage === totalPages - 1}>
-          Next &rarr;
-        </button>
-      </div>
-    </div>
-  );
+const formatPuzzles = (p) => {
+  const parts = [];
+  if (p.normal) parts.push(`${p.normal} normal`);
+  if (p.hard) parts.push(`${p.hard} hard`);
+  if (p.bonus) parts.push(`${p.bonus} bonus`);
+  return parts.join(", ");
 };
 
+const getFileUrl = (filename) =>
+  `${process.env.PUBLIC_URL || ""}/examples/${filename}`;
+
 const Examples = () => {
-  const [activeBook, setActiveBook] = useState(SAMPLE_BOOKS[0]);
+  const [activeBook, setActiveBook] = useState(EXAMPLE_BOOKS[0]);
 
   return (
     <div className="examples-page">
@@ -174,19 +116,32 @@ const Examples = () => {
         <div className="examples-header">
           <h1>Example Puzzle Books</h1>
           <p className="examples-subtitle">
-            See what BOOP can create. Browse sample books across different
-            difficulties and themes — all generated with a few clicks.
+            Browse real PDF puzzle books generated by BOOP. Each book was created
+            with different settings — single or multiple topics, various
+            difficulty mixes, custom covers, and more.
           </p>
         </div>
 
         <div className="examples-selector">
-          {SAMPLE_BOOKS.map((book) => (
+          {EXAMPLE_BOOKS.map((book) => (
             <button
               key={book.id}
               className={`example-tab ${activeBook.id === book.id ? "active" : ""}`}
               onClick={() => setActiveBook(book)}
             >
-              <span className="example-tab-color" style={{ background: book.color }} />
+              <span
+                className="example-tab-color"
+                style={{
+                  background:
+                    book.difficulty === "Hard"
+                      ? "#8B3A3A"
+                      : book.difficulty === "Mixed"
+                      ? "#C49464"
+                      : book.difficulty === "Bonus"
+                      ? "#4A6FA5"
+                      : "#3D6B3D",
+                }}
+              />
               <span className="example-tab-info">
                 <span className="example-tab-title">{book.title}</span>
                 <span className="example-tab-diff">{book.difficulty}</span>
@@ -197,30 +152,122 @@ const Examples = () => {
 
         <div className="examples-layout">
           <div className="examples-viewer">
-            <BookFlipViewer key={activeBook.id} book={activeBook} />
+            <div className="pdf-preview-card">
+              <div className="pdf-preview-visual">
+                <img
+                  src={getFileUrl(activeBook.cover)}
+                  alt={`${activeBook.title} cover preview`}
+                  className="pdf-cover-img"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+                <div className="pdf-fallback" style={{ display: "none" }}>
+                  <svg viewBox="0 0 120 160" className="pdf-fallback-svg">
+                    <rect x="5" y="5" width="110" height="150" rx="3" fill="var(--paper-light)" stroke="var(--border)" strokeWidth="1.5"/>
+                    <rect x="10" y="10" width="100" height="140" rx="2" fill="var(--paper)"/>
+                    <line x1="20" y1="40" x2="100" y2="40" stroke="var(--border-light)" strokeWidth="1.5"/>
+                    <line x1="20" y1="55" x2="90" y2="55" stroke="var(--border-light)" strokeWidth="1.5"/>
+                    <line x1="20" y1="70" x2="80" y2="70" stroke="var(--border-light)" strokeWidth="1.5"/>
+                    <rect x="35" y="100" width="50" height="8" rx="2" fill="var(--primary-dark)" opacity="0.6"/>
+                    <rect x="35" y="115" width="50" height="8" rx="2" fill="var(--primary)" opacity="0.4"/>
+                    <rect x="35" y="130" width="50" height="8" rx="2" fill="var(--secondary)" opacity="0.3"/>
+                  </svg>
+                  <span className="pdf-fallback-text">PDF Preview</span>
+                </div>
+              </div>
+              <div className="pdf-preview-actions">
+                <a
+                  href={getFileUrl(activeBook.file)}
+                  className="btn btn-primary"
+                  download
+                >
+                  Download PDF
+                </a>
+                <span className="pdf-file-size">
+                  <a
+                    href={getFileUrl(activeBook.file)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="pdf-view-link"
+                  >
+                    View in Browser
+                  </a>
+                </span>
+              </div>
+            </div>
           </div>
           <div className="examples-info">
             <h2 className="examples-book-title">{activeBook.title}</h2>
-            <span className="examples-diff-badge" style={{ background: activeBook.color }}>
+            <span
+              className="examples-diff-badge"
+              style={{
+                background:
+                  activeBook.difficulty === "Hard"
+                    ? "#8B3A3A"
+                    : activeBook.difficulty === "Mixed"
+                    ? "#C49464"
+                    : activeBook.difficulty === "Bonus"
+                    ? "#4A6FA5"
+                    : "#3D6B3D",
+              }}
+            >
               {activeBook.difficulty}
             </span>
             <p className="examples-book-desc">{activeBook.desc}</p>
+
             <div className="examples-specs">
               <div className="examples-spec">
                 <span className="spec-value">{activeBook.pages}</span>
-                <span className="spec-label">Pages</span>
+                <span className="spec-label">Sections</span>
               </div>
               <div className="examples-spec">
-                <span className="spec-value">{activeBook.words.length}</span>
-                <span className="spec-label">Sample Words</span>
+                <span className="spec-value">{activeBook.topics}</span>
+                <span className="spec-label">Topics</span>
               </div>
               <div className="examples-spec">
-                <span className="spec-value">8×8</span>
-                <span className="spec-label">Grid</span>
+                <span className="spec-value">
+                  {(activeBook.puzzles.normal || 0) +
+                    (activeBook.puzzles.hard || 0) +
+                    (activeBook.puzzles.bonus || 0)}
+                </span>
+                <span className="spec-label">Puzzles</span>
               </div>
             </div>
+
+            <div className="examples-breakdown">
+              <h4>Puzzle Breakdown</h4>
+              <ul className="breakdown-list">
+                {activeBook.puzzles.normal > 0 && (
+                  <li>
+                    <span className="breakdown-dot" style={{background:"#3D6B3D"}} />
+                    {activeBook.puzzles.normal} Normal
+                  </li>
+                )}
+                {activeBook.puzzles.hard > 0 && (
+                  <li>
+                    <span className="breakdown-dot" style={{background:"#8B3A3A"}} />
+                    {activeBook.puzzles.hard} Hard
+                  </li>
+                )}
+                {activeBook.puzzles.bonus > 0 && (
+                  <li>
+                    <span className="breakdown-dot" style={{background:"#4A6FA5"}} />
+                    {activeBook.puzzles.bonus} Bonus
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {activeBook.hasCustomCover && (
+              <div className="examples-feature-badge">
+                Custom cover &amp; background images
+              </div>
+            )}
+
             <div className="examples-cta">
-              <p>Ready to create your own puzzle book?</p>
+              <p>Create your own puzzle book with these settings.</p>
               <Link to="/create" className="btn btn-primary btn-lg">
                 Create Your Book
               </Link>
@@ -228,56 +275,39 @@ const Examples = () => {
           </div>
         </div>
 
-        <section className="examples-types">
+        <section className="examples-all">
           <h2 className="section-heading">
             <span className="heading-ornament">&#10022;</span>
-            What You Can Create
+            All Example Files
             <span className="heading-ornament">&#10022;</span>
           </h2>
-          <div className="types-grid">
-            <div className="type-card">
-              <div className="type-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
+          <div className="all-examples-grid">
+            {EXAMPLE_BOOKS.map((book) => (
+              <div key={book.id} className="all-example-card">
+                <div className="all-example-img-wrap">
+                  <img
+                    src={getFileUrl(book.cover)}
+                    alt=""
+                    className="all-example-img"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
+                  />
+                </div>
+                <div className="all-example-info">
+                  <h4>{book.title}</h4>
+                  <span className="all-example-diff">{book.difficulty}</span>
+                  <p>{formatPuzzles(book.puzzles)}</p>
+                  <a
+                    href={getFileUrl(book.file)}
+                    className="btn btn-outline btn-sm"
+                    download
+                  >
+                    Download
+                  </a>
+                </div>
               </div>
-              <h3>Single Theme Books</h3>
-              <p>All puzzles on one topic — animals, geography, science, holidays, and more. Perfect for classrooms and events.</p>
-            </div>
-            <div className="type-card">
-              <div className="type-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-              </div>
-              <h3>Mixed Difficulty</h3>
-              <p>Combine easy, normal, hard, and bonus puzzles in a single book. Progressive challenge keeps solvers engaged.</p>
-            </div>
-            <div className="type-card">
-              <div className="type-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
-              </div>
-              <h3>Custom Word Books</h3>
-              <p>Upload your own word list or type directly. Perfect for spelling lists, vocabulary practice, or themed events.</p>
-            </div>
-            <div className="type-card">
-              <div className="type-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="10 8 16 12 10 16 10 8" />
-                </svg>
-              </div>
-              <h3>Bonus Round Books</h3>
-              <p>Include circular grid puzzles as bonus content. Unique puzzle shapes add variety and surprise to any book.</p>
-            </div>
+            ))}
           </div>
         </section>
 
