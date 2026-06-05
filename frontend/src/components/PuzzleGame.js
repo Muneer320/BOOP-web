@@ -1071,8 +1071,8 @@ asteroid, comet`}</pre>
                       const now = Date.now();
                       const gameTime = (now - (gameStartTime.current || now)) / 1000;
                       const sinceLast = (now - lastGlobalHintRef.current) / 1000;
-                      const hintDelay = Math.max(30, hintCooldown);
-                      const hintReady = gameTime >= hintDelay && sinceLast >= hintCooldown;
+                      const hintDelay = 60;
+                      const hintReady = (gameTime >= hintDelay || lastGlobalHintRef.current > 0) && sinceLast >= hintCooldown;
                       let hintPct = 100;
                       let hintLabel = "Show hint";
                       if (!hintReady) {
