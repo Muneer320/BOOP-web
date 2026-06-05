@@ -1,32 +1,61 @@
-/* Full-page letter canvas (replaces ::before hack) */
-.page-letter-canvas {
+.home-page {
+  min-height: calc(100vh - 200px);
+  position: relative;
+}
+
+/* Coffee stain decorations */
+.home-page::after {
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 0;
-}
-
-.home-page {
-  min-height: calc(100vh - 200px);
+  background:
+    /* stain 1 — top-left */
+    radial-gradient(ellipse 60px 40px at 8% 15%, rgba(139, 90, 43, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 30px 25px at 8% 15%, rgba(139, 90, 43, 0.04) 0%, transparent 60%),
+    /* stain 2 — top-right */
+    radial-gradient(ellipse 50px 35px at 92% 22%, rgba(139, 90, 43, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 20px 15px at 90% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 60%),
+    /* stain 3 — middle-left */
+    radial-gradient(ellipse 40px 55px at 12% 55%, rgba(139, 90, 43, 0.04) 0%, transparent 70%),
+    /* stain 4 — bottom-right */
+    radial-gradient(ellipse 70px 45px at 85% 80%, rgba(139, 90, 43, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 25px 20px at 83% 78%, rgba(139, 90, 43, 0.03) 0%, transparent 60%),
+    /* stain 5 — bottom-left */
+    radial-gradient(ellipse 35px 30px at 5% 90%, rgba(139, 90, 43, 0.04) 0%, transparent 70%),
+    /* stain 6 — center-right */
+    radial-gradient(ellipse 45px 35px at 75% 45%, rgba(139, 90, 43, 0.03) 0%, transparent 70%);
 }
 
 /* Hero */
 .hero {
   padding: 4rem 0 3rem;
   position: relative;
-  z-index: inherit;
+  overflow: hidden;
 }
 
 .hero .container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 3rem;
   align-items: center;
   position: relative;
   z-index: 1;
+}
+
+.hero-letter-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
 }
 
 .hero-badge {
@@ -71,220 +100,13 @@
   line-height: 1.7;
   margin-bottom: 2rem;
   color: var(--ink-light);
-  max-width: 480px;
+  max-width: 600px;
 }
 
 .hero-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-.hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Book Mockup */
-.book-mockup {
-  display: flex;
-  align-items: stretch;
-  perspective: 1200px;
-  height: 380px;
-}
-
-.book-spine {
-  width: 18px;
-  background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-dark));
-  border-radius: 2px 0 0 2px;
-  position: relative;
-  z-index: 3;
-}
-
-.book-spine::after {
-  content: "";
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 80%;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.book-cover {
-  width: 200px;
-  background: var(--primary);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 2;
-  box-shadow: 3px 3px 12px rgba(44, 24, 16, 0.15);
-}
-
-.book-cover-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 0.5rem;
-  text-align: center;
-}
-
-.book-cover-label {
-  font-family: var(--font-ui);
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-}
-
-.book-cover-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--paper-light);
-  line-height: 1.2;
-}
-
-.book-cover-divider {
-  width: 40px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.book-cover-subtitle {
-  font-family: var(--font-ui);
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-}
-
-.book-cover-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  margin-top: 0.5rem;
-  opacity: 0.3;
-}
-
-.cover-cell {
-  font-family: var(--font-mono);
-  font-size: 0.5rem;
-  color: var(--paper-light);
-  text-align: center;
-}
-
-.book-page {
-  width: 180px;
-  background: var(--paper-light);
-  padding: 0.75rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-}
-
-[data-theme="dark"] .book-page {
-  background: var(--paper);
-}
-
-.book-page.page-1 {
-  z-index: 1;
-  margin-left: -8px;
-  transform: rotateY(-3deg);
-  transform-origin: left center;
-  border-right: 1px solid var(--border-light);
-}
-
-[data-theme="dark"] .book-page.page-1 {
-  border-right: 2px solid var(--border);
-}
-
-.book-page.page-2 {
-  z-index: 0;
-  margin-left: -6px;
-  transform: rotateY(-5deg);
-  transform-origin: left center;
-  box-shadow: -2px 0 8px rgba(44, 24, 16, 0.06);
-}
-
-[data-theme="dark"] .book-page.page-2 {
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .book-page.page-1::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: 5%;
-  height: 90%;
-  width: 1px;
-  background: var(--border);
-  opacity: 0.5;
-}
-
-.book-page-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.5px;
-  width: 100%;
-}
-
-.page-cell {
-  font-family: var(--font-mono);
-  font-size: 0.45rem;
-  color: var(--ink-faded);
-  text-align: center;
-  padding: 1px 0;
-  border: 0.5px solid var(--border-light);
-}
-
-[data-theme="dark"] .page-cell {
-  border-color: var(--border);
-  opacity: 0.8;
-}
-
-/* Word list below grid — bulleted, compact */
-.book-page-words {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem 0.3rem;
-  justify-content: center;
-  padding: 0 0.1rem;
-  width: 100%;
-}
-
-.book-page-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  font-family: var(--font-mono);
-  font-size: 0.35rem;
-  color: var(--ink-light);
-  background: var(--paper-dark);
-  padding: 0.04rem 0.25rem;
-  border: 0.5px solid var(--border-light);
-  border-radius: 1px;
-}
-
-[data-theme="dark"] .book-page-word {
-  background: var(--paper-dark);
-  border-color: var(--border);
-}
-
-.bpw-bullet {
-  display: inline-block;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--primary);
-  flex-shrink: 0;
 }
 
 /* Social Proof */
@@ -479,12 +301,6 @@
     justify-content: center;
   }
 
-  /* No order:-1 — book naturally goes below text on single-column grid */
-  .book-mockup {
-    height: 280px;
-    transform: scale(0.85);
-  }
-
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -514,10 +330,4 @@
   .how-section { padding: 1rem 0 3rem; }
   .features-grid { grid-template-columns: 1fr; }
   .section-heading { font-size: 1.35rem; }
-
-  .book-mockup {
-    height: 220px;
-    transform: scale(0.7);
-    transform-origin: center center;
-  }
 }

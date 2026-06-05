@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
+import HeroLetterGrid from "./HeroLetterGrid";
 import "./Home.css";
-
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const features = [
   {
@@ -29,105 +28,6 @@ const features = [
     icon: "play",
     title: "Play Online",
     desc: "Solve puzzles directly in your browser with timer, hints, touch support, and shareable results.",
-  },
-];
-
-const HERO_GRIDS = [
-  {
-    words: ["CAT", "DOG", "FISH", "BEAR", "FROG", "BIRD"],
-    grid: [
-      ["C","A","T","X","B","Y"],
-      ["D","O","G","W","I","R"],
-      ["F","I","S","H","R","D"],
-      ["B","E","A","R","F","C"],
-      ["F","R","O","G","G","O"],
-      ["Z","X","Y","V","W","U"],
-    ],
-    label: "Animal Word Search",
-  },
-  {
-    words: ["RIVER", "OCEAN", "FOREST", "DESERT", "VALLEY", "PEAK"],
-    grid: [
-      ["R","I","V","E","R","X"],
-      ["O","C","E","A","N","Y"],
-      ["F","O","R","E","S","T"],
-      ["D","E","S","E","R","T"],
-      ["V","A","L","L","E","Y"],
-      ["P","E","A","K","Z","W"],
-    ],
-    label: "Geography Word Search",
-  },
-  {
-    words: ["WORD", "SEARCH", "FIND", "HUNT", "SOLVE", "BOOK"],
-    grid: [
-      ["W","O","R","D","X","Y"],
-      ["S","E","A","R","C","H"],
-      ["F","I","N","D","Z","W"],
-      ["H","U","N","T","U","V"],
-      ["S","O","L","V","E","T"],
-      ["B","O","O","K","R","Q"],
-    ],
-    label: "Puzzle Word Search",
-  },
-  {
-    words: ["ATOM", "CELL", "GENE", "PROTON", "STATE", "ORBIT"],
-    grid: [
-      ["A","T","O","M","X","Y"],
-      ["C","E","L","L","Z","W"],
-      ["G","E","N","E","U","V"],
-      ["P","R","O","T","O","N"],
-      ["S","T","A","T","E","U"],
-      ["O","R","B","I","T","W"],
-    ],
-    label: "Science Word Search",
-  },
-  {
-    words: ["STAR", "MOON", "MARS", "VENUS", "ORBIT", "COMET"],
-    grid: [
-      ["S","T","A","R","X","Y"],
-      ["M","O","O","N","Z","W"],
-      ["M","A","R","S","X","Y"],
-      ["V","E","N","U","S","Z"],
-      ["O","R","B","I","T","W"],
-      ["C","O","M","E","T","V"],
-    ],
-    label: "Space Word Search",
-  },
-  {
-    words: ["BLUE", "RED", "GREEN", "GOLD", "PINK", "BROWN"],
-    grid: [
-      ["B","L","U","E","X","Y"],
-      ["R","E","D","Z","W","V"],
-      ["G","R","E","E","N","F"],
-      ["G","O","L","D","Z","Y"],
-      ["P","I","N","K","X","W"],
-      ["B","R","O","W","N","U"],
-    ],
-    label: "Colors Word Search",
-  },
-  {
-    words: ["DOVE", "HAWK", "SWAN", "OWL", "WREN", "JAY"],
-    grid: [
-      ["D","O","V","E","X","J"],
-      ["H","A","W","K","Y","A"],
-      ["S","W","A","N","Z","Y"],
-      ["O","W","L","U","V","W"],
-      ["W","R","E","N","T","S"],
-      ["J","A","Y","Z","X","W"],
-    ],
-    label: "Birds Word Search",
-  },
-  {
-    words: ["SUNNY", "RAIN", "SNOW", "WIND", "HAIL", "FOG"],
-    grid: [
-      ["S","U","N","N","Y","X"],
-      ["R","A","I","N","Z","W"],
-      ["S","N","O","W","Y","V"],
-      ["W","I","N","D","U","T"],
-      ["H","A","I","L","Z","S"],
-      ["F","O","G","X","W","V"],
-    ],
-    label: "Weather Word Search",
   },
 ];
 
@@ -169,92 +69,11 @@ const FeatureIcon = ({ name }) => {
   return <span className="feature-icon">{icons[name] || icons.book}</span>;
 };
 
-const pickGrid = () => {
-  const idx = parseInt(sessionStorage.getItem("heroGridIdx") || "0", 10);
-  const next = (idx + 1) % HERO_GRIDS.length;
-  sessionStorage.setItem("heroGridIdx", String(next));
-  return HERO_GRIDS[idx];
-};
-
-const getInkColor = () => {
-  if (typeof document === "undefined") return "44, 24, 16";
-  const html = document.documentElement;
-  const isDark = html.getAttribute("data-theme") === "dark";
-  return isDark ? "226, 216, 200" : "44, 24, 16";
-};
-
-const prefersReduced = () => {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
-
 const Home = () => {
-  const canvasRef = useRef(null);
-  const book = pickGrid();
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let animId;
-    let rgb = getInkColor();
-    const reduced = prefersReduced();
-
-    const observer = new MutationObserver(() => { rgb = getInkColor(); });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-
-    const COLS = 40;
-    const ROWS = 18;
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const grid = Array.from({ length: ROWS }, () =>
-      Array.from({ length: COLS }, () => ({
-        char: letters[Math.floor(Math.random() * 26)],
-        opacity: Math.random() * 0.07 + 0.03,
-        speed: Math.random() * 0.004 + 0.001,
-        phase: Math.random() * Math.PI * 2,
-      }))
-    );
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const draw = (time) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cellW = canvas.width / COLS;
-      const cellH = canvas.height / ROWS;
-
-      grid.forEach((row, ri) => {
-        row.forEach((cell, ci) => {
-          const flicker = reduced ? 0.05 : (Math.sin(time * cell.speed + cell.phase) * 0.04 + 0.05);
-          ctx.fillStyle = `rgba(${rgb}, ${flicker})`;
-          ctx.font = `${Math.min(cellW, cellH) * 0.65}px "JetBrains Mono", monospace`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(cell.char, ci * cellW + cellW / 2, ri * cellH + cellH / 2);
-        });
-      });
-
-      if (!reduced) animId = requestAnimationFrame(draw);
-    };
-
-    animId = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-      observer.disconnect();
-    };
-  }, []);
-
   return (
     <div className="home-page">
-      <canvas ref={canvasRef} className="page-letter-canvas" aria-hidden="true" />
       <section className="hero">
+        <HeroLetterGrid />
         <div className="container">
           <div className="hero-content">
             <div className="hero-badge">Puzzle Book Maker</div>
@@ -274,60 +93,6 @@ const Home = () => {
               <Link to="/play" className="btn btn-outline btn-lg">
                 Play Online
               </Link>
-            </div>
-          </div>
-          <div className="hero-visual">
-            <div className="book-mockup">
-              <div className="book-spine" />
-              <div className="book-cover">
-                <div className="book-cover-content">
-                  <span className="book-cover-label">PUZZLE BOOK</span>
-                  <span className="book-cover-title">{book.label}</span>
-                  <span className="book-cover-divider" />
-                  <span className="book-cover-subtitle">Word Search</span>
-                  <div className="book-cover-grid">
-                    {Array.from({ length: 16 }, (_, i) => (
-                      <span key={i} className="cover-cell">
-                        {LETTERS[Math.floor(Math.random() * 26)]}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="book-page page-1">
-                <div className="book-page-grid">
-                  {book.grid.map((row, ri) =>
-                    row.map((cell, ci) => (
-                      <span key={`${ri}-${ci}`} className="page-cell">{cell}</span>
-                    ))
-                  )}
-                </div>
-                <div className="book-page-words">
-                  {book.words.map((w, i) => (
-                    <span key={w} className="book-page-word">
-                      <span className="bpw-bullet" />
-                      {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="book-page page-2">
-                <div className="book-page-grid">
-                  {book.grid.map((row, ri) =>
-                    row.map((cell, ci) => (
-                      <span key={`${ri}-${ci}`} className="page-cell">{cell}</span>
-                    ))
-                  )}
-                </div>
-                <div className="book-page-words">
-                  {book.words.map((w, i) => (
-                    <span key={w} className="book-page-word">
-                      <span className="bpw-bullet" />
-                      {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>

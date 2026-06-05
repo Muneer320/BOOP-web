@@ -3,6 +3,8 @@
   border-top: 3px double var(--border);
   padding: 3rem 0 0;
   margin-top: 3rem;
+  position: relative;
+  z-index: 1;
 }
 
 .footer-grid {

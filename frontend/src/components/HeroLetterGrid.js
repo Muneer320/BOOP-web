@@ -56,7 +56,7 @@ const HeroLetterGrid = () => {
 
       grid.forEach((row, ri) => {
         row.forEach((cell, ci) => {
-          const flicker = reduced ? 0.04 : (Math.sin(time * cell.speed + cell.phase) * 0.035 + 0.04);
+          const flicker = reduced ? 0.025 : (Math.sin(time * cell.speed + cell.phase) * 0.02 + 0.025);
           ctx.fillStyle = `rgba(${rgb}, ${flicker})`;
           ctx.font = `${Math.min(cellW, cellH) * 0.65}px "JetBrains Mono", monospace`;
           ctx.textAlign = "center";
