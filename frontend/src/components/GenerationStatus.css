@@ -1,10 +1,10 @@
 .generation-status-container {
   position: fixed;
   bottom: 1rem;
-  right: 1rem;
-  left: auto;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 950;
-  max-width: 420px;
+  max-width: 480px;
   width: calc(100% - 2rem);
 }
 
