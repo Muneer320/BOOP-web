@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import BookViewer from "./BookViewer";
 import "./Examples.css";
 
 const EXAMPLE_BOOKS = [
@@ -125,10 +124,10 @@ const Examples = () => {
 
         <div className="examples-layout">
           <div className="examples-viewer">
-            <BookViewer
-              pdfUrl={getFileUrl(activeBook.file)}
-              coverUrl={getFileUrl(activeBook.cover)}
+            <iframe
+              src={getFileUrl(activeBook.file)}
               title={activeBook.title}
+              className="pdf-viewer-iframe"
             />
           </div>
           <div className="examples-info">

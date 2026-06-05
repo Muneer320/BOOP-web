@@ -1,5 +1,5 @@
 .puzzle-game {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -7,7 +7,7 @@
   background: var(--paper);
   border: 2px solid var(--border);
   padding: 2rem;
-  max-width: 680px;
+  max-width: 820px;
   margin: 0 auto;
   position: relative;
 }

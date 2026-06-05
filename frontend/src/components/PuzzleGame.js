@@ -120,6 +120,14 @@ const PuzzleGame = () => {
   const timer = useTimer();
   const gridRef = useRef(null);
 
+  /* ---- Clamp wordCountTarget when mode changes ---- */
+  useEffect(() => {
+    setWordCountTarget(prev => {
+      if (prev === 0) return 0;
+      return Math.max(mode.minW, Math.min(prev, mode.maxW));
+    });
+  }, [mode.minW, mode.maxW]);
+
   /* ---- Load topics on mount ---- */
   useEffect(() => {
     apiService.getTopics().then(r => {
@@ -954,14 +962,22 @@ asteroid, comet`}</pre>
                   className="pg-range" />
               </div>
             )}
-            <div className="pg-setting-row">
-              <label className="pg-setting-label">
-                Words per game: {wordCountTarget > 0 ? wordCountTarget : "Auto (mode default)"}
-              </label>
-              <input type="range" min="0" max="50" step="1" value={wordCountTarget}
-                onChange={e => setWordCountTarget(Number(e.target.value))}
-                className="pg-range" />
-            </div>
+            <label className="pg-toggle">
+              <input type="checkbox" checked={wordCountTarget === 0}
+                onChange={e => setWordCountTarget(e.target.checked ? 0 : mode.minW)} />
+              <span>Auto word count (mode default)</span>
+            </label>
+            {wordCountTarget > 0 && (
+              <div className="pg-setting-row">
+                <label className="pg-setting-label">
+                  Words per game: {wordCountTarget} (min {mode.minW}, max {mode.maxW})
+                </label>
+                <input type="range" min={mode.minW} max={mode.maxW} step="1"
+                  value={wordCountTarget}
+                  onChange={e => setWordCountTarget(Number(e.target.value))}
+                  className="pg-range" />
+              </div>
+            )}
           </div>
         </Section>
 

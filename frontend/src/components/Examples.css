@@ -91,16 +91,16 @@
   margin-bottom: 3rem;
 }
 
-/* PDF Preview Card */
-.pdf-preview-card {
+.examples-viewer {
   background: var(--card-bg);
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 1.5rem;
+  padding: 0.5rem;
   position: relative;
+  min-height: 400px;
 }
 
-.pdf-preview-card::before {
+.examples-viewer::before {
   content: "";
   position: absolute;
   inset: -6px;
@@ -109,67 +109,12 @@
   pointer-events: none;
 }
 
-.pdf-preview-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 320px;
-  background: var(--paper-dark);
-  background-image: radial-gradient(ellipse at center, rgba(196, 149, 106, 0.03) 0%, transparent 70%);
+.pdf-viewer-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
   border-radius: var(--radius-sm);
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.pdf-cover-img {
-  max-width: 220px;
-  max-height: 300px;
-  object-fit: contain;
-  border-radius: 2px;
-  box-shadow: 3px 3px 12px rgba(44, 24, 16, 0.12);
-}
-
-.pdf-fallback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.pdf-fallback-svg {
-  width: 120px;
-  height: 160px;
-}
-
-.pdf-fallback-text {
-  font-family: var(--font-ui);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-faded);
-}
-
-.pdf-preview-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.pdf-file-size {
-  font-family: var(--font-ui);
-  font-size: 0.7rem;
-  color: var(--ink-faded);
-}
-
-.pdf-view-link {
-  color: var(--primary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.pdf-view-link:hover {
-  color: var(--primary-dark);
+  background: #fff;
 }
 
 /* Info panel */
@@ -475,8 +420,8 @@
     order: -1;
   }
 
-  .pdf-preview-visual {
-    min-height: 240px;
+  .pdf-viewer-iframe {
+    height: 450px;
   }
 }
 
@@ -494,13 +439,8 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .pdf-preview-visual {
-    min-height: 200px;
-  }
-
-  .pdf-cover-img {
-    max-width: 160px;
-    max-height: 220px;
+  .pdf-viewer-iframe {
+    height: 350px;
   }
 }
 
