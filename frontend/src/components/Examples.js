@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import BookViewer from "./BookViewer";
 import "./Examples.css";
 
 const EXAMPLE_BOOKS = [
@@ -12,7 +13,7 @@ const EXAMPLE_BOOKS = [
     pages: 4,
     topics: 1,
     puzzles: { normal: 3, hard: 2, bonus: 2 },
-    cover: "sports.jpg",
+    cover: "sports_cover.jpg",
   },
   {
     id: "science-wildlife",
@@ -34,7 +35,7 @@ const EXAMPLE_BOOKS = [
     pages: 4,
     topics: 1,
     puzzles: { normal: 0, hard: 3, bonus: 1 },
-    cover: "culture.jpg",
+    cover: "culture_cover.jpg",
   },
   {
     id: "astronomy",
@@ -56,7 +57,7 @@ const EXAMPLE_BOOKS = [
     pages: 6,
     topics: 5,
     puzzles: { normal: 10, hard: 5, bonus: 5 },
-    cover: "cover1.jpg",
+    cover: "mixed_cover.jpg",
   },
   {
     id: "sports-deluxe",
@@ -67,7 +68,7 @@ const EXAMPLE_BOOKS = [
     pages: 4,
     topics: 1,
     puzzles: { normal: 2, hard: 1, bonus: 1 },
-    cover: "sports.jpg",
+    cover: "sports_cover.jpg",
     hasCustomCover: true,
   },
   {
@@ -91,7 +92,7 @@ const EXAMPLE_BOOKS = [
     pages: 3,
     topics: 3,
     puzzles: { normal: 3, hard: 3, bonus: 0 },
-    cover: "cover2.jpg",
+    cover: "mixed_cover.jpg",
     hasCustomCover: true,
   },
 ];
@@ -122,81 +123,13 @@ const Examples = () => {
           </p>
         </div>
 
-        <div className="examples-selector">
-          {EXAMPLE_BOOKS.map((book) => (
-            <button
-              key={book.id}
-              className={`example-tab ${activeBook.id === book.id ? "active" : ""}`}
-              onClick={() => setActiveBook(book)}
-            >
-              <span
-                className="example-tab-color"
-                style={{
-                  background:
-                    book.difficulty === "Hard"
-                      ? "#8B3A3A"
-                      : book.difficulty === "Mixed"
-                      ? "#C49464"
-                      : book.difficulty === "Bonus"
-                      ? "#4A6FA5"
-                      : "#3D6B3D",
-                }}
-              />
-              <span className="example-tab-info">
-                <span className="example-tab-title">{book.title}</span>
-                <span className="example-tab-diff">{book.difficulty}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-
         <div className="examples-layout">
           <div className="examples-viewer">
-            <div className="pdf-preview-card">
-              <div className="pdf-preview-visual">
-                <img
-                  src={getFileUrl(activeBook.cover)}
-                  alt={`${activeBook.title} cover preview`}
-                  className="pdf-cover-img"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-                <div className="pdf-fallback" style={{ display: "none" }}>
-                  <svg viewBox="0 0 120 160" className="pdf-fallback-svg">
-                    <rect x="5" y="5" width="110" height="150" rx="3" fill="var(--paper-light)" stroke="var(--border)" strokeWidth="1.5"/>
-                    <rect x="10" y="10" width="100" height="140" rx="2" fill="var(--paper)"/>
-                    <line x1="20" y1="40" x2="100" y2="40" stroke="var(--border-light)" strokeWidth="1.5"/>
-                    <line x1="20" y1="55" x2="90" y2="55" stroke="var(--border-light)" strokeWidth="1.5"/>
-                    <line x1="20" y1="70" x2="80" y2="70" stroke="var(--border-light)" strokeWidth="1.5"/>
-                    <rect x="35" y="100" width="50" height="8" rx="2" fill="var(--primary-dark)" opacity="0.6"/>
-                    <rect x="35" y="115" width="50" height="8" rx="2" fill="var(--primary)" opacity="0.4"/>
-                    <rect x="35" y="130" width="50" height="8" rx="2" fill="var(--secondary)" opacity="0.3"/>
-                  </svg>
-                  <span className="pdf-fallback-text">PDF Preview</span>
-                </div>
-              </div>
-              <div className="pdf-preview-actions">
-                <a
-                  href={getFileUrl(activeBook.file)}
-                  className="btn btn-primary"
-                  download
-                >
-                  Download PDF
-                </a>
-                <span className="pdf-file-size">
-                  <a
-                    href={getFileUrl(activeBook.file)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="pdf-view-link"
-                  >
-                    View in Browser
-                  </a>
-                </span>
-              </div>
-            </div>
+            <BookViewer
+              pdfUrl={getFileUrl(activeBook.file)}
+              coverUrl={getFileUrl(activeBook.cover)}
+              title={activeBook.title}
+            />
           </div>
           <div className="examples-info">
             <h2 className="examples-book-title">{activeBook.title}</h2>
@@ -283,7 +216,14 @@ const Examples = () => {
           </h2>
           <div className="all-examples-grid">
             {EXAMPLE_BOOKS.map((book) => (
-              <div key={book.id} className="all-example-card">
+              <div
+                key={book.id}
+                className={`all-example-card${activeBook.id === book.id ? " active" : ""}`}
+                onClick={() => setActiveBook(book)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveBook(book); } }}
+              >
                 <div className="all-example-img-wrap">
                   <img
                     src={getFileUrl(book.cover)}
@@ -302,6 +242,7 @@ const Examples = () => {
                     href={getFileUrl(book.file)}
                     className="btn btn-outline btn-sm"
                     download
+                    onClick={(e) => e.stopPropagation()}
                   >
                     Download
                   </a>

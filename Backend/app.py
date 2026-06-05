@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from routers import generate, files, templates, status, settings, words, play
 import os
 import threading
@@ -74,3 +74,12 @@ app.include_router(files.router, prefix="/api")
 app.include_router(generate.router, prefix="/api")
 app.include_router(words.router, prefix="/api")
 app.include_router(play.router, prefix="/api")
+
+@app.get("/api")
+@app.get("/api/")
+async def api_root():
+    return {"status": "ok", "app": "BOOP Puzzle API", "version": "1.0.0"}
+
+@app.get("/")
+async def root_redirect():
+    return RedirectResponse(url="/api")

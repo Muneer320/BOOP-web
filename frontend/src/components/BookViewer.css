@@ -1,0 +1,200 @@
+.book-viewer {
+  --book-width: 420px;
+  --book-height: 540px;
+  --book-depth: 24px;
+  --spine-width: 28px;
+}
+
+/* Closed book (cover) */
+.book-closed {
+  position: relative;
+  width: var(--book-width);
+  height: var(--book-height);
+  cursor: pointer;
+  perspective: 1200px;
+}
+
+.book-cover-display {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px 12px 12px 4px;
+  overflow: hidden;
+  box-shadow:
+    3px 3px 12px rgba(0,0,0,0.2),
+    -1px 0 4px rgba(0,0,0,0.1);
+  background: var(--card-bg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 2;
+}
+
+.book-closed:hover .book-cover-display {
+  transform: translateX(-4px) rotateY(-2deg);
+  box-shadow:
+    6px 4px 18px rgba(0,0,0,0.25),
+    -2px 0 6px rgba(0,0,0,0.1);
+}
+
+.book-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.book-cover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.book-closed:hover .book-cover-overlay {
+  opacity: 1;
+}
+
+.book-open-icon {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+/* Spine */
+.book-spine {
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: var(--spine-width);
+  height: 100%;
+  background: linear-gradient(to right, #3a2a1a, #5a4030, #3a2a1a);
+  border-radius: 6px 2px 2px 6px;
+  z-index: 1;
+  box-shadow: inset -2px 0 4px rgba(0,0,0,0.3);
+}
+
+.book-pages-shadow {
+  position: absolute;
+  top: 2px;
+  left: 16px;
+  width: calc(100% - 16px);
+  height: calc(100% - 4px);
+  background: linear-gradient(to right, rgba(0,0,0,0.06), transparent 8%, transparent 92%, rgba(0,0,0,0.04));
+  border-radius: 1px;
+  z-index: 0;
+}
+
+/* Open book */
+.book-open {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.book-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.book-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.book-close-btn:hover {
+  background: var(--border);
+}
+
+.book-title-bar {
+  flex: 1;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.book-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.book-download-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.book-pages {
+  display: flex;
+  height: 520px;
+  border: 2px solid var(--border);
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  background: #f5f0e8;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.06);
+}
+
+.book-page-left,
+.book-page-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.book-page-left {
+  border-right: 1px solid var(--border-light);
+}
+
+.book-page-divider {
+  width: 0;
+  position: relative;
+}
+
+.book-page-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.book-pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
