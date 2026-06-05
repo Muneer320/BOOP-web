@@ -4,13 +4,32 @@ import { useGamePersistence } from "../hooks/useGamePersistence";
 import useTimer from "../hooks/useTimer";
 import "./PuzzleGame.css";
 
+const Section = ({ title, id, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className={`pg-section ${open ? "open" : ""}`}>
+      <button
+        className="pg-section-header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="pg-section-title">{title}</span>
+        <span className="pg-section-chevron">{open ? "–" : "+"}</span>
+      </button>
+      <div className={`pg-section-body ${open ? "visible" : ""}`}>
+        {children}
+      </div>
+    </section>
+  );
+};
+
 const MODES = [
-  { id: "easy", label: "Easy", grid: 10, minW: 4, maxW: 10, back: false, mask: null },
-  { id: "normal", label: "Normal", grid: 13, minW: 6, maxW: 10, back: true, mask: null },
-  { id: "hard", label: "Hard", grid: 15, minW: 8, maxW: 18, back: true, mask: null },
-  { id: "veryhard", label: "Very Hard", grid: 18, minW: 10, maxW: 26, back: true, mask: null },
-  { id: "nightmare", label: "Nightmare", grid: 20, minW: 12, maxW: 34, back: true, mask: null },
-  { id: "bonus", label: "Bonus", grid: 15, minW: 6, maxW: 15, back: true, mask: "circle" },
+  { id: "easy", label: "Easy", grid: 10, minW: 7, maxW: 12, back: false, mask: null },
+  { id: "normal", label: "Normal", grid: 13, minW: 10, maxW: 15, back: true, mask: null },
+  { id: "hard", label: "Hard", grid: 15, minW: 13, maxW: 20, back: true, mask: null },
+  { id: "veryhard", label: "Very Hard", grid: 18, minW: 15, maxW: 25, back: true, mask: null },
+  { id: "nightmare", label: "Nightmare", grid: 20, minW: 18, maxW: 30, back: true, mask: null },
+  { id: "bonus", label: "Bonus", grid: 15, minW: 7, maxW: 15, back: true, mask: "circle" },
 ];
 
 const COLORS = ["#3a6b35", "#8b3a3a", "#b8860b", "#4a6fa5", "#6b4a8b", "#c4956a", "#2d6b5e", "#8b5e3a", "#4a7c5e", "#7a5e3a"];
@@ -70,6 +89,9 @@ const PuzzleGame = () => {
   const [showConfirmNew, setShowConfirmNew] = useState(false);
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(true);
+  const [hintsEnabled, setHintsEnabled] = useState(true);
+  const [hintCooldown, setHintCooldown] = useState(30);
+  const [wordCountTarget, setWordCountTarget] = useState(0);
   const [gameId, setGameId] = useState(null);
   const [focusedCell, setFocusedCell] = useState(null);
   const [hintWord, setHintWord] = useState(null);
@@ -97,6 +119,14 @@ const PuzzleGame = () => {
   const mode = useMemo(() => MODES.find(m => m.id === modeId) || MODES[1], [modeId]);
   const timer = useTimer();
   const gridRef = useRef(null);
+
+  /* ---- Clamp wordCountTarget when mode changes ---- */
+  useEffect(() => {
+    setWordCountTarget(prev => {
+      if (prev === 0) return 0;
+      return Math.max(mode.minW, Math.min(prev, mode.maxW));
+    });
+  }, [mode.minW, mode.maxW]);
 
   /* ---- Load topics on mount ---- */
   useEffect(() => {
@@ -176,16 +206,18 @@ const PuzzleGame = () => {
   /* ---- Start game ---- */
   const handleStart = useCallback(async () => {
     let words = computeWords();
-    if (words.length < mode.minW) {
-      setError(`Need at least ${mode.minW} words. Selected ${words.length}. Try a different topic or add words.`);
+    const target = wordCountTarget > 0 ? wordCountTarget : mode.maxW;
+    const minLimit = wordCountTarget > 0 ? Math.min(wordCountTarget, mode.minW) : mode.minW;
+    if (words.length < minLimit) {
+      setError(`Need at least ${minLimit} words. Selected ${words.length}. Try a different topic or add words.`);
       return;
     }
-    if (words.length > mode.maxW) {
+    if (words.length > target) {
       const shuffled = [...words].sort(() => Math.random() - 0.5);
-      words = shuffled.slice(0, mode.maxW);
+      words = shuffled.slice(0, target);
     }
     await generatePuzzle(words, timerEnabled);
-  }, [computeWords, mode, generatePuzzle, timerEnabled]);
+  }, [computeWords, mode, generatePuzzle, timerEnabled, wordCountTarget]);
 
   /* ---- Restore game from localStorage ---- */
   useEffect(() => {
@@ -471,9 +503,9 @@ const PuzzleGame = () => {
     const now = Date.now();
     const elapsed = (now - (gameStartTime.current || now)) / 1000;
     if (elapsed < 60) return;
-    if (now - lastGlobalHintRef.current < 30000) return;
+    if (!hintsEnabled || now - lastGlobalHintRef.current < hintCooldown * 1000) return;
     setHintWord(word);
-  }, []);
+  }, [hintsEnabled, hintCooldown]);
 
   const handleFullSolution = useCallback(() => {
     if (!puzzle) return;
@@ -559,24 +591,24 @@ const PuzzleGame = () => {
     canvas.height = pH;
     const ctx = canvas.getContext("2d");
 
-    /* Background gradient */
+    /* Background gradient — warm paper tones matching BOOP brand */
     const grad = ctx.createLinearGradient(0, 0, 0, pH);
-    grad.addColorStop(0, "#16213e");
-    grad.addColorStop(1, "#0f172a");
+    grad.addColorStop(0, "#1C1915");
+    grad.addColorStop(1, "#201C17");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, pW, pH);
 
     let y = margin;
 
     /* Title */
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "bold 28px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `bold 28px "Playfair Display", Georgia, serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText("BOOP - Word Search", pW / 2, y);
+    ctx.fillText("BOOP — Word Search", pW / 2, y);
     y += 36;
-    ctx.fillStyle = "#a0aec0";
-    ctx.font = "16px sans-serif";
+    ctx.fillStyle = "#A09080";
+    ctx.font = `16px "Inter", sans-serif`;
     ctx.fillText(`Mode: ${(puzzle.mode || "custom").charAt(0).toUpperCase() + (puzzle.mode || "custom").slice(1)}`, pW / 2, y);
     y += 28;
 
@@ -595,11 +627,11 @@ const PuzzleGame = () => {
       ctx.arc(cx, cy2, r, 0, Math.PI * 2);
       ctx.clip();
     }
-    ctx.fillStyle = "#1e293b";
+    ctx.fillStyle = "#28231D";
     ctx.fillRect(bgX, bgY, bgW, bgH);
     ctx.restore();
     if (!isCircle) {
-      ctx.strokeStyle = "#334155";
+      ctx.strokeStyle = "#3E352B";
       ctx.lineWidth = 1;
       ctx.strokeRect(bgX, bgY, bgW, bgH);
     }
@@ -618,13 +650,13 @@ const PuzzleGame = () => {
         const found = foundSetRef.current.has(`${r},${c}`);
         if (found) {
           const blended = getBlendedColor(r, c);
-          ctx.fillStyle = blended || "#3a6b35";
+          ctx.fillStyle = blended || "#5A8E50";
         } else {
-          ctx.fillStyle = "#2a2a2a";
+          ctx.fillStyle = "#2D261F";
         }
         ctx.fillRect(x, cy, cellPx, cellPx);
-        ctx.fillStyle = found ? "#ffffff" : "#94a3b8";
-        ctx.font = `bold ${Math.floor(cellPx * 0.52)}px sans-serif`;
+        ctx.fillStyle = found ? "#FDFAF5" : "#BFB09C";
+        ctx.font = `bold ${Math.floor(cellPx * 0.52)}px "JetBrains Mono", monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(letter, x + cellPx / 2, cy + cellPx / 2 + 1);
@@ -643,19 +675,19 @@ const PuzzleGame = () => {
       const wy = y + row * rowH;
       const isFound = foundWordNames.includes(wordList[i]);
       const idx = foundWordNames.indexOf(wordList[i]);
-      ctx.fillStyle = isFound ? COLORS[idx % COLORS.length] : "#475569";
+      ctx.fillStyle = isFound ? COLORS[idx % COLORS.length] : "#8A7A68";
       ctx.beginPath();
       ctx.arc(wx + 6, wy + 8, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = isFound ? "#e2e8f0" : "#64748b";
-      ctx.font = `${isFound ? "bold " : ""}14px sans-serif`;
+      ctx.fillStyle = isFound ? "#E2D8C8" : "#BFB09C";
+      ctx.font = `${isFound ? "bold " : ""}14px "Inter", sans-serif`;
       ctx.fillText(wordList[i], wx + 16, wy + 1);
     }
     y += wordRows * rowH + 20;
 
     /* Footer */
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "20px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `20px "Playfair Display", Georgia, serif`;
     ctx.textAlign = "center";
     const timeStr = timer?.formatTime || "00:00";
     ctx.fillText(`Time: ${timeStr}`, pW / 2, y);
@@ -673,13 +705,13 @@ const PuzzleGame = () => {
     const afterW = ctx.measureText(after).width;
     const totalW = beforeW + boldW2 + afterW;
     const startX = pW / 2 - totalW / 2;
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "#8A7A68";
     ctx.fillText(before, startX, y);
-    ctx.fillStyle = "#fdfaf4";
-    ctx.font = "bold 14px sans-serif";
+    ctx.fillStyle = "#E2D8C8";
+    ctx.font = `bold 14px "Inter", sans-serif`;
     ctx.fillText(boldPart, startX + beforeW, y);
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "#8A7A68";
+    ctx.font = `14px "Inter", sans-serif`;
     ctx.fillText(after, startX + beforeW + boldW2, y);
 
     return canvas;
@@ -805,115 +837,149 @@ const PuzzleGame = () => {
     <div className="pg-start">
       <div className="pg-start-card">
         <h2 className="pg-start-title">Play Word Search</h2>
-        <p className="pg-start-sub">Choose your mode, pick words, and start solving.</p>
+        <p className="pg-start-sub">Configure your puzzle, pick words, and start solving.</p>
 
         {error && <div className="pg-error">
           <span>{error}</span>
           <button className="pg-error-close" onClick={() => setError(null)}>&times;</button>
         </div>}
 
-        <div className="pg-modes">
-          {MODES.map(m => (
-            <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
-              onClick={() => { setModeId(m.id); setError(null); }}>
-              <span className="pg-mode-label">{m.label}</span>
-              <span className="pg-mode-size">{m.grid}×{m.grid}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="pg-word-source">
-          <div className="pg-source-tabs">
-            {[
-              { id: "preset", label: "Themes" },
-              { id: "manual", label: "Type Words" },
-              { id: "file", label: "Upload" },
-            ].map(tab => (
-              <button key={tab.id}
-                className={`pg-source-tab${wordSource === tab.id ? " active" : ""}`}
-                onClick={() => setWordSource(tab.id)}>{tab.label}</button>
+        <Section title="Modes" id="pg-modes-section" defaultOpen={true}>
+          <div className="pg-modes">
+            {MODES.map(m => (
+              <button key={m.id} className={`pg-mode-btn${modeId === m.id ? " active" : ""}`}
+                onClick={() => { setModeId(m.id); setError(null); }}>
+                <span className="pg-mode-label">{m.label}</span>
+                <span className="pg-mode-size">{m.grid}×{m.grid}</span>
+              </button>
             ))}
           </div>
+        </Section>
 
-          {wordSource === "preset" && (
-            <div className="pg-preset-panel">
-              {topicError && <p className="alert alert-danger">{topicError}</p>}
-              {loadingTopics && <p className="pg-loading-hint">Loading words\u2026</p>}
-              {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
-                renderTopicCard(topic)
-              )}
-              {activeTopic && (
-                <p className="pg-word-count-total">
-                  {topicSelectedWords.length} word{topicSelectedWords.length !== 1 ? "s" : ""} selected
-                  {topicSelectedWords.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
-                </p>
-              )}
+        <Section title="Words" id="pg-words-section" defaultOpen={false}>
+          <div className="pg-word-source">
+            <div className="pg-source-tabs">
+              {[
+                { id: "preset", label: "Themes" },
+                { id: "manual", label: "Type Words" },
+                { id: "file", label: "Upload" },
+              ].map(tab => (
+                <button key={tab.id}
+                  className={`pg-source-tab${wordSource === tab.id ? " active" : ""}`}
+                  onClick={() => setWordSource(tab.id)}>{tab.label}</button>
+              ))}
             </div>
-          )}
 
-          {wordSource === "manual" && (
-            <div className="pg-manual-panel">
-              <div className="form-group">
-                <label>Type words (comma or Enter to add)</label>
-                <input className="form-control" value={manualInput} onChange={handleManualInput}
-                  onKeyDown={handleManualKeyDown} placeholder="e.g. APPLE,BANANA,ORANGE" />
+            {wordSource === "preset" && (
+              <div className="pg-preset-panel">
+                {topicError && <p className="alert alert-danger">{topicError}</p>}
+                {loadingTopics && <p className="pg-loading-hint">Loading words\u2026</p>}
+                {topics.length === 0 ? <p>No topics available.</p> : topics.map(topic =>
+                  renderTopicCard(topic)
+                )}
+                {activeTopic && (
+                  <p className="pg-word-count-total">
+                    {topicSelectedWords.length} word{topicSelectedWords.length !== 1 ? "s" : ""} selected
+                    {topicSelectedWords.length > mode.maxW ? ` (will pick ${mode.maxW} at random)` : ` (min ${mode.minW}, max ${mode.maxW})`}
+                  </p>
+                )}
               </div>
-              <div className="pg-chips">
-                {wordChips.map(w => (
-                  <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
-                    {w} <span className="pg-chip-remove">&times;</span>
-                  </span>
-                ))}
-              </div>
-              {wordChips.length > 0 && (
-                <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
-              )}
-            </div>
-          )}
+            )}
 
-          {wordSource === "file" && (
-            <div className="pg-file-panel">
-              <p className="pg-file-hint">Upload a <code>.txt</code> file with topics and words, or a simple word list:</p>
-              <pre className="format-example" style={{ fontSize: "0.75rem", padding: "0.5rem" }}>{`>TECHNOLOGY
+            {wordSource === "manual" && (
+              <div className="pg-manual-panel">
+                <div className="form-group">
+                  <label>Type words (comma or Enter to add)</label>
+                  <input className="form-control" value={manualInput} onChange={handleManualInput}
+                    onKeyDown={handleManualKeyDown} placeholder="e.g. APPLE,BANANA,ORANGE" />
+                </div>
+                <div className="pg-chips">
+                  {wordChips.map(w => (
+                    <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                      {w} <span className="pg-chip-remove">&times;</span>
+                    </span>
+                  ))}
+                </div>
+                {wordChips.length > 0 && (
+                  <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
+                )}
+              </div>
+            )}
+
+            {wordSource === "file" && (
+              <div className="pg-file-panel">
+                <p className="pg-file-hint">Upload a <code>.txt</code> file with topics and words, or a simple word list:</p>
+                <pre className="format-example" style={{ fontSize: "0.75rem", padding: "0.5rem" }}>{`>TECHNOLOGY
 algorithm
 binary
 ====================
 >ASTRONOMY
 asteroid, comet`}</pre>
-              <label className="btn btn-outline" style={{ cursor: "pointer" }}>
-                Choose .txt File(s)
-                <input type="file" accept=".txt" multiple ref={fileInputRef}
-                  onChange={handleFileUpload} style={{ display: "none" }} />
-              </label>
-              {fileErrors.length > 0 && (
-                <div className="pg-error" style={{ marginTop: "0.5rem" }}>
-                  <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                    {fileErrors.map((e, i) => <li key={i}>{e}</li>)}
-                  </ul>
-                </div>
-              )}
-              {wordChips.length > 0 && (
-                <>
-                  <div className="pg-chips">
-                    {wordChips.map(w => (
-                      <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
-                        {w} <span className="pg-chip-remove">&times;</span>
-                      </span>
-                    ))}
+                <label className="btn btn-outline cursor-pointer">
+                  Choose .txt File(s)
+                  <input type="file" accept=".txt" multiple ref={fileInputRef}
+                    onChange={handleFileUpload} style={{ display: "none" }} />
+                </label>
+                {fileErrors.length > 0 && (
+                  <div className="pg-error" style={{ marginTop: "0.5rem" }}>
+                    <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                      {fileErrors.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
                   </div>
-                  <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+                {wordChips.length > 0 && (
+                  <>
+                    <div className="pg-chips">
+                      {wordChips.map(w => (
+                        <span key={w} className="pg-chip" onClick={() => removeChip(w)}>
+                          {w} <span className="pg-chip-remove">&times;</span>
+                        </span>
+                      ))}
+                    </div>
+                    <p className="pg-word-count">{wordChips.length} words (min {mode.minW}, max {mode.maxW})</p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Section>
 
-        <div className="pg-timer-option">
-          <label className="pg-toggle">
-            <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
-            <span>Show timer</span>
-          </label>
-        </div>
+        <Section title="Settings" id="pg-settings-section" defaultOpen={false}>
+          <div className="pg-settings">
+            <label className="pg-toggle">
+              <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} />
+              <span>Show timer</span>
+            </label>
+            <label className="pg-toggle">
+              <input type="checkbox" checked={hintsEnabled} onChange={e => setHintsEnabled(e.target.checked)} />
+              <span>Enable hints</span>
+            </label>
+            {hintsEnabled && (
+              <div className="pg-setting-row">
+                <label className="pg-setting-label">Hint cooldown: {hintCooldown}s</label>
+                <input type="range" min="10" max="120" step="5" value={hintCooldown}
+                  onChange={e => setHintCooldown(Number(e.target.value))}
+                  className="pg-range" />
+              </div>
+            )}
+            <label className="pg-toggle">
+              <input type="checkbox" checked={wordCountTarget === 0}
+                onChange={e => setWordCountTarget(e.target.checked ? 0 : mode.minW)} />
+              <span>Auto word count (mode default)</span>
+            </label>
+            {wordCountTarget > 0 && (
+              <div className="pg-setting-row">
+                <label className="pg-setting-label">
+                  Words per game: {wordCountTarget} (min {mode.minW}, max {mode.maxW})
+                </label>
+                <input type="range" min={mode.minW} max={mode.maxW} step="1"
+                  value={wordCountTarget}
+                  onChange={e => setWordCountTarget(Number(e.target.value))}
+                  className="pg-range" />
+              </div>
+            )}
+          </div>
+        </Section>
 
         <button className="btn btn-primary btn-lg pg-start-btn" onClick={handleStart} disabled={loading}>
           {loading ? "Generating…" : "Start Game"}
@@ -1001,20 +1067,21 @@ asteroid, comet`}</pre>
                     style={foundWords[word] ? { color: getWordColor(word) } : {}}>
                     <span className="pg-word-bullet">{foundWords[word] ? "\u2713" : "\u25CB"}</span>
                     <span className="pg-word-text">{word}</span>
-                    {!foundWords[word] && (() => {
+                    {!foundWords[word] && hintsEnabled && (() => {
                       const now = Date.now();
                       const gameTime = (now - (gameStartTime.current || now)) / 1000;
                       const sinceLast = (now - lastGlobalHintRef.current) / 1000;
-                      const hintReady = gameTime >= 60 && sinceLast >= 30;
+                      const hintDelay = 60;
+                      const hintReady = (gameTime >= hintDelay || lastGlobalHintRef.current > 0) && sinceLast >= hintCooldown;
                       let hintPct = 100;
                       let hintLabel = "Show hint";
                       if (!hintReady) {
-                        if (gameTime < 60) {
-                          hintPct = Math.min(99, (gameTime / 60) * 100);
-                          hintLabel = `Hint in ${60 - Math.ceil(gameTime)}s`;
+                        if (gameTime < hintDelay) {
+                          hintPct = Math.min(99, (gameTime / hintDelay) * 100);
+                          hintLabel = `Hint in ${hintDelay - Math.ceil(gameTime)}s`;
                         } else {
-                          hintPct = Math.min(99, (sinceLast / 30) * 100);
-                          hintLabel = `Hint in ${30 - Math.ceil(sinceLast)}s`;
+                          hintPct = Math.min(99, (sinceLast / hintCooldown) * 100);
+                          hintLabel = `Hint in ${hintCooldown - Math.ceil(sinceLast)}s`;
                         }
                       }
                       return (
@@ -1123,12 +1190,16 @@ asteroid, comet`}</pre>
   if (loading) {
     return (
       <div className="puzzle-game">
-        <div className="card">
+        <div className="pg-start-card">
           <div className="pg-loading">
-            <h2>Generating Puzzle…</h2>
-            <div className="spinner" />
-            <p className="text-secondary">Fitting words into a {mode.grid}×{mode.grid} grid</p>
-            <button className="btn btn-secondary btn-sm pg-loading-back" onClick={() => setLoading(false)}>Cancel</button>
+            <h2>Generating Puzzle</h2>
+            <div className="loading-progress-bar" style={{ margin: "1.5rem auto", maxWidth: "300px" }}>
+              <div className="loading-progress-fill" style={{ width: "60%", animation: "shimmer 1.5s ease infinite" }} />
+            </div>
+            <p style={{ fontFamily: "var(--font-body)", fontStyle: "italic", color: "var(--ink-light)" }}>
+              Placing words in a {mode.grid}&times;{mode.grid} grid&hellip;
+            </p>
+            <button className="btn btn-outline btn-sm pg-loading-back" onClick={() => setLoading(false)}>Cancel</button>
           </div>
         </div>
       </div>

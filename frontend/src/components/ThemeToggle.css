@@ -1,20 +1,19 @@
 .theme-toggle {
   background: none;
-  border: 2px solid transparent;
+  border: 1.5px solid var(--border);
   cursor: pointer;
   padding: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
-  color: var(--gray);
-  margin-left: 1rem;
+  transition: all 0.15s ease;
+  color: var(--ink-faded);
 }
 
 .theme-toggle:hover {
   color: var(--primary);
-  border-color: var(--gray-light);
+  border-color: var(--primary);
 }
 
 .sun-moon {

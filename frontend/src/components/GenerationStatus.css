@@ -46,6 +46,12 @@
   font-size: 1.5rem;
 }
 
+.status-icon.err {
+  color: var(--danger);
+  font-size: 1.2rem;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
 .status-info {
   flex: 1;
 }
@@ -78,13 +84,26 @@
 }
 
 .download-again-btn {
-  background: none;
-  border: none;
+  flex-shrink: 0;
+  margin-left: 12px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--primary);
-  font-size: 0.85rem;
+  background: none;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.7rem;
   cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.download-again-btn:hover {
+  background: var(--primary);
+  color: var(--paper-light);
 }
 
 .mini-grid {

@@ -39,41 +39,39 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             <Link to="/" className="logo-link">
-              <img src={logo} alt="BOOP logo" className="logo-image" />
+              <img src={logo} alt="BOOP logo" className="logo-image" loading="lazy" />
               <div className="logo-text-block">
-                <h1 className="logo-text">BOOP Web</h1>
-                <span className="tagline">Word Search Generator</span>
+                <h1 className="logo-text">BOOP</h1>
+                <span className="tagline">Puzzle Book Maker</span>
               </div>
             </Link>
           </div>
 
-          {/* Hamburger menu button - visible only on mobile */}
           <button className="menu-toggle" onClick={toggleMenu}
             aria-label="Toggle navigation menu"
             aria-expanded={menuOpen}>
             <span className={`menu-icon ${menuOpen ? "open" : ""}`}></span>
           </button>
 
-          {/* Navigation - always visible on desktop, toggled on mobile */}
           <nav className={`nav ${menuOpen ? "visible" : ""}`} aria-label="Main navigation">
             <ul className="main-nav-list">
               <li>
-                <Link to="/" className={isActive("/")} onClick={() => setMenuOpen(false)}>
-                  Home
+                <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)} aria-current={isActive("/create") === "active" ? "page" : undefined}>
+                  Create
                 </Link>
               </li>
               <li>
-                <Link to="/create" className={isActive("/create")} onClick={() => setMenuOpen(false)}>
-                  Create Puzzle
-                </Link>
-              </li>
-              <li>
-                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)}>
+                <Link to="/play" className={isActive("/play")} onClick={() => setMenuOpen(false)} aria-current={isActive("/play") === "active" ? "page" : undefined}>
                   Play
                 </Link>
               </li>
               <li>
-                <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)}>
+                <Link to="/examples" className={isActive("/examples")} onClick={() => setMenuOpen(false)} aria-current={isActive("/examples") === "active" ? "page" : undefined}>
+                  Examples
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className={isActive("/about")} onClick={() => setMenuOpen(false)} aria-current={isActive("/about") === "active" ? "page" : undefined}>
                   About
                 </Link>
               </li>
