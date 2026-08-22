@@ -1,23 +1,31 @@
 <div align="center">
 
-<img src="frontend/src/assets/logo.svg" alt="BOOP logo" width="96" />
+<img src="frontend/src/assets/logo.svg" alt="BOOP puzzle-book logo" width="96">
 
 # BOOP Web
 
-**Make printable word search puzzle books in the browser, or play a puzzle right away.**
+**Make a word-search book worth printing—or play the next puzzle now.**
 
-[![Deploy](https://img.shields.io/github/actions/workflow/status/Muneer320/BOOP-web/deploy.yml?branch=master&label=tests%20%26%20deploy)](https://github.com/Muneer320/BOOP-web/actions/workflows/deploy.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Choose a theme, bring your own words and artwork, and leave with a PDF containing puzzles and solutions.
 
-[**Open the app**](https://boop-web.vercel.app/) · [Sample books](https://boop-web.vercel.app/examples) · [Report a bug](https://github.com/Muneer320/BOOP-web/issues)
+[![Tests and deploy](https://img.shields.io/github/actions/workflow/status/Muneer320/BOOP-web/deploy.yml?branch=master&label=tests%20%26%20deploy)](https://github.com/Muneer320/BOOP-web/actions/workflows/deploy.yml) [![MIT](https://img.shields.io/badge/license-MIT-406a3c)](LICENSE)
+
+[**Open the app**](https://boop-web.vercel.app/) · [**Sample books**](https://boop-web.vercel.app/examples) · [**Run locally**](#run-it-locally)
 
 </div>
 
-![BOOP Web home page](docs/screenshots/home.jpeg)
+## Your words, a printable puzzle book
 
-BOOP started as [a command-line tool](https://github.com/Muneer320/BOOP) that turned word lists into puzzle-book PDFs. BOOP Web puts the same generator behind a web interface: pick topics and words, choose how many puzzles of each kind you want, add your own cover and backgrounds, and download a finished book with a contents page and solutions.
+BOOP began as [a Python CLI](https://github.com/Muneer320/BOOP) for turning topic-organized words into PDFs. The web version makes that workflow visual: choose built-in topics or custom words, set puzzle counts, customize the cover/backgrounds, and download the assembled book. For a shorter session, generate a puzzle and solve it directly in the browser.
 
-## What it does
+![Actual BOOP Web homepage from the current frontend production build](docs/screenshots/home.jpeg)
+
+| Create for a theme | Make it a book | Play immediately |
+| --- | --- | --- |
+| Built-in topics, typed words or a `.txt` list | Cover, contents, topic pages, puzzle grids and solutions | Difficulty modes, hints, timer, saved progress and solved-grid export |
+
+<details>
+<summary><strong>See book creation, browser play and the full feature list</strong></summary>
 
 **Puzzle books (PDF)**
 - Topics from the built-in word lists, your own typed words, or an uploaded `.txt` word list.
@@ -38,7 +46,51 @@ BOOP started as [a command-line tool](https://github.com/Muneer320/BOOP) that tu
 |---|---|
 | ![Create page](docs/screenshots/create.jpeg) | ![Play page](docs/screenshots/play.jpeg) |
 
-## How it is built
+</details>
+
+## From word list to pages—or a playable grid
+
+```mermaid
+flowchart LR
+    UI[React interface] --> API[FastAPI]
+    API --> Words[Topic or custom word lists]
+    Words --> Generator[Word placement and grid generation]
+    Generator --> SVG[Puzzle and solution SVGs]
+    SVG --> PDF[Printable PDF book]
+    Generator --> Play[Browser puzzle and local progress]
+```
+
+Generation uses a temporary directory per request so separate books do not mix files. Unfittable words/puzzles produce an explicit failure rather than a book silently missing pages. The generator reports progress to the interface while assembling the PDF.
+
+## Run it locally
+
+Use Git, Python 3.12+ (matching backend CI) and Node.js; Node 24 is verified for the frontend checks/build. No account or API key is needed for local generation/play.
+
+```sh
+git clone https://github.com/Muneer320/BOOP-web.git
+cd BOOP-web
+```
+
+In the first terminal, create/activate a Python virtual environment for your shell, then:
+
+```sh
+cd Backend
+python -m pip install -r requirements.txt
+python -m uvicorn app:app --reload --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, starting from the repository root:
+
+```sh
+cd frontend
+npm ci
+npm start
+```
+
+Open [localhost:3000](http://localhost:3000). The frontend's `REACT_APP_API_URL` defaults to `http://localhost:8000/api`. Backend `CORS_ORIGINS` defaults to `http://localhost:3000`. To try a book, choose one topic, reduce counts for a small first run and download the result; **Play** starts a browser grid instead.
+
+<details>
+<summary><strong>Stack, source layout and deployment</strong></summary>
 
 | Part | Stack | Hosted on |
 |---|---|---|
@@ -60,7 +112,12 @@ frontend/
 scripts/              helper for regenerating the Wordo sample book
 ```
 
-## API
+Every push to `master` runs backend tests before syncing `Backend/` to Hugging Face Spaces through the [existing workflow](.github/workflows/deploy.yml). Vercel builds the frontend from that branch. Deployments depend on their configured account secrets/settings; a frontend URL alone does not prove the backend is healthy.
+
+</details>
+
+<details>
+<summary><strong>HTTP routes and upload/progress behavior</strong></summary>
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -76,46 +133,23 @@ scripts/              helper for regenerating the Wordo sample book
 
 Request and response examples are in [Backend/README.md](Backend/README.md).
 
-## Run it locally
+Uploaded resources use random IDs, not authenticated user accounts. Avoid private materials in a shared/public deployment and treat a file identifier as access to that resource. Browser game progress is local to the browser; no shared account history is implied.
 
-You need Python 3.10+ and Node.js 18+.
+</details>
 
-```bash
-git clone https://github.com/Muneer320/BOOP-web.git
-cd BOOP-web
+## Verify and contribute
 
-# Backend: http://localhost:8000
-cd Backend
-python -m venv venv
-venv/bin/activate          # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app:app --reload
+From `Backend`, install `pytest httpx` and run `python -m pytest`. From `frontend`, run `npm test -- --watch=false --runInBand` and `npm run build`. Legacy Create React App build-tool advisories remain a separate known limitation; do not treat a successful build as a clean dependency audit.
 
-# Frontend: http://localhost:3000 (in a second terminal)
-cd frontend
-npm install
-npm start
-```
+For a focused PR, run affected checks and generate/play a small puzzle before updating the related setup/API documentation. Report a reproducible issue with synthetic words/images in [the tracker](https://github.com/Muneer320/BOOP-web/issues).
 
-The frontend reads the backend address from `REACT_APP_API_URL` (default `http://localhost:8000/api`). The backend reads allowed origins from `CORS_ORIGINS` (comma-separated, default `http://localhost:3000`).
-
-### Tests
-
-```bash
-cd Backend && pip install pytest httpx && pytest
-cd frontend && npm test
-```
-
-## Deployment
-
-Every push to `master` runs the backend tests and then syncs `Backend/` to the Hugging Face Space ([workflow](.github/workflows/deploy.yml)). Vercel builds the frontend from the same branch.
-
-## History
+<details>
+<summary><strong>From the original CLI to the web redesign</strong></summary>
 
 The first web version (April–May 2025) was a small React form around the CLI generator. It is kept as the [`v2.0-before-finishupathon`](https://github.com/Muneer320/BOOP-web/tree/v2.0-before-finishupathon) tag.
 
 In June 2026 I rebuilt most of the app during the Finish-Up-A-Thon hackathon. The work included the redesign, dark mode, the in-browser game, live generation progress, the Examples page and security fixes. Later cleanups made book generation safe to run concurrently, made generation failures report a clear error, shrank the generated PDFs (the Wordo sample went from 26.8 MB to under 0.5 MB) and added tests.
 
-## License
+</details>
 
-[MIT](LICENSE)
+[Backend setup and API examples](Backend/README.md) · [Frontend source](frontend/src/) · [MIT license](LICENSE)

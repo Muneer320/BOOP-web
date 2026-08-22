@@ -140,7 +140,7 @@ const Home = () => {
       <section className="social-proof">
         <div className="container">
           <p className="social-proof-text">
-            Used by teachers, parents, and publishers to create beautiful puzzle books.
+            Make puzzle books for classrooms, family activities, or your next event.
           </p>
         </div>
       </section>

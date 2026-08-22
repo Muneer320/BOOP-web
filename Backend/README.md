@@ -1,11 +1,10 @@
 # BOOP Backend API
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
-[![HF Space](https://img.shields.io/badge/HuggingFace-Space-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/spaces/muneer320/BOOP-backend)
 
-FastAPI backend powering the BOOP Word Search Puzzle Generator. Handles puzzle generation, file management, and PDF book assembly.
+The FastAPI service behind [BOOP Web](../README.md): turn word lists into playable grids or printable puzzle books, with progress and explicit placement failures. Python 3.12 matches the deployment test environment. The configured Hugging Face deployment is described in the main README; its URL alone is not a health check.
 
 ## Endpoints
 
@@ -35,14 +34,14 @@ Generate a PDF puzzle book with multiple puzzles.
 ```json
 {
   "name": "My Puzzle Book",
-  "normal": 5,
-  "hard": 2,
-  "bonus_normal": 1,
-  "bonus_hard": 1,
+  "normal": 1,
+  "hard": 0,
+  "bonus_normal": 0,
+  "bonus_hard": 0,
   "cover_id": null,
   "background_id": null,
   "puzzle_bg_id": null,
-  "words_payload": {"animals": ["cat", "dog"]},
+  "words_payload": {"animals": ["LION", "TIGER", "ZEBRA", "HORSE", "PANDA", "OTTER", "KOALA", "LEMUR", "WHALE", "SHARK"]},
   "words_file_id": null
 }
 ```
