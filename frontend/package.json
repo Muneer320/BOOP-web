@@ -7,11 +7,11 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.4.0",
+    "axios": "^1.18.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^6.14.1",
+    "react-router-dom": "^7.18.2",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -38,5 +38,34 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "@tootallnate/once": "2.0.1",
+    "body-parser": "^1.20.6",
+    "brace-expansion": "1.1.18",
+    "filelist": {
+      "brace-expansion": "2.1.4"
+    },
+    "sucrase": {
+      "brace-expansion": "2.1.4"
+    },
+    "eslint": {
+      "js-yaml": "4.3.1"
+    },
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.1"
+    },
+    "fast-uri": "3.1.5",
+    "js-yaml": "3.15.1",
+    "nanoid": "3.3.18",
+    "postcss": "^8.5.23",
+    "postcss-svgo": {
+      "svgo": "2.8.3"
+    },
+    "react-router": "7.18.2",
+    "serialize-javascript": "7.0.5",
+    "underscore": "1.13.8",
+    "uuid": "11.1.1",
+    "websocket-driver": "0.7.5"
   }
 }
