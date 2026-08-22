@@ -1,217 +1,121 @@
 <div align="center">
 
+<img src="frontend/src/assets/logo.svg" alt="BOOP logo" width="96" />
+
 # BOOP Web
 
-**Word Search Puzzle Generator — From CLI to Cloud**
+**Make printable word search puzzle books in the browser, or play a puzzle right away.**
 
-![BOOP Logo](frontend/src/assets/logo.svg)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/Muneer320/BOOP-web/deploy.yml?branch=master&label=tests%20%26%20deploy)](https://github.com/Muneer320/BOOP-web/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![GitHub Release](https://img.shields.io/github/v/release/muneer320/BOOP-web?style=for-the-badge&logo=github&color=blue)](https://github.com/muneer320/BOOP-web/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/muneer320/BOOP-web/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/muneer320/BOOP-web/actions)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](Backend/)
-[![Node](https://img.shields.io/badge/Node-18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](frontend/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](Backend/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](frontend/)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-
-[Live Link](https://boop-web.vercel.app/) · [Report Bug](https://github.com/muneer320/BOOP-web/issues) · [Request Feature](https://github.com/muneer320/BOOP-web/issues)
-
----
+[**Open the app**](https://boop-web.vercel.app/) · [Sample books](https://boop-web.vercel.app/examples) · [Report a bug](https://github.com/Muneer320/BOOP-web/issues)
 
 </div>
 
-## Features
+![BOOP Web home page](docs/screenshots/home.jpeg)
 
-### Puzzle Generation
-- **Multiple difficulty levels** — Easy, Normal, Hard, Very Hard, Nightmare
-- **Bonus modes** — Circular mask puzzles for an extra challenge
-- **Custom word lists** — Upload via file or type manually, grouped by topic
-- **Custom assets** — Upload cover images, backgrounds, and puzzle backgrounds
+BOOP started as [a command-line tool](https://github.com/Muneer320/BOOP) that turned word lists into puzzle-book PDFs. BOOP Web puts the same generator behind a web interface: pick topics and words, choose how many puzzles of each kind you want, add your own cover and backgrounds, and download a finished book with a contents page and solutions.
 
-### Interactive Play
-- **Live word search grid** — Click-and-drag to select words, keyboard navigation
-- **Hint system** — Global 30-second cooldown, highlight next unfound word
-- **Timer** — Persists across page refreshes, pause/resume
-- **Progress persistence** — Save and restore game state via localStorage
+## What it does
 
-### Download & Share
-- **PDF puzzle books** — Generate multi-puzzle books with covers and backgrounds
-- **Poster download** — Solved grid as a poster-style PNG with word list and solve time
-- **Web Share API** — Share solved puzzles via native share sheet with image attachment
+**Puzzle books (PDF)**
+- Topics from the built-in word lists, your own typed words, or an uploaded `.txt` word list.
+- Normal (13×13) and Hard (17×17) puzzles, plus circular "bonus" puzzles for each.
+- Cover page, table of contents, a title page per section, and a solutions section.
+- Optional custom cover, page background and puzzle background images.
+- Progress is shown while the book is generated. If some words cannot be fitted into a grid, the API says which puzzle failed instead of returning a book with a missing page.
 
-### UI/UX
-- **Dark mode** — Automatic system preference detection with manual toggle
-- **Responsive design** — Works on mobile, tablet, and desktop
-- **Live preview** — SVG puzzle preview while configuring
-- **Loading states** — Skeleton screens and animated progress indicators
-- **Error handling** — Dismissible error banners with clear messages
-- **Accessibility** — Keyboard navigation, ARIA labels, focus trapping in modals
+**Play in the browser**
+- Six modes, from Easy (10×10, forwards only) to Nightmare (20×20), plus a circular Bonus grid.
+- Drag or tap to select words, with hints, a timer and progress that survive a page refresh.
+- When you finish, download a poster of the solved grid or share it.
 
-## Tech Stack
+**Interface**
+- Light and dark themes, responsive layout, keyboard navigation.
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Backend** | [FastAPI](https://fastapi.tiangolo.com/) | REST API framework |
-| | [fpdf2](https://pyfpdf.github.io/fpdf2/) | PDF puzzle book generation |
-| | [svgwrite](https://github.com/mathiasbynens/svgwrite) | SVG asset rendering |
-| | [svglib](https://github.com/deeplook/svglib) | SVG to PDF conversion |
-| | [reportlab](https://www.reportlab.com/) | Advanced PDF layout |
-| | [slowapi](https://github.com/laurentS/slowapi) | Rate limiting |
-| | [Uvicorn](https://www.uvicorn.org/) | ASGI server |
-| **Frontend** | [React 19](https://react.dev/) | UI framework |
-| | [React Router 6](https://reactrouter.com/) | Client-side routing |
-| | [Axios](https://axios-http.com/) | HTTP client |
-| | [CSS Modules](https://create-react-app.dev/docs/adding-a-css-modules-stylesheet/) | Component styling |
-| **Deployment** | [Vercel](https://vercel.com/) | Frontend hosting |
-| | [Hugging Face Spaces](https://huggingface.co/spaces) | Backend hosting (Docker) |
-| | [GitHub Actions](https://github.com/features/actions) | CI/CD pipeline |
+| Create a book | Play |
+|---|---|
+| ![Create page](docs/screenshots/create.jpeg) | ![Play page](docs/screenshots/play.jpeg) |
 
-## Quick Start
+## How it is built
 
-### Prerequisites
+| Part | Stack | Hosted on |
+|---|---|---|
+| Frontend (`frontend/`) | React 19, React Router 7, Create React App | Vercel |
+| Backend (`Backend/`) | FastAPI, svgwrite, svglib + ReportLab, pypdf, slowapi | Hugging Face Spaces (Docker) |
 
-- [Node.js](https://nodejs.org/) 18+ and npm
-- [Python](https://www.python.org/) 3.9+ and pip
+The generator places the words on a grid, draws each puzzle and its solution as SVG, and converts the pages into one PDF. Books are built in a temporary directory per request, so several books can be generated at the same time.
 
-### Setup
+```text
+Backend/
+  app.py              FastAPI app, CORS and rate limiting
+  routers/            generate, play, files, words, settings, templates, status
+  boop/               puzzle generator and PDF assembly (from the original CLI)
+  tests/              pytest suite
+frontend/
+  src/components/     pages and UI components
+  src/context/        generation progress and theme state
+  public/examples/    sample books shown on the Examples page
+scripts/              helper for regenerating the Wordo sample book
+```
+
+## API
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/status` | Health check |
+| GET | `/api/settings` | Grid sizes and word limits used by the generator |
+| GET | `/api/topics`, `/api/topics/{topic}/words` | Built-in word lists |
+| GET | `/api/templates`, `/api/templates/{id}` | Bundled cover and background images |
+| POST | `/api/upload` | Upload an image or a word list. Returns a random file id |
+| GET / DELETE | `/api/files/{file_id}` | Fetch or delete one uploaded file by its id |
+| POST | `/api/generate-puzzle?session_id=…` | Build a book and return the PDF |
+| GET | `/api/generation-progress/{session_id}` | Progress of a book that is being generated |
+| POST | `/api/play/generate` | One puzzle for the in-browser game |
+
+Request and response examples are in [Backend/README.md](Backend/README.md).
+
+## Run it locally
+
+You need Python 3.10+ and Node.js 18+.
 
 ```bash
-# Clone
 git clone https://github.com/Muneer320/BOOP-web.git
 cd BOOP-web
 
-# Backend
+# Backend: http://localhost:8000
 cd Backend
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cd ..
+uvicorn app:app --reload
 
-# Frontend
+# Frontend: http://localhost:3000 (in a second terminal)
 cd frontend
 npm install
-cd ..
+npm start
 ```
 
-### Run
+The frontend reads the backend address from `REACT_APP_API_URL` (default `http://localhost:8000/api`). The backend reads allowed origins from `CORS_ORIGINS` (comma-separated, default `http://localhost:3000`).
+
+### Tests
 
 ```bash
-# Terminal 1 — Backend
-cd Backend
-uvicorn app:app --reload   # → http://localhost:8000
-
-# Terminal 2 — Frontend
-cd frontend
-npm start                  # → http://localhost:3000
+cd Backend && pip install pytest httpx && pytest
+cd frontend && npm test
 ```
-
-## Project Structure
-
-```text
-BOOP-web/
-├── Backend/                    # FastAPI backend (deployed to HF Spaces)
-│   ├── boop/                   # Core puzzle generation logic
-│   │   ├── generatePuzzle.py   # Word search grid algorithm
-│   │   ├── appendImage.py      # PDF assembly with assets
-│   │   ├── rawWordToJSON.py    # Word-list processing
-│   │   └── Assets/             # Cover & background images
-│   ├── routers/                # API route modules
-│   │   ├── files.py            # File upload/download
-│   │   ├── generate.py         # Puzzle book generation
-│   │   ├── play.py             # Single-puzzle generation
-│   │   ├── settings.py         # App configuration
-│   │   ├── status.py           # Health check
-│   │   ├── templates.py        # Asset templates
-│   │   └── words.py            # Word topics
-│   ├── app.py                  # Entry point
-│   ├── limiter.py              # Rate limit config
-│   ├── requirements.txt        # Python dependencies
-│   ├── Dockerfile              # HF Space container definition
-│   └── README.md               # Backend API docs
-├── frontend/                   # React frontend (deployed to Vercel)
-│   ├── src/
-│   │   ├── components/         # React components
-│   │   ├── context/            # React context providers
-│   │   ├── hooks/              # Custom hooks (timer, persistence)
-│   │   ├── pages/              # Route pages
-│   │   ├── services/           # API client (Axios)
-│   │   ├── styles/             # Global CSS & variables
-│   │   └── assets/             # Images, icons, fonts
-│   ├── public/                 # Static files
-│   └── package.json
-├── .github/                    # CI/CD & HF metadata
-│   ├── workflows/deploy.yml    # GitHub Actions deployment
-│   ├── HF_README.md            # HF Space landing page
-│   └── HF_gitattributes        # HF Xet binary file config
-└── README.md                   # You are here
-```
-
-## API Documentation
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/status` | GET | Health check |
-| `/api/settings` | GET | App configuration limits |
-| `/api/templates` | GET | Available cover/background templates |
-| `/api/topics` | GET | Word topic categories |
-| `/api/topics/{topic}/words` | GET | Words for a specific topic |
-| `/api/upload` | POST | Upload file (image or word list) |
-| `/api/files/{file_id}` | GET | Retrieve uploaded file |
-| `/api/files/{file_id}` | DELETE | Delete uploaded file |
-| `/api/generate-puzzle` | POST | Generate a multi-puzzle PDF book |
-| `/api/play/generate` | POST | Generate a single playable puzzle |
-
-For full request/response schemas, see the [Backend README](Backend/README.md).
 
 ## Deployment
 
-### Automated (GitHub Actions)
+Every push to `master` runs the backend tests and then syncs `Backend/` to the Hugging Face Space ([workflow](.github/workflows/deploy.yml)). Vercel builds the frontend from the same branch.
 
-Push to `main` triggers the [deploy workflow](.github/workflows/deploy.yml):
+## History
 
-- **Backend** — Synced to [Hugging Face Space](https://huggingface.co/spaces/muneer320/BOOP-backend) via Docker
-- **Frontend** — Deployed to [Vercel](https://boop-web.vercel.app/)
+The first web version (April–May 2025) was a small React form around the CLI generator. It is kept as the [`v2.0-before-finishupathon`](https://github.com/Muneer320/BOOP-web/tree/v2.0-before-finishupathon) tag.
 
-### Manual
-
-```bash
-# Frontend
-cd frontend
-REACT_APP_API_URL=<backend-url> npm run build
-npx vercel --prod
-
-# Backend (Docker)
-docker build -t boop-backend Backend/
-docker run -p 7860:7860 boop-backend
-```
-
-## Environment Variables
-
-| Variable | Default | Required | Description |
-|----------|---------|----------|-------------|
-| `REACT_APP_API_URL` | — | Yes | Backend API base URL |
-| `CORS_ORIGINS` | `http://localhost:3000` | No | Allowed CORS origins (comma-separated) |
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+In June 2026 I rebuilt most of the app during the Finish-Up-A-Thon hackathon. The work included the redesign, dark mode, the in-browser game, live generation progress, the Examples page and security fixes. Later cleanups made book generation safe to run concurrently, made generation failures report a clear error, shrank the generated PDFs (the Wordo sample went from 26.8 MB to under 0.5 MB) and added tests.
 
 ## License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
-
----
-
-<div align="center">
-
-**Built with** ❤️ **by** [Muneer320](https://github.com/muneer320)
-
-[![GitHub stars](https://img.shields.io/github/stars/muneer320/BOOP-web?style=social)](https://github.com/muneer320/BOOP-web/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/muneer320/BOOP-web?style=social)](https://github.com/muneer320/BOOP-web/network/members)
-[![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fmuneer320%2FBOOP-web)](https://twitter.com/intent/tweet?text=Check%20out%20BOOP%20Web%20-%20a%20word%20search%20puzzle%20generator!&url=https://github.com/muneer320/BOOP-web)
-
-</div>
+[MIT](LICENSE)

@@ -354,7 +354,33 @@ def create_puzzle_and_solution(puzzle_filename, wordlist, nrows: int, ncols: int
         return puzzle_filename
 
 
+PUZZLE_RETRIES = 3
+# If a word list cannot be placed at the intended size (this mostly happens with
+# the circle mask on Bonus puzzles), the grid grows by GRID_GROWTH per step,
+# up to MAX_GRID_GROWTH extra cells, instead of the page being dropped.
+GRID_GROWTH = 2
+MAX_GRID_GROWTH = 4
+
+
+def _create_with_retries(puzzle_filename, word_list, size, mask_type, background_image, page_number):
+    """Generate one puzzle at `size`, retrying with fresh random layouts and then
+    slightly larger grids. Returns True on success."""
+    for grid in range(size, min(size + MAX_GRID_GROWTH, NMAX) + 1, GRID_GROWTH):
+        for _ in range(PUZZLE_RETRIES):
+            if create_puzzle_and_solution(
+                puzzle_filename, word_list, grid, grid,
+                mask_type=mask_type, background_image=background_image, page_number=page_number,
+            ) is None:
+                return True
+    return False
+
+
 def create_all_puzzles(word_json_path, background_image, puzzle_folder, progress_callback=None):
+    """Create every transition page, puzzle and solution SVG for the book.
+
+    Returns the page numbers (e.g. "1N2", "2BH1") of puzzles whose words could
+    not be placed even after retries. An empty list means the book is complete.
+    """
     fails = []
 
     with open(word_json_path, "r") as file:
@@ -392,14 +418,11 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder, progress
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}{mode[0]}{puzzle_number}"
                 puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
-                size = 13 if "Normal" in mode else 17
+                size = 13 if mode == "Normal" else 17
 
-                puzzle = create_puzzle_and_solution(
-                    puzzle_filename, word_list, size, size, mask_type=None, background_image=background_image, page_number=page_number
-                )
-                current_puzzle += 1
-                if puzzle is not None:
+                if not _create_with_retries(puzzle_filename, word_list, size, None, background_image, page_number):
                     fails.append(page_number)
+                current_puzzle += 1
 
         for bonus_mode in ['Normal', 'Hard']:
             bonus_data = modes.get("Bonus", {}).get(bonus_mode, [])
@@ -420,19 +443,17 @@ def create_all_puzzles(word_json_path, background_image, puzzle_folder, progress
                 word_list = [word.upper() for word in word_list]
                 page_number = f"{topic_index}B{bonus_mode[0]}{puzzle_number}"
                 puzzle_filename = f"{puzzle_folder}/{current_puzzle}. {page_number}"
-                size = 13 if "Normal" in mode else 17
+                # Bonus I uses the Normal grid size and Bonus II the Hard one.
+                size = 13 if bonus_mode == "Normal" else 17
 
-                puzzle = create_puzzle_and_solution(
-                    puzzle_filename, word_list, size, size, mask_type="circle", background_image=background_image, page_number=page_number
-                )
-                current_puzzle += 1
-                if puzzle is not None:
+                if not _create_with_retries(puzzle_filename, word_list, size, "circle", background_image, page_number):
                     fails.append(page_number)
+                current_puzzle += 1
 
-    create_transition_svg(f"{puzzle_folder}//S.svg",
+    create_transition_svg(f"{puzzle_folder}/S.svg",
                           "SOLUTIONS", "", background_image)
 
-    return [fail.partition(". ")[2] for fail in fails]
+    return fails
 
 
 def create_transition_svg(filename, topic_name, mode_name, background_image=None):
@@ -455,43 +476,6 @@ def create_transition_svg(filename, topic_name, mode_name, background_image=None
             font_size=mode_font_size, font_family="Times New Roman", font_weight="bold"))
 
     dwg.save()
-
-
-def create_individual_puzzle(files, word_json_path, puzzle_folder, background_image):
-    with open(word_json_path, "r") as file:
-        words_data = json.load(file)
-
-    # puzzle_folder = "generated_puzzles"
-    os.makedirs(puzzle_folder, exist_ok=True)
-
-    for file in files:
-        # file = 5BH1
-        try:
-            page_number = file
-            topic_index = int(file[0])
-            bonus = True if file[1] == "B" else False
-            mask_type = "circle" if bonus else None
-            file = file.replace("B", "")
-            mode = "Normal" if file[1] == "N" else "Hard"
-            size = 13 if "Normal" in mode else 17
-            puzzle_number = int(file[2:])
-
-            if bonus:
-                word_list = words_data[list(words_data.keys())[
-                    topic_index - 1]]["Bonus"][mode][puzzle_number - 1]
-                print(word_list)
-            else:
-                word_list = words_data[list(words_data.keys())[
-                    topic_index - 1]][mode][puzzle_number - 1]
-
-            word_list = [word.upper() for word in word_list]
-
-            create_puzzle_and_solution(
-                f"{puzzle_folder}/{page_number}", word_list, size, size, mask_type=mask_type, background_image=background_image, page_number=page_number
-            )
-        except Exception as e:
-            print(f"Failed to generate puzzle {page_number}: {e}")
-            print("\n\n")
 
 
 def main():

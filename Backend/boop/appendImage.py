@@ -7,6 +7,27 @@ import os
 import re
 import tempfile
 
+from PIL import Image
+
+# Page backgrounds are drawn on every puzzle and solution page. Storing them as an
+# A4-sized JPEG (about 150 DPI) instead of the original lossless image keeps books
+# small: the same background used to add ~1.7 MB per canvas.
+BACKGROUND_MAX_SIZE = (1240, 1754)
+BACKGROUND_JPEG_QUALITY = 85
+
+
+def _prepare_background(image_path, work_dir):
+    """Return a compact JPEG copy of a page background, or the original path on failure."""
+    try:
+        with Image.open(image_path) as img:
+            img = img.convert("RGB")
+            img.thumbnail(BACKGROUND_MAX_SIZE)
+            out = os.path.join(work_dir, "_page_background.jpg")
+            img.save(out, "JPEG", quality=BACKGROUND_JPEG_QUALITY, optimize=True)
+            return out
+    except Exception:
+        return image_path
+
 
 def append_page(book_name, image_path):
     pdf_filename = f"{book_name}.pdf"
@@ -59,6 +80,9 @@ def append_puzzle_page(pdf_file, svg_directory, background_image=None, prog_call
                 pdf_writer.add_page(existing_pdf.pages[page_num])
             with open(temp_pdf, "wb") as f_temp:
                 pdf_writer.write(f_temp)
+
+    if background_image:
+        background_image = _prepare_background(background_image, svg_directory)
 
     c = canvas.Canvas(new_pdf, pagesize=A4)
     c_solutions = canvas.Canvas(new_solutions_pdf, pagesize=A4)

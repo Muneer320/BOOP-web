@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.pytest_cache/
+
+# Backend runtime files
+Backend/uploads/*
+Backend/outputs/
+
+# Frontend
+node_modules/
+frontend/build/
+.env
+.env.local
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
