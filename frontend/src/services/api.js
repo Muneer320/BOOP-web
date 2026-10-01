@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -14,8 +14,6 @@ const apiService = {
 
   getSettings: () => api.get("/settings"),
 
-  getTemplates: () => api.get("/templates"),
-
   uploadFile: (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -23,11 +21,6 @@ const apiService = {
       headers: { "Content-Type": "multipart/form-data" }
     });
   },
-  getFile: (fileId) =>
-    api.get(`/files/${fileId}`, {
-      responseType: "blob",
-    }),
-  deleteFile: (fileId) => api.delete(`/files/${fileId}`),
 
   getTopics: () => api.get("/topics"),
   getTopicWords: (topic) => api.get(`/topics/${topic}/words`),

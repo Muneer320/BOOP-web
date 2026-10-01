@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -28,9 +30,17 @@ def cleanup_uploads(interval_hours: int = 12, max_age_hours: int = 12):
                         pass
         time.sleep(interval_hours * 3600)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    os.makedirs(UPLOAD_CLEANUP_DIR, exist_ok=True)
+    threading.Thread(target=cleanup_uploads, daemon=True).start()
+    yield
+
+
 app = FastAPI(
     title="BOOP Puzzle API",
-    version="1.0.0"
+    version="3.0.0",
+    lifespan=lifespan,
 )
 
 app.state.limiter = limiter
@@ -51,11 +61,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "An internal error occurred. Please try again later."},
     )
-
-@app.on_event("startup")
-def start_cleanup_task():
-    thread = threading.Thread(target=cleanup_uploads, daemon=True)
-    thread.start()
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 origins = [o.strip() for o in CORS_ORIGINS]
@@ -78,7 +83,7 @@ app.include_router(play.router, prefix="/api")
 @app.get("/api")
 @app.get("/api/")
 async def api_root():
-    return {"status": "ok", "app": "BOOP Puzzle API", "version": "1.0.0"}
+    return {"status": "ok", "app": "BOOP Puzzle API", "version": "3.0.0"}
 
 @app.get("/")
 async def root_redirect():

@@ -19,4 +19,6 @@ EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/api/status')" || exit 1
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "4"]
+# One worker: generation progress is held in memory, and book generation already
+# runs in a thread pool, so a single process serves concurrent requests.
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]

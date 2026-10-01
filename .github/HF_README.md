@@ -14,12 +14,13 @@ FastAPI backend for the BOOP Word Search Puzzle Generator.
 ## API Endpoints
 
 - `GET /api/status` — Health check
-- `GET /api/settings` — App settings
-- `GET /api/templates` — Available templates
+- `GET /api/settings` — Generator grid sizes and word limits
+- `GET /api/templates` — Bundled images
 - `GET /api/topics` — Word topics
-- `POST /api/generate-puzzle` — Generate puzzle book PDF
-- `POST /api/upload` — File upload
-- `GET /api/files/{file_id}` — Retrieve uploaded file
-- `DELETE /api/files/{file_id}` — Delete uploaded file
+- `POST /api/upload` — Upload an image or word list
+- `GET|DELETE /api/files/{file_id}` — One uploaded file by id
+- `POST /api/generate-puzzle` — Generate a puzzle book PDF
+- `GET /api/generation-progress/{session_id}` — Generation progress
+- `POST /api/play/generate` — One puzzle for the in-browser game
 
 Built with FastAPI · Source: [github.com/muneer320/BOOP-web](https://github.com/muneer320/BOOP-web)

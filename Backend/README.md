@@ -1,6 +1,6 @@
 # BOOP Backend API
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
 [![HF Space](https://img.shields.io/badge/HuggingFace-Space-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/spaces/muneer320/BOOP-backend)
@@ -12,15 +12,19 @@ FastAPI backend powering the BOOP Word Search Puzzle Generator. Handles puzzle g
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/status` | Health check |
-| GET | `/api/settings` | App configuration (limits, modes) |
-| GET | `/api/templates` | Available cover/background templates |
+| GET | `/api/settings` | Grid sizes and word limits used by the book generator |
+| GET | `/api/templates` | Bundled cover/background images |
+| GET | `/api/templates/{template_id}` | One bundled image |
 | GET | `/api/topics` | Word topic categories |
 | GET | `/api/topics/{topic}/words` | Words for a topic |
-| POST | `/api/upload` | Upload a file (multipart) |
-| GET | `/api/files/{file_id}` | Retrieve an uploaded file |
-| DELETE | `/api/files/{file_id}` | Delete an uploaded file |
-| POST | `/api/generate-puzzle` | Generate a multi-puzzle PDF book |
+| POST | `/api/upload` | Upload an image or `.txt` word list (multipart). Returns a random file id |
+| GET | `/api/files/{file_id}` | Fetch one uploaded file by id |
+| DELETE | `/api/files/{file_id}` | Delete one uploaded file by id |
+| POST | `/api/generate-puzzle` | Generate a puzzle book PDF |
+| GET | `/api/generation-progress/{session_id}` | Progress of a running generation |
 | POST | `/api/play/generate` | Generate a single puzzle for interactive play |
+
+There is no endpoint that lists uploaded files. File ids are random UUIDs.
 
 ### POST `/api/generate-puzzle`
 
@@ -43,7 +47,18 @@ Generate a PDF puzzle book with multiple puzzles.
 }
 ```
 
-**Response:** `application/octet-stream` (PDF file)
+Pass `?session_id=<id>` (letters, digits, `-`, `_`) to follow progress through
+`/api/generation-progress/{session_id}`.
+
+Normal puzzles use a 13×13 grid and Hard puzzles 17×17. Bonus puzzles use the
+same sizes with a circular mask. If a puzzle's words do not fit, the generator
+retries with new layouts and then grows the grid by up to 4 cells.
+
+**Responses:**
+
+- `200` with the PDF (`application/octet-stream`)
+- `400` for an invalid session id or file id
+- `422` when a topic has too few words, or some words could not be fitted (the message names the puzzles)
 
 ### POST `/api/play/generate`
 
@@ -77,16 +92,18 @@ Generate a single puzzle for the interactive play interface. Uses an adaptive fi
 |----------|---------|-------------|
 | `CORS_ORIGINS` | `http://localhost:3000` | Comma-separated allowed CORS origins |
 
-## Mode Presets
+## Play Mode Presets
+
+Used by `/api/play/generate`. `min_words`/`max_words` limit how many words can be sent.
 
 | Mode | Grid | Min Words | Max Words | Backwards | Mask |
 |------|------|-----------|-----------|-----------|------|
-| Easy | 10 | 4 | 7 | No | — |
-| Normal | 13 | 6 | 10 | Yes | — |
-| Hard | 15 | 8 | 13 | Yes | — |
-| Very Hard | 18 | 10 | 16 | Yes | — |
-| Nightmare | 20 | 12 | 20 | Yes | — |
-| Bonus | 15 | 6 | 11 | Yes | Circle |
+| `easy` | 10 | 7 | 12 | No | — |
+| `normal` | 13 | 10 | 15 | Yes | — |
+| `hard` | 15 | 13 | 20 | Yes | — |
+| `veryhard` | 18 | 15 | 25 | Yes | — |
+| `nightmare` | 20 | 18 | 30 | Yes | — |
+| `bonus` | 15 | 7 | 15 | Yes | Circle |
 
 ## Local Development
 
@@ -96,6 +113,12 @@ source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app:app --reload       # → http://localhost:8000
 ```
+
+Run the tests with `pip install pytest httpx && pytest`.
+
+The server keeps generation progress in memory, so it runs with a single
+uvicorn worker (see the Dockerfile). Each book is generated in a thread pool,
+so one worker still builds several books at once.
 
 ## Project Structure
 
@@ -111,16 +134,18 @@ Backend/
 │   ├── appendImage.py      # PDF assembly & image embedding
 │   ├── rawWordToJSON.py    # Word-list processing & sampling
 │   └── Assets/             # Static cover & background images
+├── file_ids.py             # Validation for uploaded file ids
 ├── routers/                # API route handlers
-│   ├── files.py            # Upload / download / delete files
+│   ├── files.py            # Upload / fetch / delete one file by id
 │   ├── generate.py         # Puzzle book generation (long-running)
 │   ├── play.py             # Single-puzzle generation (play mode)
 │   ├── settings.py         # App settings endpoint
 │   ├── status.py           # Health check endpoint
 │   ├── templates.py        # Asset template listing
 │   └── words.py            # Word topics & words
-├── uploads/                # Temporary uploaded files (gitignored)
-└── outputs/                # Generated PDFs (gitignored)
+├── tests/                  # pytest suite
+├── uploads/                # Uploaded files (gitignored)
+└── outputs/                # Per-request working directories, removed after each book (gitignored)
 ```
 
 ## Deployment
