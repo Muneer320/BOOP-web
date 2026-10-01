@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, List
 from routers.files import UPLOAD_DIR
 from limiter import limiter
+from file_ids import is_safe_file_id
 import os, shutil, tempfile, re
 
 boop_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'boop'))
@@ -22,17 +23,9 @@ router = APIRouter()
 progress_store = {}
 
 SAFE_NAME_RE = re.compile(r'^[A-Za-z0-9\s\-_]+$')
-FILE_ID_RE = re.compile(r'^[a-f0-9\-]+\.[a-zA-Z0-9]+$')
-
 def sanitize_filename(name):
     safe = re.sub(r'[^\w\s\-]', '', name).strip()
     return safe or "PuzzleBook"
-
-def is_safe_file_id(file_id):
-    if not file_id:
-        return True
-    basename = os.path.basename(file_id)
-    return bool(FILE_ID_RE.match(basename)) and basename == file_id
 
 class GenerateRequest(BaseModel):
     name: str
